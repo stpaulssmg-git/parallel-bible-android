@@ -1,0 +1,1451 @@
+package com.stpauls.parallelbible
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.os.Bundle
+import android.text.TextUtils
+import android.util.LruCache
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipInputStream
+import kotlin.concurrent.thread
+
+class MainActivity : Activity() {
+
+    private lateinit var webView: WebView
+    private val dbFileName = "bible.db"
+    private val initLock = Any()
+
+    @Volatile
+    private var sqliteDb: SQLiteDatabase? = null
+    private var cachedBooks: List<String> = emptyList()
+    private var cachedBookChapters: Map<String, List<Int>> = emptyMap()
+
+    // In-memory LRU cache for visited and adjacent chapters
+    private val chapterJsonCache = object : LruCache<String, String>(32) {}
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        webView = WebView(this)
+        setContentView(webView)
+
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            allowFileAccess = false
+        }
+
+        webView.addJavascriptInterface(BibleBridge(), "AndroidBridge")
+
+        thread {
+            try {
+                ensureDatabaseReady()
+                val initialHtml = buildInitialPageHtml()
+                runOnUiThread {
+                    webView.loadDataWithBaseURL(
+                        "https://bible.local/",
+                        initialHtml,
+                        "text/html",
+                        "UTF-8",
+                        null
+                    )
+                }
+            } catch (e: Throwable) {
+                val errorReport = """
+                    <html><body style="font-family:sans-serif;padding:20px;">
+                    <h2>Database Error</h2>
+                    <p>Make sure <code>bible.db.zip</code> or <code>bible.db</code> is placed inside <code>app/src/main/assets/</code>.</p>
+                    <pre style="white-space:pre-wrap;font-size:12px;">${esc(e.stackTraceToString())}</pre>
+                    </body></html>
+                """.trimIndent()
+                runOnUiThread {
+                    webView.loadDataWithBaseURL("https://bible.local/", errorReport, "text/html", "UTF-8", null)
+                }
+            }
+        }
+    }
+
+    inner class BibleBridge {
+        @JavascriptInterface
+        fun getChapterData(book: String, chapter: Int): String {
+            ensureDatabaseReady()
+            return getOrBuildChapterJson(book, chapter, prefetchAdjacent = true)
+        }
+
+        @JavascriptInterface
+        fun searchVerses(query: String, leftVer: String, rightVer: String, page: Int): String {
+            ensureDatabaseReady()
+            return executeVerseSearch(query, leftVer, rightVer, page).toString()
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (this::webView.isInitialized) {
+            webView.evaluateJavascript("window.handleAndroidBack ? window.handleAndroidBack() : false") { result ->
+                if (result != "true") {
+                    super.onBackPressed()
+                }
+            }
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sqliteDb?.close()
+        sqliteDb = null
+    }
+
+    private fun resolveAssetDbPath(): String {
+        for (candidate in listOf("bible.db.zip", "assets/bible.db.zip", dbFileName, "assets/$dbFileName")) {
+            try {
+                assets.open(candidate).close()
+                return candidate
+            } catch (_: Exception) {
+            }
+        }
+        throw IllegalStateException("Neither bible.db.zip nor bible.db found in app/src/main/assets/")
+    }
+
+    private fun hasUpdatedSchema(dbFile: File): Boolean {
+        if (!dbFile.exists() || dbFile.length() == 0L) return false
+        return try {
+            var hasNasb = false
+            var hasOrig = false
+            SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                db.rawQuery("PRAGMA table_info(verses)", null).use { c ->
+                    while (c.moveToNext()) {
+                        when (c.getString(1)) {
+                            "nasb_text" -> hasNasb = true
+                            "orig_text" -> hasOrig = true
+                        }
+                    }
+                }
+            }
+            hasNasb && hasOrig
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun ensureDatabaseReady() {
+        if (sqliteDb != null) return
+        synchronized(initLock) {
+            if (sqliteDb != null) return
+
+            val dbFile: File = getDatabasePath(dbFileName)
+            dbFile.parentFile?.mkdirs()
+
+            val prefs = getSharedPreferences("bible_db_prefs", Context.MODE_PRIVATE)
+            @Suppress("DEPRECATION")
+            val pkgUpdateTime = packageManager.getPackageInfo(packageName, 0).lastUpdateTime
+            val savedUpdateTime = prefs.getLong("apk_update_time", -1L)
+
+            if (!dbFile.exists() || dbFile.length() == 0L || pkgUpdateTime != savedUpdateTime || !hasUpdatedSchema(dbFile)) {
+                val assetPath = resolveAssetDbPath()
+                if (assetPath.endsWith(".zip")) {
+                    assets.open(assetPath).use { rawInput ->
+                        ZipInputStream(rawInput).use { zipInput ->
+                            val entry = zipInput.nextEntry
+                            if (entry != null) {
+                                FileOutputStream(dbFile).use { output ->
+                                    zipInput.copyTo(output, 65536)
+                                }
+                            } else {
+                                throw IllegalStateException("Empty zip file in assets: $assetPath")
+                            }
+                        }
+                    }
+                } else {
+                    assets.open(assetPath).use { input ->
+                        FileOutputStream(dbFile).use { output ->
+                            input.copyTo(output, 65536)
+                        }
+                    }
+                }
+                prefs.edit().putLong("apk_update_time", pkgUpdateTime).apply()
+            }
+
+            val db = SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS
+            )
+
+            val books = mutableListOf<String>()
+            val bookChapters = mutableMapOf<String, List<Int>>()
+
+            db.rawQuery("SELECT book, chapters_json FROM books ORDER BY book_order ASC", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    val book = cursor.getString(0)
+                    val chapsJson = JSONArray(cursor.getString(1))
+                    val chapsList = ArrayList<Int>(chapsJson.length())
+                    for (i in 0 until chapsJson.length()) {
+                        chapsList.add(chapsJson.getInt(i))
+                    }
+                    books.add(book)
+                    bookChapters[book] = chapsList
+                }
+            }
+
+            cachedBooks = books
+            cachedBookChapters = bookChapters
+            sqliteDb = db
+        }
+    }
+
+    private fun versionKeyToColumn(ver: String): String = when (ver) {
+        "kjv"  -> "kjv_text"
+        "nas"  -> "nasb_text"
+        "orig" -> "orig_text"
+        "abp"  -> "aben_text"
+        "abgr" -> "abgr_text"
+        "t4t"  -> "t4t_text"
+        "kan"  -> "kan_text"
+        else   -> "kjv_text"
+    }
+
+    private fun executeVerseSearch(
+        rawQuery: String,
+        leftVer: String,
+        rightVer: String,
+        requestedPage: Int
+    ): JSONObject {
+        val db = sqliteDb ?: throw IllegalStateException("Database not initialized")
+        val trimmed = rawQuery.trim()
+        val pageSize = 24
+
+        if (trimmed.isEmpty()) {
+            return JSONObject().apply {
+                put("query", "")
+                put("total", 0)
+                put("page", 1)
+                put("pageSize", pageSize)
+                put("results", JSONArray())
+            }
+        }
+
+        val leftCol = versionKeyToColumn(leftVer)
+        val rightCol = versionKeyToColumn(rightVer)
+        val escapedLike = trimmed
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        val likeArg = "%$escapedLike%"
+
+        var totalMatches = 0
+        db.rawQuery(
+            """
+            SELECT COUNT(*)
+            FROM verses v
+            WHERE v.$leftCol LIKE ? ESCAPE '\' OR v.$rightCol LIKE ? ESCAPE '\'
+            """.trimIndent(),
+            arrayOf(likeArg, likeArg)
+        ).use { c ->
+            if (c.moveToFirst()) {
+                totalMatches = c.getInt(0)
+            }
+        }
+
+        val totalPages = if (totalMatches == 0) 1 else ((totalMatches + pageSize - 1) / pageSize)
+        val safePage = requestedPage.coerceIn(1, totalPages)
+        val offset = (safePage - 1) * pageSize
+
+        val resultsArray = JSONArray()
+        if (totalMatches > 0) {
+            db.rawQuery(
+                """
+                SELECT v.book, v.chapter, v.verse_num, v.t4t_label,
+                       v.kjv_text, v.nasb_text, v.orig_text,
+                       v.aben_text, v.abgr_text, v.t4t_text, v.kan_text
+                FROM verses v
+                JOIN books b ON v.book = b.book
+                WHERE v.$leftCol LIKE ? ESCAPE '\' OR v.$rightCol LIKE ? ESCAPE '\'
+                ORDER BY b.book_order ASC, v.chapter ASC, v.verse_num ASC
+                LIMIT ? OFFSET ?
+                """.trimIndent(),
+                arrayOf(likeArg, likeArg, pageSize.toString(), offset.toString())
+            ).use { c ->
+                while (c.moveToNext()) {
+                    val obj = JSONObject()
+                    obj.put("book", c.getString(0))
+                    obj.put("chapter", c.getInt(1))
+                    obj.put("v", c.getInt(2))
+                    obj.put("t4tL", c.getString(3))
+                    if (!c.isNull(4)) obj.put("kjv", c.getString(4))
+                    if (!c.isNull(5)) obj.put("nas", c.getString(5))
+                    if (!c.isNull(6)) obj.put("orig", c.getString(6))
+                    if (!c.isNull(7)) obj.put("abp", c.getString(7))
+                    if (!c.isNull(8)) obj.put("abgr", c.getString(8))
+                    if (!c.isNull(9)) obj.put("t4t", c.getString(9))
+                    if (!c.isNull(10)) obj.put("kan", c.getString(10))
+                    resultsArray.put(obj)
+                }
+            }
+        }
+
+        return JSONObject().apply {
+            put("query", trimmed)
+            put("total", totalMatches)
+            put("page", safePage)
+            put("totalPages", totalPages)
+            put("pageSize", pageSize)
+            put("results", resultsArray)
+        }
+    }
+
+    private fun getOrBuildChapterJson(
+        requestedBook: String?,
+        requestedChapter: Int?,
+        prefetchAdjacent: Boolean
+    ): String {
+        val selectedBook = if (requestedBook != null && cachedBooks.contains(requestedBook)) {
+            requestedBook
+        } else {
+            cachedBooks.firstOrNull() ?: "GEN"
+        }
+
+        val chapters = cachedBookChapters[selectedBook] ?: listOf(1)
+        val selectedChapter = if (requestedChapter != null && chapters.contains(requestedChapter)) {
+            requestedChapter
+        } else {
+            chapters.firstOrNull() ?: 1
+        }
+
+        val cacheKey = "$selectedBook:$selectedChapter"
+        chapterJsonCache.get(cacheKey)?.let { cached ->
+            if (prefetchAdjacent) triggerAdjacentPrefetch(selectedBook, selectedChapter)
+            return cached
+        }
+
+        val built = queryChapterJsonObject(selectedBook, selectedChapter).toString()
+        chapterJsonCache.put(cacheKey, built)
+
+        if (prefetchAdjacent) {
+            triggerAdjacentPrefetch(selectedBook, selectedChapter)
+        }
+        return built
+    }
+
+    private fun triggerAdjacentPrefetch(book: String, chapter: Int) {
+        val (prevPair, nextPair) = getAdjacentPassages(book, chapter)
+        thread {
+            if (prevPair != null) {
+                val k = "${prevPair.first}:${prevPair.second}"
+                if (chapterJsonCache.get(k) == null) {
+                    chapterJsonCache.put(k, queryChapterJsonObject(prevPair.first, prevPair.second).toString())
+                }
+            }
+            if (nextPair != null) {
+                val k = "${nextPair.first}:${nextPair.second}"
+                if (chapterJsonCache.get(k) == null) {
+                    chapterJsonCache.put(k, queryChapterJsonObject(nextPair.first, nextPair.second).toString())
+                }
+            }
+        }
+    }
+
+    private fun getAdjacentPassages(
+        selectedBook: String,
+        selectedChapter: Int
+    ): Pair<Pair<String, Int>?, Pair<String, Int>?> {
+        val chapters = cachedBookChapters[selectedBook] ?: listOf(1)
+        val bookIndex = cachedBooks.indexOf(selectedBook)
+        val chapIndex = chapters.indexOf(selectedChapter)
+
+        var prev: Pair<String, Int>? = null
+        if (chapIndex > 0) {
+            prev = Pair(selectedBook, chapters[chapIndex - 1])
+        } else if (bookIndex > 0) {
+            val prevBook = cachedBooks[bookIndex - 1]
+            val prevChaps = cachedBookChapters[prevBook] ?: listOf(1)
+            prev = Pair(prevBook, prevChaps.last())
+        }
+
+        var next: Pair<String, Int>? = null
+        if (chapIndex != -1 && chapIndex < chapters.size - 1) {
+            next = Pair(selectedBook, chapters[chapIndex + 1])
+        } else if (bookIndex != -1 && bookIndex < cachedBooks.size - 1) {
+            val nextBook = cachedBooks[bookIndex + 1]
+            val nextChaps = cachedBookChapters[nextBook] ?: listOf(1)
+            next = Pair(nextBook, nextChaps.first())
+        }
+
+        return Pair(prev, next)
+    }
+
+    private fun queryChapterJsonObject(selectedBook: String, selectedChapter: Int): JSONObject {
+        val db = sqliteDb ?: throw IllegalStateException("Database not initialized")
+        val chapters = cachedBookChapters[selectedBook] ?: listOf(1)
+        val (prev, next) = getAdjacentPassages(selectedBook, selectedChapter)
+
+        val versesArray = JSONArray()
+        db.rawQuery(
+            """
+            SELECT verse_num, t4t_label, kjv_text, nasb_text, orig_text, aben_text, abgr_text, t4t_text, kan_text
+            FROM verses
+            WHERE book = ? AND chapter = ?
+            ORDER BY verse_num ASC
+            """.trimIndent(),
+            arrayOf(selectedBook, selectedChapter.toString())
+        ).use { c ->
+            while (c.moveToNext()) {
+                val obj = JSONObject()
+                obj.put("v", c.getInt(0))
+                obj.put("t4tL", c.getString(1))
+                if (!c.isNull(2)) obj.put("kjv", c.getString(2))
+                if (!c.isNull(3)) obj.put("nas", c.getString(3))
+                if (!c.isNull(4)) obj.put("orig", c.getString(4))
+                if (!c.isNull(5)) obj.put("abp", c.getString(5))
+                if (!c.isNull(6)) obj.put("abgr", c.getString(6))
+                if (!c.isNull(7)) obj.put("t4t", c.getString(7))
+                if (!c.isNull(8)) obj.put("kan", c.getString(8))
+                versesArray.put(obj)
+            }
+        }
+
+        return JSONObject().apply {
+            put("book", selectedBook)
+            put("chapter", selectedChapter)
+            put("chapters", JSONArray(chapters))
+            put("prevBook", prev?.first ?: JSONObject.NULL)
+            put("prevChapter", prev?.second ?: JSONObject.NULL)
+            put("nextBook", next?.first ?: JSONObject.NULL)
+            put("nextChapter", next?.second ?: JSONObject.NULL)
+            put("verses", versesArray)
+        }
+    }
+
+    private fun buildInitialPageHtml(): String {
+        val firstBook = cachedBooks.firstOrNull() ?: "GEN"
+        val firstChapter = cachedBookChapters[firstBook]?.firstOrNull() ?: 1
+        val initialDataJson = getOrBuildChapterJson(firstBook, firstChapter, prefetchAdjacent = true)
+
+        val availableChaptersJson = JSONObject()
+        for ((b, chaps) in cachedBookChapters) {
+            availableChaptersJson.put(b, JSONArray(chaps))
+        }
+
+        val bookOptions = StringBuilder()
+        for (b in cachedBooks) {
+            val sel = if (b == firstBook) " selected" else ""
+            bookOptions.append("""<option value="${esc(b)}"$sel>${esc(b)}</option>""")
+        }
+
+        return HTML_TEMPLATE
+            .replace("{{BOOK_OPTIONS}}", bookOptions.toString())
+            .replace("{{AVAILABLE_BOOKS_JSON}}", JSONArray(cachedBooks).toString())
+            .replace("{{AVAILABLE_CHAPTERS_JSON}}", availableChaptersJson.toString())
+            .replace("{{INITIAL_CHAPTER_DATA_JSON}}", initialDataJson)
+    }
+
+    private fun esc(text: String): String = TextUtils.htmlEncode(text)
+
+    companion object {
+        private val DLR = "${'$'}"
+        private val HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en" data-theme="warm">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parallel Bible</title>
+<style>
+:root { --verse-font-size: 16px; }
+html[data-theme="warm"] {
+    --bg-body: #f4ece1; --header-bg: #4a2511; --header-text: #fdfaf3; --header-border: #6b3a1e;
+    --row-odd-bg: #fffdf9; --row-even-bg: #f3e8d6; --row-hover-bg: #ead8be; --row-border: #dfcbb0;
+    --cell-divider: #d5be9f; --text-color: #2b1d0e; --verse-num-color: #9c3d18; --merged-text-color: #8a7356;
+    --bar-bg: rgba(74, 37, 17, 0.96); --btn-bg: #6e3b1f; --btn-hover-bg: #874927; --btn-text: #fdfaf3;
+    --btn-active-bg: #f3c677; --btn-active-text: #381a0a; --mark-bg: #f6d365; --mark-text: #2b1d0e;
+}
+html[data-theme="teal"] {
+    --bg-body: #eaf2f4; --header-bg: #0f4c5c; --header-text: #ffffff; --header-border: #1b697d;
+    --row-odd-bg: #ffffff; --row-even-bg: #e6f2f5; --row-hover-bg: #d3e8ed; --row-border: #cde0e5;
+    --cell-divider: #bfd6dc; --text-color: #1e293b; --verse-num-color: #0f766e; --merged-text-color: #64748b;
+    --bar-bg: rgba(15, 76, 92, 0.96); --btn-bg: #1b697d; --btn-hover-bg: #248199; --btn-text: #ffffff;
+    --btn-active-bg: #99f6e4; --btn-active-text: #0f4c5c; --mark-bg: #fde047; --mark-text: #0f4c5c;
+}
+html[data-theme="dark"] {
+    --bg-body: #12161f; --header-bg: #0b111e; --header-text: #e2e8f0; --header-border: #1e293b;
+    --row-odd-bg: #161d2a; --row-even-bg: #20293a; --row-hover-bg: #2a364b; --row-border: #2d384d;
+    --cell-divider: #334155; --text-color: #e2e8f0; --verse-num-color: #38bdf8; --merged-text-color: #94a3b8;
+    --bar-bg: rgba(11, 17, 30, 0.96); --btn-bg: #1e293b; --btn-hover-bg: #334155; --btn-text: #e2e8f0;
+    --btn-active-bg: #38bdf8; --btn-active-text: #0b111e; --mark-bg: #facc15; --mark-text: #0b111e;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+button, select, a, input { touch-action: manipulation; }
+html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg-body); color: var(--text-color);
+    overflow-x: hidden;
+}
+.container {
+    position: relative; width: 100%; height: 100vh;
+    overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    background: var(--bg-body); padding-top: 40px; padding-bottom: 58px;
+}
+.parallel-content {
+    width: 100%;
+    will-change: transform, opacity;
+}
+@keyframes slideFromRight {
+    0% { transform: translateX(36px); opacity: 0.35; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideFromLeft {
+    0% { transform: translateX(-36px); opacity: 0.35; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+.parallel-content.swipe-next { animation: slideFromRight 0.14s ease-out; }
+.parallel-content.swipe-prev { animation: slideFromLeft 0.14s ease-out; }
+
+/* Floating Chapter Indicator Toast on Swipe */
+.chapter-toast {
+    position: fixed;
+    top: 52px;
+    left: 50%;
+    transform: translate(-50%, -10px);
+    z-index: 120;
+    background: var(--bar-bg);
+    color: var(--btn-text);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.chapter-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Search Filter Banner & Pagination Controls */
+.search-banner, .search-pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px; padding: 10px 14px;
+    background: var(--row-even-bg); border-bottom: 2px solid var(--header-border);
+    font-size: 13px;
+}
+.search-pagination {
+    border-top: 1px solid var(--row-border);
+    border-bottom: none;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px;
+}
+.search-banner-info {
+    font-weight: 600; color: var(--text-color);
+}
+.search-banner-actions {
+    display: flex; align-items: center; gap: 6px;
+}
+.filter-btn {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 6px 11px; border-radius: 5px; font-size: 12px; font-weight: bold;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+}
+.filter-btn.clear-btn {
+    background: var(--btn-active-bg); color: var(--btn-active-text);
+}
+.filter-btn:disabled {
+    opacity: 0.4; cursor: default;
+}
+.ref-badge {
+    display: inline-block; background: var(--btn-bg); color: var(--btn-text);
+    padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold;
+    margin-right: 6px; cursor: pointer; text-decoration: none;
+}
+.mt-rtl .ref-badge { margin-right: 0; margin-left: 6px; }
+mark.search-hl {
+    background: var(--mark-bg); color: var(--mark-text);
+    padding: 0 2px; border-radius: 3px; font-weight: 600;
+}
+
+.version-row {
+    display: grid; grid-template-columns: 50% 50%; width: 100%;
+    border-bottom: 1px solid var(--row-border); scroll-margin-top: 48px;
+    contain: layout style;
+}
+.version-row:nth-child(odd) { background-color: var(--row-odd-bg); }
+.version-row:nth-child(even) { background-color: var(--row-even-bg); }
+.version-row.verse-highlight {
+    outline: 2px solid var(--verse-num-color); outline-offset: -2px;
+    background-color: var(--row-hover-bg) !important;
+}
+.verse-cell {
+    min-width: 0; padding: 12px 14px; font-size: var(--verse-font-size);
+    line-height: 1.65; color: var(--text-color); overflow-wrap: break-word;
+}
+.left-cell { border-right: 1px solid var(--cell-divider); }
+.mt-rtl {
+    direction: rtl; text-align: right;
+    font-family: 'SBL Hebrew', 'Ezra SIL', 'David', serif;
+    font-size: calc(var(--verse-font-size) * 1.15); line-height: 1.75;
+}
+.mt-rtl .verse-number { margin-right: 0; margin-left: 4px; }
+.verse-number { font-weight: bold; color: var(--verse-num-color); margin-right: 4px; font-size: 0.9em; }
+.verse-merged { color: var(--merged-text-color); font-style: italic; }
+.version-label {
+    position: fixed; top: 0; z-index: 10; width: 50%; height: 40px;
+    background: var(--header-bg); color: var(--header-text); padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--header-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    will-change: transform; transition: transform 0.18s ease;
+}
+.version-label.ui-hidden { transform: translateY(-100%); }
+.left-label { left: 0; border-right: 1px solid var(--header-border); }
+.right-label { left: 50%; }
+.header-version-switch {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: rgba(0, 0, 0, 0.2); padding: 3px; border-radius: 6px;
+    max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.header-version-switch::-webkit-scrollbar { display: none; }
+.header-version-switch button {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    cursor: pointer; line-height: 1.1; white-space: nowrap;
+}
+.header-version-switch button.active { background: var(--btn-active-bg); color: var(--btn-active-text); }
+.bottom-dock {
+    position: fixed; bottom: 8px; left: 8px; right: 8px; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    pointer-events: none; will-change: transform; transition: transform 0.18s ease;
+}
+.bottom-dock.ui-hidden { transform: translateY(calc(100% + 14px)); }
+.nav-bar, .utility-bar {
+    pointer-events: auto; display: flex; align-items: center; gap: 4px;
+    background: var(--bar-bg); padding: 4px; border-radius: 7px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex-shrink: 0;
+}
+.nav-bar select {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 6px 8px; border-radius: 4px; font-size: 13px; font-weight: bold;
+}
+.utility-bar button {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 6px 9px; border-radius: 4px; font-size: 13px; font-weight: bold;
+    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+}
+.search-bar {
+    position: relative; pointer-events: auto; display: flex; align-items: center; gap: 4px;
+    background: var(--bar-bg); padding: 4px; border-radius: 7px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex: 1; max-width: 280px; min-width: 90px;
+}
+.search-input {
+    width: 100%; min-width: 0; border: none; outline: none;
+    background: var(--btn-bg); color: var(--btn-text);
+    padding: 6px 8px; border-radius: 4px; font-size: 13px; font-weight: 600;
+}
+.search-input::placeholder { color: var(--btn-text); opacity: 0.65; }
+.search-clear-inline {
+    display: none; border: none; background: var(--btn-active-bg); color: var(--btn-active-text);
+    padding: 5px 7px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;
+    line-height: 1;
+}
+.search-clear-inline.show { display: inline-flex; align-items: center; }
+.search-button {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 6px 8px; border-radius: 4px; display: inline-flex; align-items: center; cursor: pointer;
+}
+.search-button svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+.search-results {
+    position: absolute; left: 0; right: 0; bottom: calc(100% + 6px);
+    display: none; max-height: 240px; overflow-y: auto;
+    background: var(--bar-bg); border-radius: 7px; padding: 4px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.35); min-width: 150px;
+}
+.search-results.show { display: block; }
+.search-result {
+    width: 100%; border: none; background: transparent; color: var(--btn-text);
+    text-align: left; padding: 7px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;
+}
+.search-result.keyword-action {
+    border-top: 1px solid rgba(255,255,255,0.15);
+    font-weight: bold; color: var(--btn-active-bg);
+}
+.search-result small { opacity: 0.7; margin-left: 5px; }
+.search-empty { color: var(--btn-text); opacity: 0.75; padding: 7px 8px; font-size: 12px; }
+@media (max-width: 600px) {
+    .container { padding-top: 34px; padding-bottom: 48px; }
+    .version-label { height: 34px; padding: 0 2px; }
+    .header-version-switch button { padding: 3px 6px; font-size: 11px; }
+    .verse-cell { padding: 8px 6px; line-height: 1.55; }
+    .bottom-dock { bottom: 4px; left: 4px; right: 4px; gap: 4px; }
+    .nav-bar, .search-bar, .utility-bar { padding: 3px; gap: 3px; }
+    .search-bar { max-width: none; }
+    .nav-bar select, .utility-bar button, .search-button, .search-input {
+        padding: 5px 6px; font-size: 12px;
+    }
+    .chapter-toast { top: 44px; }
+    .search-banner { padding: 8px 10px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="chapterToast" class="chapter-toast"></div>
+
+<div class="container" id="scrollContainer">
+    <div class="parallel-content" id="parallelContent"></div>
+    <div class="version-label left-label">
+        <div class="header-version-switch">
+            <button type="button" id="kjvButton" class="active" onclick="showLeftVersion('kjv')">KJV</button>
+            <button type="button" id="nasButton" onclick="showLeftVersion('nas')">NAS</button>
+            <button type="button" id="origButton" onclick="showLeftVersion('orig')">ORIG</button>
+        </div>
+    </div>
+    <div class="version-label right-label">
+        <div class="header-version-switch">
+            <button type="button" id="abpButton" class="active" onclick="showRightVersion('abp')">ABEn</button>
+            <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABGr</button>
+            <button type="button" id="t4tButton" onclick="showRightVersion('t4t')">T4T</button>
+            <button type="button" id="kanButton" onclick="showRightVersion('kan')">KAN</button>
+        </div>
+    </div>
+</div>
+<div class="bottom-dock" id="bottomDock">
+    <div class="nav-bar">
+        <select id="bookSelect" aria-label="Book" onchange="onBookSelectChange(this.value)">{{BOOK_OPTIONS}}</select>
+        <select id="chapterSelect" aria-label="Chapter" onchange="onChapterSelectChange(this.value)"></select>
+    </div>
+    <form class="search-bar" onsubmit="return submitChapterSearch();">
+        <div class="search-results" id="searchResults"></div>
+        <input type="text" id="chapterSearch" class="search-input" placeholder="Ref or word..." autocomplete="off">
+        <button type="button" id="clearSearchInlineBtn" class="search-clear-inline" title="Clear Search" onclick="clearVerseSearch()">&times;</button>
+        <button type="submit" class="search-button" title="Search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.2" y2="16.2"></line></svg>
+        </button>
+    </form>
+    <div class="utility-bar">
+        <button type="button" onclick="changeFontSize(-1)">A&minus;</button>
+        <button type="button" onclick="changeFontSize(1)">A+</button>
+        <button type="button" id="themeButton" onclick="cycleTheme()">D</button>
+    </div>
+</div>
+<script>
+const rootEl = document.documentElement;
+const themes = ['warm', 'teal', 'dark'];
+let currentTheme = 'warm';
+let currentFontSize = window.innerWidth <= 600 ? 14 : 16;
+let activeLeft = 'kjv';
+let activeRight = 'abp';
+
+const versionLabels = {
+    kjv: 'KJV', nas: 'NAS', orig: 'ORIG',
+    abp: 'ABEn', abgr: 'ABGr', t4t: 'T4T', kan: 'KAN'
+};
+
+const missingFallbacks = {
+    kjv:  '[Not available in KJV]',
+    nas:  '[Not available in NAS]',
+    orig: '[Not available in ORIG]',
+    abp:  '[Not available in ABEn]',
+    abgr: '[Not available in ABGr]',
+    t4t:  '[Included in previous verse]',
+    kan:  '[Merged with adjacent verse]'
+};
+
+const availableBooks = {{AVAILABLE_BOOKS_JSON}};
+const availableChapters = {{AVAILABLE_CHAPTERS_JSON}};
+const initialChapterData = {{INITIAL_CHAPTER_DATA_JSON}};
+
+let currentBook = initialChapterData.book;
+let currentChapter = initialChapterData.chapter;
+let currentVerses = initialChapterData.verses || [];
+let prevTarget = null;
+let nextTarget = null;
+let navHistory = [];
+let toastTimer = null;
+
+// Active text-search state
+let searchState = {
+    active: false,
+    query: '',
+    page: 1,
+    total: 0,
+    totalPages: 1,
+    pageSize: 24,
+    results: []
+};
+
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${DLR}()|[\]\\]/g, '\\${DLR}&');
+}
+
+function highlightQueryHtml(text, query) {
+    const safeText = escHtml(text);
+    if (!query) return safeText;
+    const safeQuery = escHtml(query.trim());
+    if (!safeQuery) return safeText;
+    try {
+        const regex = new RegExp('(' + escapeRegExp(safeQuery) + ')', 'gi');
+        return safeText.replace(regex, '<mark class="search-hl">${DLR}1</mark>');
+    } catch (e) {
+        return safeText;
+    }
+}
+
+function showChapterToast(label) {
+    const toast = document.getElementById('chapterToast');
+    if (!toast) return;
+    toast.textContent = label;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 850);
+}
+
+function applyTheme(theme) {
+    if (!themes.includes(theme)) theme = 'warm';
+    currentTheme = theme;
+    rootEl.setAttribute('data-theme', theme);
+    localStorage.setItem('bibleTheme', theme);
+}
+
+function cycleTheme() {
+    applyTheme(themes[(themes.indexOf(currentTheme) + 1) % themes.length]);
+}
+
+function applyFontSize(sizePx) {
+    currentFontSize = Math.min(28, Math.max(12, sizePx));
+    rootEl.style.setProperty('--verse-font-size', currentFontSize + 'px');
+    localStorage.setItem('bibleFontSize', currentFontSize);
+}
+
+function changeFontSize(delta) {
+    applyFontSize(currentFontSize + delta);
+}
+
+function buildCellInner(row, ver) {
+    const numLabel = (ver === 't4t' && row.t4tL) ? row.t4tL : row.v;
+    const text = row[ver];
+    if (text !== undefined && text !== null) {
+        return '<span class="verse-number">' + escHtml(numLabel) + '</span> ' + escHtml(text);
+    }
+    return '<span class="verse-number">' + escHtml(numLabel) + '</span> <span class="verse-merged">' + missingFallbacks[ver] + '</span>';
+}
+
+function buildSearchCellInner(row, ver, query) {
+    const numLabel = (ver === 't4t' && row.t4tL) ? row.t4tL : row.v;
+    const refLabel = row.book + ' ' + row.chapter + ':' + numLabel;
+    const badgeHtml = '<span class="ref-badge" onclick="openSearchResult(\'' + escHtml(row.book) + '\',' + row.chapter + ',' + row.v + ')">' + escHtml(refLabel) + '</span>';
+    const text = row[ver];
+    if (text !== undefined && text !== null) {
+        return badgeHtml + highlightQueryHtml(text, query);
+    }
+    return badgeHtml + '<span class="verse-merged">' + missingFallbacks[ver] + '</span>';
+}
+
+function isHebrewText(str) {
+    return typeof str === 'string' && /[\u0590-\u05FF]/.test(str);
+}
+
+function updateInlineClearButton() {
+    const btn = document.getElementById('clearSearchInlineBtn');
+    const input = document.getElementById('chapterSearch');
+    if (!btn) return;
+    const hasVal = input && input.value.trim().length > 0;
+    btn.classList.toggle('show', searchState.active || hasVal);
+}
+
+function renderVersesDom() {
+    updateInlineClearButton();
+    if (searchState.active) {
+        renderSearchVersesDom();
+        return;
+    }
+    let html = '';
+    const isOrig = (activeLeft === 'orig');
+    for (let i = 0; i < currentVerses.length; i++) {
+        const row = currentVerses[i];
+        const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
+        html += '<div class="version-row" id="v' + row.v + '">'
+              + '<div class="verse-cell left-cell' + leftRtl + '">' + buildCellInner(row, activeLeft) + '</div>'
+              + '<div class="verse-cell right-cell">' + buildCellInner(row, activeRight) + '</div>'
+              + '</div>';
+    }
+    document.getElementById('parallelContent').innerHTML = html;
+}
+
+function renderSearchVersesDom() {
+    const q = searchState.query;
+    const total = searchState.total;
+    const page = searchState.page;
+    const totalPages = searchState.totalPages;
+    const rows = searchState.results || [];
+    const startIdx = total === 0 ? 0 : ((page - 1) * searchState.pageSize) + 1;
+    const endIdx = Math.min(total, startIdx + rows.length - 1);
+    const pairLabel = (versionLabels[activeLeft] || activeLeft.toUpperCase()) + ' + ' + (versionLabels[activeRight] || activeRight.toUpperCase());
+
+    let html = '<div class="search-banner">'
+        + '<div class="search-banner-info">'
+        + 'Search: &ldquo;' + escHtml(q) + '&rdquo; in ' + escHtml(pairLabel) + ' &mdash; '
+        + (total > 0 ? ('Showing ' + startIdx + '&ndash;' + endIdx + ' of ' + total) : '0 matches')
+        + '</div>'
+        + '<div class="search-banner-actions">'
+        + '<button type="button" class="filter-btn" onclick="changeSearchPage(-1)" ' + (page <= 1 ? 'disabled' : '') + '>&larr; Prev</button>'
+        + '<button type="button" class="filter-btn" onclick="changeSearchPage(1)" ' + (page >= totalPages ? 'disabled' : '') + '>Next &rarr;</button>'
+        + '<button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">&times; Clear Filter</button>'
+        + '</div>'
+        + '</div>';
+
+    if (rows.length === 0) {
+        html += '<div style="padding: 28px 16px; text-align: center; font-size: 15px;">'
+              + 'No verses containing <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong> found in ' + escHtml(pairLabel) + '.'
+              + '<div style="margin-top:14px;"><button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">Return to ' + escHtml(currentBook + ' ' + currentChapter) + '</button></div>'
+              + '</div>';
+    } else {
+        const isOrig = (activeLeft === 'orig');
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
+            html += '<div class="version-row">'
+                  + '<div class="verse-cell left-cell' + leftRtl + '">' + buildSearchCellInner(row, activeLeft, q) + '</div>'
+                  + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
+                  + '</div>';
+        }
+        html += '<div class="search-pagination">'
+              + '<button type="button" class="filter-btn" onclick="changeSearchPage(-1)" ' + (page <= 1 ? 'disabled' : '') + '>&larr; Prev 24</button>'
+              + '<span style="font-weight:bold;">Page ' + page + ' of ' + totalPages + ' (' + total + ' verses)</span>'
+              + '<button type="button" class="filter-btn" onclick="changeSearchPage(1)" ' + (page >= totalPages ? 'disabled' : '') + '>Next 24 &rarr;</button>'
+              + '<button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">&times; Clear Filter</button>'
+              + '</div>';
+    }
+
+    document.getElementById('parallelContent').innerHTML = html;
+}
+
+function runKeywordSearch(query, page = 1) {
+    const trimmed = query.trim();
+    if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
+
+    const resultsPopup = document.getElementById('searchResults');
+    const input = document.getElementById('chapterSearch');
+    if (resultsPopup) resultsPopup.classList.remove('show');
+    if (input) {
+        input.value = trimmed;
+        input.blur();
+    }
+
+    const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page);
+    const data = JSON.parse(rawJson);
+
+    searchState.active = true;
+    searchState.query = data.query || trimmed;
+    searchState.page = data.page || 1;
+    searchState.total = data.total || 0;
+    searchState.totalPages = data.totalPages || 1;
+    searchState.pageSize = data.pageSize || 24;
+    searchState.results = data.results || [];
+
+    renderVersesDom();
+    const container = document.getElementById('scrollContainer');
+    if (container) container.scrollTop = 0;
+}
+
+function changeSearchPage(delta) {
+    if (!searchState.active) return;
+    const targetPage = searchState.page + delta;
+    if (targetPage < 1 || targetPage > searchState.totalPages) return;
+    runKeywordSearch(searchState.query, targetPage);
+}
+
+function clearVerseSearch() {
+    const input = document.getElementById('chapterSearch');
+    const resultsPopup = document.getElementById('searchResults');
+    if (input) input.value = '';
+    if (resultsPopup) resultsPopup.classList.remove('show');
+
+    if (searchState.active) {
+        searchState.active = false;
+        searchState.query = '';
+        searchState.results = [];
+        renderVersesDom();
+    } else {
+        updateInlineClearButton();
+    }
+}
+
+function openSearchResult(book, chapter, verse) {
+    searchState.active = false;
+    searchState.query = '';
+    searchState.results = [];
+    const input = document.getElementById('chapterSearch');
+    if (input) input.value = '';
+    updateInlineClearButton();
+
+    const chapNum = Number(chapter) || 1;
+    if (book === currentBook && chapNum === currentChapter) {
+        renderVersesDom();
+        requestAnimationFrame(() => scrollToVerse(verse));
+    } else {
+        navigateToPassage(book, chapNum, verse);
+    }
+}
+
+function showLeftVersion(version, skipRender = false) {
+    if (!['kjv', 'nas', 'orig'].includes(version)) version = 'kjv';
+    activeLeft = version;
+    document.getElementById('kjvButton').classList.toggle('active', version === 'kjv');
+    document.getElementById('nasButton').classList.toggle('active', version === 'nas');
+    document.getElementById('origButton').classList.toggle('active', version === 'orig');
+    localStorage.setItem('selectedFirstVersion', version);
+    if (!skipRender) {
+        if (searchState.active) runKeywordSearch(searchState.query, 1);
+        else renderVersesDom();
+    }
+}
+
+function showRightVersion(version, skipRender = false) {
+    if (!['abp', 'abgr', 't4t', 'kan'].includes(version)) version = 'abp';
+    activeRight = version;
+    document.getElementById('abpButton').classList.toggle('active', version === 'abp');
+    document.getElementById('abgrButton').classList.toggle('active', version === 'abgr');
+    document.getElementById('t4tButton').classList.toggle('active', version === 't4t');
+    document.getElementById('kanButton').classList.toggle('active', version === 'kan');
+    localStorage.setItem('selectedSecondVersion', version);
+    if (!skipRender) {
+        if (searchState.active) runKeywordSearch(searchState.query, 1);
+        else renderVersesDom();
+    }
+}
+
+function renderChapterData(data, targetVerse = null, swipeDir = null) {
+    searchState.active = false;
+    currentBook = data.book;
+    currentChapter = Number(data.chapter);
+    currentVerses = data.verses || [];
+
+    const contentEl = document.getElementById('parallelContent');
+    contentEl.classList.remove('swipe-next', 'swipe-prev');
+    renderVersesDom();
+
+    if (swipeDir === 'next' || swipeDir === 'prev') {
+        void contentEl.offsetWidth;
+        contentEl.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
+        showChapterToast(currentBook + ' ' + currentChapter);
+    }
+
+    document.getElementById('bookSelect').value = currentBook;
+
+    const chapSelect = document.getElementById('chapterSelect');
+    if (chapSelect) {
+        const chaps = data.chapters || [1];
+        let opts = '';
+        for (let i = 0; i < chaps.length; i++) {
+            const c = chaps[i];
+            opts += '<option value="' + c + '"' + (c === currentChapter ? ' selected' : '') + '>' + c + '</option>';
+        }
+        chapSelect.innerHTML = opts;
+    }
+
+    prevTarget = (data.prevBook && data.prevChapter)
+        ? { book: data.prevBook, chapter: data.prevChapter }
+        : null;
+
+    nextTarget = (data.nextBook && data.nextChapter)
+        ? { book: data.nextBook, chapter: data.nextChapter }
+        : null;
+
+    const container = document.getElementById('scrollContainer');
+    if (targetVerse) {
+        requestAnimationFrame(() => scrollToVerse(targetVerse));
+    } else if (container) {
+        container.scrollTop = 0;
+    }
+
+    localStorage.setItem('lastBook', currentBook);
+    localStorage.setItem('lastChapter', currentChapter);
+}
+
+function onBookSelectChange(newBook) { navigateToPassage(newBook, 1, null); }
+function onChapterSelectChange(newChap) { navigateToPassage(currentBook, parseInt(newChap, 10) || 1, null); }
+
+function scrollToVerse(verseNum) {
+    if (!verseNum) return false;
+    const targetRow = document.getElementById('v' + verseNum);
+    if (!targetRow) return false;
+    document.querySelectorAll('.version-row.verse-highlight').forEach(r => r.classList.remove('verse-highlight'));
+    targetRow.classList.add('verse-highlight');
+    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return true;
+}
+
+function navigateToPassage(book, chapter, verse = null, pushHistory = true, swipeDir = null) {
+    const results = document.getElementById('searchResults');
+    const input = document.getElementById('chapterSearch');
+    if (results) results.classList.remove('show');
+    if (input) input.blur();
+
+    const wasSearchActive = searchState.active;
+    searchState.active = false;
+
+    const chapNum = Number(chapter) || 1;
+    if (book === currentBook && chapNum === currentChapter) {
+        if (wasSearchActive) renderVersesDom();
+        if (verse !== null) scrollToVerse(verse);
+        return;
+    }
+
+    if (pushHistory) {
+        navHistory.push({ book: currentBook, chapter: currentChapter });
+        if (navHistory.length > 30) navHistory.shift();
+    }
+
+    if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+        const rawJson = window.AndroidBridge.getChapterData(book, chapNum);
+        renderChapterData(JSON.parse(rawJson), verse, swipeDir);
+    }
+}
+
+window.handleAndroidBack = function() {
+    if (searchState.active) {
+        clearVerseSearch();
+        return true;
+    }
+    if (navHistory.length > 0) {
+        const prev = navHistory.pop();
+        navigateToPassage(prev.book, prev.chapter, null, false, 'prev');
+        return true;
+    }
+    return false;
+};
+
+/* Horizontal Swipe Gesture Handler (Left -> Next Chapter, Right -> Previous Chapter) */
+function initSwipeNavigation() {
+    const container = document.getElementById('scrollContainer');
+    if (!container) return;
+
+    let startX = 0;
+    let startY = 0;
+    let startTime = 0;
+
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        if (e.target.closest('.bottom-dock, .version-label, .search-banner, .search-pagination')) {
+            startTime = 0;
+            return;
+        }
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        if (!startTime || e.changedTouches.length !== 1) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        const elapsed = Date.now() - startTime;
+        startTime = 0;
+
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.8 && elapsed < 650) {
+            if (searchState.active) {
+                if (dx < 0 && searchState.page < searchState.totalPages) changeSearchPage(1);
+                else if (dx > 0 && searchState.page > 1) changeSearchPage(-1);
+                return;
+            }
+            if (dx < 0 && nextTarget) {
+                navigateToPassage(nextTarget.book, nextTarget.chapter, null, true, 'next');
+            } else if (dx > 0 && prevTarget) {
+                navigateToPassage(prevTarget.book, prevTarget.chapter, null, true, 'prev');
+            }
+        }
+    }, { passive: true });
+}
+
+const bookAliases = {
+    GEN: ['GENESIS', 'GEN'],
+    EXO: ['EXODUS', 'EXOD', 'EXO'],
+    LEV: ['LEVITICUS', 'LEV'],
+    NUM: ['NUMBERS', 'NUM'],
+    DEU: ['DEUTERONOMY', 'DEUT', 'DEU'],
+    JOS: ['JOSHUA', 'JOSH', 'JOS'],
+    JDG: ['JUDGES', 'JUDG', 'JDG'],
+    RUT: ['RUTH', 'RUT'],
+    '1SA': ['1SAMUEL', '1SAM', '1SA', 'ISAMUEL', 'ISAM'],
+    '2SA': ['2SAMUEL', '2SAM', '2SA', 'IISAMUEL', 'IISAM'],
+    '1KI': ['1KINGS', '1KGS', '1KI', 'IKINGS', 'IKGS'],
+    '2KI': ['2KINGS', '2KGS', '2KI', 'IIKINGS', 'IIKGS'],
+    '1CH': ['1CHRONICLES', '1CHRON', '1CHR', '1CH', 'ICHRONICLES'],
+    '2CH': ['2CHRONICLES', '2CHRON', '2CHR', '2CH', 'IICHRONICLES'],
+    EZR: ['EZRA', 'EZR'],
+    NEH: ['NEHEMIAH', 'NEH'],
+    EST: ['ESTHER', 'ESTH', 'EST'],
+    JOB: ['JOB'],
+    PSA: ['PSALMS', 'PSALM', 'PSA', 'PS'],
+    PRO: ['PROVERBS', 'PROV', 'PRO'],
+    ECC: ['ECCLESIASTES', 'ECCL', 'ECC'],
+    SNG: ['SONGOFSOLOMON', 'SONGOFSONGS', 'SONG', 'CANTICLES', 'CANT', 'SNG'],
+    ISA: ['ISAIAH', 'ISA'],
+    JER: ['JEREMIAH', 'JER'],
+    LAM: ['LAMENTATIONS', 'LAM'],
+    EZK: ['EZEKIEL', 'EZEK', 'EZK'],
+    DAN: ['DANIEL', 'DAN'],
+    HOS: ['HOSEA', 'HOS'],
+    JOL: ['JOEL', 'JOL'],
+    AMO: ['AMOS', 'AMO'],
+    OBA: ['OBADIAH', 'OBAD', 'OBA'],
+    JON: ['JONAH', 'JON'],
+    MIC: ['MICAH', 'MIC'],
+    NAM: ['NAHUM', 'NAH', 'NAM'],
+    HAB: ['HABAKKUK', 'HAB'],
+    ZEP: ['ZEPHANIAH', 'ZEPH', 'ZEP'],
+    HAG: ['HAGGAI', 'HAG'],
+    ZEC: ['ZECHARIAH', 'ZECH', 'ZEC'],
+    MAL: ['MALACHI', 'MAL'],
+    MAT: ['MATTHEW', 'MATT', 'MAT'],
+    MAR: ['MARK', 'MRK', 'MAR'],
+    LUK: ['LUKE', 'LUK'],
+    JHN: ['JOHN', 'JHN', 'JOH', 'JN'],
+    ACT: ['ACTS', 'ACT'],
+    ROM: ['ROMANS', 'ROM'],
+    '1CO': ['1CORINTHIANS', '1COR', '1CO', 'ICORINTHIANS', 'ICOR'],
+    '2CO': ['2CORINTHIANS', '2COR', '2CO', 'IICORINTHIANS', 'IICOR'],
+    GAL: ['GALATIANS', 'GAL'],
+    EPH: ['EPHESIANS', 'EPH'],
+    PHP: ['PHILIPPIANS', 'PHIL', 'PHP'],
+    COL: ['COLOSSIANS', 'COL'],
+    '1TH': ['1THESSALONIANS', '1THESS', '1TH', 'ITHESSALONIANS'],
+    '2TH': ['2THESSALONIANS', '2THESS', '2TH', 'IITHESSALONIANS'],
+    '1TI': ['1TIMOTHY', '1TIM', '1TI', 'ITIMOTHY'],
+    '2TI': ['2TIMOTHY', '2TIM', '2TI', 'IITIMOTHY'],
+    TIT: ['TITUS', 'TIT'],
+    PHM: ['PHILEMON', 'PHLM', 'PHM'],
+    HEB: ['HEBREWS', 'HEB'],
+    JAS: ['JAMES', 'JAS'],
+    '1PE': ['1PETER', '1PET', '1PE', 'IPETER'],
+    '2PE': ['2PETER', '2PET', '2PE', 'IIPETER'],
+    '1JN': ['1JOHN', '1JHN', '1JN', 'IJOHN'],
+    '2JN': ['2JOHN', '2JHN', '2JN', 'IIJOHN'],
+    '3JN': ['3JOHN', '3JHN', '3JN', 'IIIJOHN'],
+    JUD: ['JUDE', 'JUD'],
+    REV: ['REVELATION', 'REVELATIONS', 'REV']
+};
+
+function normalizeSearch(v) {
+    return v.trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function cleanBookKey(q) {
+    return q.replace(/[\s.]+/g, '').toUpperCase();
+}
+
+function isExactBookMatch(bookCode, rawQuery) {
+    const key = cleanBookKey(rawQuery);
+    if (bookCode.toUpperCase() === key) return true;
+    const aliases = bookAliases[bookCode] || [];
+    return aliases.includes(key);
+}
+
+function findBookMatches(q) {
+    const key = cleanBookKey(q);
+    if (!key) return [];
+    return availableBooks.filter(b => {
+        if (b.toUpperCase().startsWith(key)) return true;
+        const aliases = bookAliases[b] || [];
+        return aliases.some(alias => alias.startsWith(key));
+    });
+}
+
+function parseSearchQuery(query) {
+    const match = query.match(/^([1-4]?\s*[A-Z.]+(?:\s+[A-Z.]+)*?)\s*(\d+)(?:[:.\s]+(\d+))?${DLR}/i);
+    if (match) {
+        return {
+            bookQuery: match[1].trim(),
+            chapter: parseInt(match[2], 10),
+            verse: match[3] ? parseInt(match[3], 10) : null
+        };
+    }
+    return { bookQuery: query, chapter: null, verse: null };
+}
+
+function submitChapterSearch() {
+    const input = document.getElementById('chapterSearch');
+    const results = document.getElementById('searchResults');
+    const rawValue = input ? input.value.trim() : '';
+    const query = normalizeSearch(rawValue);
+    if (!query) {
+        if (results) results.classList.remove('show');
+        return false;
+    }
+
+    const { bookQuery, chapter, verse } = parseSearchQuery(query);
+    const matches = findBookMatches(bookQuery);
+
+    if (chapter !== null) {
+        const exactBook = matches.find(b => isExactBookMatch(b, bookQuery));
+        if (exactBook && availableChapters[exactBook]) {
+            const chaps = availableChapters[exactBook];
+            if (chaps.includes(chapter)) {
+                navigateToPassage(exactBook, chapter, verse);
+                return false;
+            }
+        }
+        if (matches.length === 1) {
+            const book = matches[0];
+            const chaps = availableChapters[book] || [];
+            if (chaps.includes(chapter)) {
+                navigateToPassage(book, chapter, verse);
+                return false;
+            }
+        }
+        if (matches.length > 0) {
+            renderSearchResults(matches, chapter, verse, rawValue);
+            return false;
+        }
+    } else {
+        // Exact book name without chapter (e.g. "GEN" or "JOHN") jumps to Ch 1
+        const exactBookOnly = matches.find(b => isExactBookMatch(b, bookQuery));
+        if (exactBookOnly && matches.length === 1) {
+            navigateToPassage(exactBookOnly, 1, null);
+            return false;
+        }
+    }
+
+    // Otherwise, run full-text verse search across active left & right versions
+    runKeywordSearch(rawValue, 1);
+    return false;
+}
+
+function renderSearchResults(matches, requestedChapter = null, requestedVerse = null, rawText = '') {
+    const results = document.getElementById('searchResults');
+    if (!results) return;
+    results.innerHTML = '';
+
+    matches.forEach(book => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'search-result';
+        const chapters = availableChapters[book] || [];
+        const hasRequestedChapter = requestedChapter !== null && chapters.includes(requestedChapter);
+        const chapter = hasRequestedChapter ? requestedChapter : (chapters[0] || 1);
+        button.textContent = book;
+        const info = document.createElement('small');
+        if (requestedChapter !== null) {
+            info.textContent = hasRequestedChapter ? 'Ch ' + requestedChapter + (requestedVerse !== null ? ':' + requestedVerse : '') : 'Chapter not found';
+        } else {
+            info.textContent = chapters.length ? chapters.length + ' ch' : '';
+        }
+        button.appendChild(info);
+        button.addEventListener('click', () => {
+            if (requestedChapter !== null && !hasRequestedChapter) return;
+            navigateToPassage(book, chapter, requestedVerse);
+        });
+        results.appendChild(button);
+    });
+
+    const trimmedRaw = (rawText || '').trim();
+    if (trimmedRaw.length >= 2) {
+        const kwBtn = document.createElement('button');
+        kwBtn.type = 'button';
+        kwBtn.className = 'search-result keyword-action';
+        const pairLabel = (versionLabels[activeLeft] || activeLeft.toUpperCase()) + ' + ' + (versionLabels[activeRight] || activeRight.toUpperCase());
+        kwBtn.innerHTML = 'Search verses for &ldquo;' + escHtml(trimmedRaw) + '&rdquo; <small>(' + escHtml(pairLabel) + ')</small>';
+        kwBtn.addEventListener('click', () => {
+            runKeywordSearch(trimmedRaw, 1);
+        });
+        results.appendChild(kwBtn);
+    }
+
+    if (!results.children.length) {
+        results.innerHTML = '<div class="search-empty">Press search to find verses.</div>';
+    }
+    results.classList.add('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLeft = localStorage.getItem('selectedFirstVersion');
+    if (savedLeft) showLeftVersion(savedLeft, true);
+
+    const savedRight = localStorage.getItem('selectedSecondVersion');
+    showRightVersion(savedRight || 'abp', true);
+
+    const savedTheme = localStorage.getItem('bibleTheme');
+    if (savedTheme) applyTheme(savedTheme);
+
+    const savedFontSize = parseInt(localStorage.getItem('bibleFontSize'), 10);
+    if (!isNaN(savedFontSize)) applyFontSize(savedFontSize);
+    else applyFontSize(currentFontSize);
+
+    const savedBook = localStorage.getItem('lastBook');
+    const savedChap = parseInt(localStorage.getItem('lastChapter'), 10);
+    if (savedBook && !isNaN(savedChap) && (savedBook !== initialChapterData.book || savedChap !== initialChapterData.chapter) && window.AndroidBridge) {
+        const rawJson = window.AndroidBridge.getChapterData(savedBook, savedChap);
+        renderChapterData(JSON.parse(rawJson), null);
+    } else {
+        renderChapterData(initialChapterData, null);
+    }
+
+    initSwipeNavigation();
+
+    const input = document.getElementById('chapterSearch');
+    const results = document.getElementById('searchResults');
+    if (input && results) {
+        input.addEventListener('input', () => {
+            updateInlineClearButton();
+            const rawVal = input.value.trim();
+            const query = normalizeSearch(rawVal);
+            if (!query) { results.classList.remove('show'); return; }
+            const { bookQuery, chapter, verse } = parseSearchQuery(query);
+            const bookMatches = chapter !== null ? findBookMatches(bookQuery) : findBookMatches(query);
+            renderSearchResults(bookMatches, chapter, verse, rawVal);
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-bar')) results.classList.remove('show');
+        });
+    }
+
+    const container = document.getElementById('scrollContainer');
+    const bottomDock = document.getElementById('bottomDock');
+    const topHeaders = document.querySelectorAll('.version-label');
+    if (container && bottomDock) {
+        let lastScrollTop = container.scrollTop;
+        container.addEventListener('scroll', () => {
+            if (document.activeElement === input) return;
+            const currentScroll = container.scrollTop;
+            const delta = currentScroll - lastScrollTop;
+            if (delta > 12 && currentScroll > 60) {
+                bottomDock.classList.add('ui-hidden');
+                topHeaders.forEach(h => h.classList.add('ui-hidden'));
+            } else if (delta < -10 || currentScroll <= 30) {
+                bottomDock.classList.remove('ui-hidden');
+                topHeaders.forEach(h => h.classList.remove('ui-hidden'));
+            }
+            lastScrollTop = currentScroll;
+        }, { passive: true });
+    }
+});
+</script>
+</body>
+</html>
+        """.trimIndent()
+    }
+}

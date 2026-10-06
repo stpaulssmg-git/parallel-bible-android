@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="warm">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallel Bible - {{TITLE}}</title>
+    <style>
+        :root {
+            --verse-font-size: 16px;
+        }
+
+        /* Default Theme: Warm Parchment & Mahogany */
+        html[data-theme="warm"] {
+            --bg-body: #f4ece1;
+            --header-bg: #4a2511;
+            --header-text: #fdfaf3;
+            --header-border: #6b3a1e;
+            --row-odd-bg: #fffdf9;
+            --row-even-bg: #f3e8d6;
+            --row-hover-bg: #ead8be;
+            --row-border: #dfcbb0;
+            --cell-divider: #d5be9f;
+            --text-color: #2b1d0e;
+            --verse-num-color: #9c3d18;
+            --merged-text-color: #8a7356;
+            --bar-bg: rgba(74, 37, 17, 0.96);
+            --btn-bg: #6e3b1f;
+            --btn-hover-bg: #874927;
+            --btn-text: #fdfaf3;
+            --btn-active-bg: #f3c677;
+            --btn-active-text: #381a0a;
+        }
+
+        /* Theme 2: Teal & Crisp Light */
+        html[data-theme="teal"] {
+            --bg-body: #eaf2f4;
+            --header-bg: #0f4c5c;
+            --header-text: #ffffff;
+            --header-border: #1b697d;
+            --row-odd-bg: #ffffff;
+            --row-even-bg: #e6f2f5;
+            --row-hover-bg: #d3e8ed;
+            --row-border: #cde0e5;
+            --cell-divider: #bfd6dc;
+            --text-color: #1e293b;
+            --verse-num-color: #0f766e;
+            --merged-text-color: #64748b;
+            --bar-bg: rgba(15, 76, 92, 0.96);
+            --btn-bg: #1b697d;
+            --btn-hover-bg: #248199;
+            --btn-text: #ffffff;
+            --btn-active-bg: #99f6e4;
+            --btn-active-text: #0f4c5c;
+        }
+
+        /* Theme 3: Midnight Dark */
+        html[data-theme="dark"] {
+            --bg-body: #12161f;
+            --header-bg: #0b111e;
+            --header-text: #e2e8f0;
+            --header-border: #1e293b;
+            --row-odd-bg: #161d2a;
+            --row-even-bg: #20293a;
+            --row-hover-bg: #2a364b;
+            --row-border: #2d384d;
+            --cell-divider: #334155;
+            --text-color: #e2e8f0;
+            --verse-num-color: #38bdf8;
+            --merged-text-color: #94a3b8;
+            --bar-bg: rgba(11, 17, 30, 0.96);
+            --btn-bg: #1e293b;
+            --btn-hover-bg: #334155;
+            --btn-text: #e2e8f0;
+            --btn-active-bg: #38bdf8;
+            --btn-active-text: #0b111e;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-color);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg-body);
+            padding-top: 40px;
+            padding-bottom: 58px;
+        }
+
+        .parallel-content { width: 100%; }
+
+        .version-row {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            width: 100%;
+            border-bottom: 1px solid var(--row-border);
+            scroll-margin-top: 48px;
+            transition: background-color 0.15s ease;
+        }
+
+        .version-row:nth-child(odd) { background-color: var(--row-odd-bg); }
+        .version-row:nth-child(even) { background-color: var(--row-even-bg); }
+        .version-row:hover { background-color: var(--row-hover-bg); }
+
+        .version-row.verse-highlight {
+            outline: 2px solid var(--verse-num-color);
+            outline-offset: -2px;
+            background-color: var(--row-hover-bg) !important;
+        }
+
+        .verse-cell {
+            min-width: 0;
+            padding: 12px 14px;
+            font-size: var(--verse-font-size);
+            line-height: 1.65;
+            color: var(--text-color);
+            overflow-wrap: break-word;
+        }
+
+        .left-cell { border-right: 1px solid var(--cell-divider); }
+        .right-cell { border-right: none; }
+
+        .mt-rtl {
+            direction: rtl;
+            text-align: right;
+            font-family: 'SBL Hebrew', 'Ezra SIL', 'David', 'Noto Serif Hebrew', serif;
+            font-size: calc(var(--verse-font-size) * 1.15);
+            line-height: 1.75;
+        }
+
+        .mt-rtl .verse-number {
+            margin-right: 0;
+            margin-left: 4px;
+        }
+
+        .verse-number {
+            font-weight: bold;
+            color: var(--verse-num-color);
+            margin-right: 4px;
+            font-size: 0.9em;
+        }
+
+        .verse-merged {
+            color: var(--merged-text-color);
+            font-style: italic;
+        }
+
+        .version-label {
+            position: fixed;
+            top: 0;
+            z-index: 10;
+            width: 50%;
+            height: 40px;
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--header-border);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            transition: transform 0.22s ease;
+        }
+
+        .version-label.ui-hidden { transform: translateY(-100%); }
+        .left-label { left: 0; border-right: 1px solid var(--header-border); }
+        .right-label { left: 50%; }
+
+        .header-version-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px;
+            border-radius: 6px;
+            max-width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .header-version-switch::-webkit-scrollbar { display: none; }
+
+        .header-version-switch button {
+            border: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1.1;
+            white-space: nowrap;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .header-version-switch button:hover:not(.active) { background: var(--btn-hover-bg); }
+        .header-version-switch button.active {
+            background: var(--btn-active-bg);
+            color: var(--btn-active-text);
+        }
+
+        .bottom-dock {
+            position: fixed;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            pointer-events: none;
+            transition: transform 0.22s ease, opacity 0.22s ease;
+        }
+
+        .bottom-dock.ui-hidden { transform: translateY(calc(100% + 14px)); }
+
+        .nav-bar, .utility-bar {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bar-bg);
+            padding: 4px;
+            border-radius: 7px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .nav-bar select {
+            border: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 6px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-bar .nav-btn,
+        .utility-bar button {
+            border: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 6px 9px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            user-select: none;
+        }
+
+        .nav-bar .nav-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .search-bar {
+            position: relative;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bar-bg);
+            padding: 4px;
+            border-radius: 7px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            flex: 1;
+            max-width: 240px;
+            min-width: 90px;
+        }
+
+        .search-input {
+            width: 100%;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .search-input::placeholder {
+            color: var(--btn-text);
+            opacity: 0.65;
+        }
+
+        .search-button {
+            border: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .search-button svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .search-results {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: calc(100% + 6px);
+            display: none;
+            max-height: 240px;
+            overflow-y: auto;
+            background: var(--bar-bg);
+            border-radius: 7px;
+            padding: 4px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+            min-width: 150px;
+        }
+
+        .search-results.show { display: block; }
+
+        .search-result {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--btn-text);
+            text-align: left;
+            padding: 7px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .search-result small { opacity: 0.7; margin-left: 5px; }
+        .search-empty {
+            color: var(--btn-text);
+            opacity: 0.75;
+            padding: 7px 8px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding-top: 34px; padding-bottom: 48px; }
+            .version-label { height: 34px; padding: 0 2px; }
+            .header-version-switch { gap: 2px; padding: 2px; }
+            .header-version-switch button { padding: 3px 6px; font-size: 11px; }
+            .verse-cell { padding: 8px 6px; line-height: 1.55; }
+            .bottom-dock { bottom: 4px; left: 4px; right: 4px; gap: 3px; }
+            .nav-bar, .search-bar, .utility-bar { padding: 3px; gap: 2px; border-radius: 6px; }
+            .search-bar { max-width: none; }
+            .nav-bar select { padding: 5px 3px; font-size: 12px; }
+            .nav-bar .nav-btn, .utility-bar button, .search-button { padding: 5px 6px; font-size: 12px; }
+            .search-input { padding: 5px 6px; font-size: 12px; }
+            .search-button svg { width: 13px; height: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="scrollContainer">
+    <div class="parallel-content">
+        {{VERSES_HTML}}
+    </div>
+
+    <div class="version-label left-label">
+        <div class="header-version-switch">
+            <button type="button" id="kjvButton" class="active" onclick="showLeftVersion('kjv')">KJV</button>
+            <button type="button" id="mtButton" onclick="showLeftVersion('mt')">MT</button>
+            <button type="button" id="trButton" onclick="showLeftVersion('tr')">TR</button>
+        </div>
+    </div>
+    <div class="version-label right-label">
+        <div class="header-version-switch">
+            <button type="button" id="abpButton" class="active" onclick="showRightVersion('abp')">ABEn</button>
+            <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABGr</button>
+            <button type="button" id="t4tButton" onclick="showRightVersion('t4t')">T4T</button>
+            <button type="button" id="kanButton" onclick="showRightVersion('kan')">KAN</button>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-dock" id="bottomDock">
+    <form class="nav-bar" method="get" action="index.php">
+        <a href="{{PREV_URL}}" class="nav-btn {{PREV_DISABLED}}" aria-label="Previous Chapter">&lsaquo;</a>
+        <select name="book" aria-label="Book" onchange="this.form.chapter.value=1; this.form.submit();">
+            {{BOOK_OPTIONS}}
+        </select>
+        <select name="chapter" aria-label="Chapter" onchange="this.form.submit();">
+            {{CHAPTER_OPTIONS}}
+        </select>
+        <a href="{{NEXT_URL}}" class="nav-btn {{NEXT_DISABLED}}" aria-label="Next Chapter">&rsaquo;</a>
+    </form>
+
+    <form class="search-bar" method="get" action="index.php" onsubmit="return submitChapterSearch();">
+        <div class="search-results" id="searchResults"></div>
+        <input type="text" id="chapterSearch" class="search-input" placeholder="Eg. GEN 23:10" autocomplete="off">
+        <button type="submit" class="search-button" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="20" y1="20" x2="16.2" y2="16.2"></line>
+            </svg>
+        </button>
+    </form>
+
+    <div class="utility-bar">
+        <button type="button" onclick="changeFontSize(-1)">A&minus;</button>
+        <button type="button" onclick="changeFontSize(1)">A+</button>
+        <button type="button" id="themeButton" onclick="cycleTheme()">D</button>
+    </div>
+</div>
+
+<script>
+    const themes = ['warm', 'teal', 'dark'];
+    const themeLabels = { warm: 'Warm', teal: 'Teal', dark: 'Dark' };
+
+    function applyTheme(theme) {
+        if (!themes.includes(theme)) theme = 'warm';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('bibleTheme', theme);
+    }
+
+    function cycleTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'warm';
+        applyTheme(themes[(themes.indexOf(current) + 1) % themes.length]);
+    }
+
+    function applyFontSize(sizePx) {
+        const clamped = Math.min(28, Math.max(12, sizePx));
+        document.documentElement.style.setProperty('--verse-font-size', clamped + 'px');
+        localStorage.setItem('bibleFontSize', clamped);
+    }
+
+    function changeFontSize(delta) {
+        const currentStr = getComputedStyle(document.documentElement).getPropertyValue('--verse-font-size');
+        const current = parseInt(currentStr, 10) || (window.innerWidth <= 600 ? 14 : 16);
+        applyFontSize(current + delta);
+    }
+
+    function showLeftVersion(version) {
+        if (!['kjv', 'mt', 'tr'].includes(version)) version = 'kjv';
+        document.querySelectorAll('.kjv-cell').forEach(c => c.style.display = (version === 'kjv') ? 'block' : 'none');
+        document.querySelectorAll('.mt-cell').forEach(c => c.style.display = (version === 'mt') ? 'block' : 'none');
+        document.querySelectorAll('.tr-cell').forEach(c => c.style.display = (version === 'tr') ? 'block' : 'none');
+
+        document.getElementById('kjvButton').classList.toggle('active', version === 'kjv');
+        document.getElementById('mtButton').classList.toggle('active', version === 'mt');
+        document.getElementById('trButton').classList.toggle('active', version === 'tr');
+        localStorage.setItem('selectedFirstVersion', version);
+    }
+
+    function showRightVersion(version) {
+        if (!['abp', 'abgr', 't4t', 'kan'].includes(version)) version = 'abp';
+        document.querySelectorAll('.abp-cell').forEach(c => c.style.display = (version === 'abp') ? 'block' : 'none');
+        document.querySelectorAll('.abgr-cell').forEach(c => c.style.display = (version === 'abgr') ? 'block' : 'none');
+        document.querySelectorAll('.t4t-cell').forEach(c => c.style.display = (version === 't4t') ? 'block' : 'none');
+        document.querySelectorAll('.kan-cell').forEach(c => c.style.display = (version === 'kan') ? 'block' : 'none');
+
+        document.getElementById('abpButton').classList.toggle('active', version === 'abp');
+        document.getElementById('abgrButton').classList.toggle('active', version === 'abgr');
+        document.getElementById('t4tButton').classList.toggle('active', version === 't4t');
+        document.getElementById('kanButton').classList.toggle('active', version === 'kan');
+        localStorage.setItem('selectedSecondVersion', version);
+    }
+
+    const currentBook = {{CURRENT_BOOK_JSON}};
+    const currentChapter = {{CURRENT_CHAPTER_INT}};
+    const availableBooks = {{AVAILABLE_BOOKS_JSON}};
+    const availableChapters = {{AVAILABLE_CHAPTERS_JSON}};
+
+    function normalizeSearch(value) {
+        return value.trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function findBookMatches(query) {
+        return availableBooks.filter(book => book.toUpperCase().startsWith(query));
+    }
+
+    function parseSearchQuery(query) {
+        const match = query.match(/^(.+?)\s+(\d+)(?:[:.\s](\d+))?$/);
+        if (match) {
+            return {
+                bookQuery: match[1].trim(),
+                chapter: parseInt(match[2], 10),
+                verse: match[3] ? parseInt(match[3], 10) : null
+            };
+        }
+        return { bookQuery: query, chapter: null, verse: null };
+    }
+
+    function scrollToVerse(verseNum) {
+        if (!verseNum) return false;
+        const targetRow = document.getElementById('v' + verseNum);
+        if (!targetRow) return false;
+        document.querySelectorAll('.version-row.verse-highlight').forEach(r => r.classList.remove('verse-highlight'));
+        targetRow.classList.add('verse-highlight');
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return true;
+    }
+
+    function navigateToPassage(book, chapter, verse = null) {
+        const results = document.getElementById('searchResults');
+        if (results) results.classList.remove('show');
+
+        if (book === currentBook && Number(chapter) === currentChapter && verse !== null) {
+            scrollToVerse(verse);
+            return;
+        }
+
+        let url = 'index.php?book=' + encodeURIComponent(book) + '&chapter=' + chapter;
+        if (verse !== null) url += '&verse=' + verse;
+        window.location.href = url;
+    }
+
+    function submitChapterSearch() {
+        const input = document.getElementById('chapterSearch');
+        const results = document.getElementById('searchResults');
+        const query = normalizeSearch(input ? input.value : '');
+        if (!query) {
+            if (results) results.classList.remove('show');
+            return false;
+        }
+
+        const { bookQuery, chapter, verse } = parseSearchQuery(query);
+        const matches = findBookMatches(bookQuery);
+
+        if (chapter !== null) {
+            const exactBook = matches.find(b => b.toUpperCase() === bookQuery);
+            if (exactBook && availableChapters[exactBook]) {
+                const chaps = Object.keys(availableChapters[exactBook]).map(Number);
+                if (chaps.includes(chapter)) {
+                    navigateToPassage(exactBook, chapter, verse);
+                    return false;
+                }
+            }
+            if (matches.length === 1) {
+                const book = matches[0];
+                const chaps = Object.keys(availableChapters[book] || {}).map(Number);
+                if (chaps.includes(chapter)) {
+                    navigateToPassage(book, chapter, verse);
+                    return false;
+                }
+            }
+            renderSearchResults(matches, chapter, verse);
+            return false;
+        }
+
+        renderSearchResults(matches);
+        return false;
+    }
+
+    function renderSearchResults(matches, requestedChapter = null, requestedVerse = null) {
+        const results = document.getElementById('searchResults');
+        if (!results) return;
+        results.innerHTML = '';
+
+        if (!matches.length) {
+            results.innerHTML = '<div class="search-empty">No matching books found.</div>';
+            results.classList.add('show');
+            return;
+        }
+
+        matches.forEach(book => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'search-result';
+
+            const chapters = Object.keys(availableChapters[book] || {}).map(Number).sort((a, b) => a - b);
+            const hasRequestedChapter = requestedChapter !== null && chapters.includes(requestedChapter);
+            const chapter = hasRequestedChapter ? requestedChapter : (chapters[0] || 1);
+
+            button.textContent = book;
+            const info = document.createElement('small');
+            if (requestedChapter !== null) {
+                info.textContent = hasRequestedChapter
+                    ? 'Ch ' + requestedChapter + (requestedVerse !== null ? ':' + requestedVerse : '')
+                    : 'Chapter not found';
+            } else {
+                info.textContent = chapters.length ? chapters.length + ' ch' : '';
+            }
+            button.appendChild(info);
+
+            button.addEventListener('click', () => {
+                if (requestedChapter !== null && !hasRequestedChapter) return;
+                navigateToPassage(book, chapter, requestedVerse);
+            });
+            results.appendChild(button);
+        });
+        results.classList.add('show');
+    }
+
+    function initChapterSearch() {
+        const input = document.getElementById('chapterSearch');
+        const results = document.getElementById('searchResults');
+        if (!input || !results) return;
+
+        input.addEventListener('input', () => {
+            const query = normalizeSearch(input.value);
+            if (!query) {
+                results.classList.remove('show');
+                return;
+            }
+            const { bookQuery, chapter, verse } = parseSearchQuery(query);
+            renderSearchResults(findBookMatches(bookQuery), chapter, verse);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-bar')) results.classList.remove('show');
+        });
+    }
+
+    function initAutoHideBars() {
+        const container = document.getElementById('scrollContainer');
+        const bottomDock = document.getElementById('bottomDock');
+        const topHeaders = document.querySelectorAll('.version-label');
+        const searchInput = document.getElementById('chapterSearch');
+        if (!container || !bottomDock) return;
+
+        let lastScrollTop = container.scrollTop;
+        container.addEventListener('scroll', () => {
+            if (document.activeElement === searchInput) return;
+            const currentScroll = container.scrollTop;
+            const delta = currentScroll - lastScrollTop;
+
+            if (delta > 12 && currentScroll > 60) {
+                bottomDock.classList.add('ui-hidden');
+                topHeaders.forEach(h => h.classList.add('ui-hidden'));
+            } else if (delta < -10 || currentScroll <= 30) {
+                bottomDock.classList.remove('ui-hidden');
+                topHeaders.forEach(h => h.classList.remove('ui-hidden'));
+            }
+            lastScrollTop = currentScroll;
+        }, { passive: true });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initChapterSearch();
+        initAutoHideBars();
+
+        const savedLeftVersion = localStorage.getItem('selectedFirstVersion');
+        if (savedLeftVersion) showLeftVersion(savedLeftVersion);
+
+        const savedRightVersion = localStorage.getItem('selectedSecondVersion');
+        showRightVersion(savedRightVersion || 'abp');
+
+        const savedTheme = localStorage.getItem('bibleTheme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const savedFontSize = parseInt(localStorage.getItem('bibleFontSize'), 10);
+        if (!isNaN(savedFontSize)) {
+            applyFontSize(savedFontSize);
+        } else if (window.innerWidth <= 600) {
+            applyFontSize(14);
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const verseParam = parseInt(urlParams.get('verse') || window.location.hash.replace(/^#v/i, ''), 10);
+        if (!isNaN(verseParam) && verseParam > 0) {
+            requestAnimationFrame(() => scrollToVerse(verseParam));
+        }
+    });
+</script>
+</body>
+</html>
