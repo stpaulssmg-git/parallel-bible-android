@@ -242,11 +242,113 @@ mark.search-hl {
     }
     .chapter-toast { top: 44px; }
     .search-banner { padding: 8px 10px; font-size: 12px; }
+    .about-dialog { max-width: 92%; }
+    .about-trans-grid { grid-template-columns: 1fr; }
 }
+
+/* About Modal Overlay */
+.about-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 200; background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.about-modal.show { opacity: 1; pointer-events: auto; }
+.about-dialog {
+    background: var(--bg-body); color: var(--text-color);
+    border: 1px solid var(--header-border); border-radius: 12px;
+    max-width: 440px; width: 100%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    transform: scale(0.92); transition: transform 0.2s ease;
+}
+.about-modal.show .about-dialog { transform: scale(1); }
+.about-header {
+    background: var(--header-bg); color: var(--header-text);
+    padding: 14px 18px; display: flex; align-items: center;
+    justify-content: space-between; border-bottom: 1px solid var(--header-border);
+    border-radius: 11px 11px 0 0;
+}
+.about-title-group { display: flex; align-items: center; gap: 12px; }
+.about-app-icon { font-size: 28px; line-height: 1; }
+.about-app-name { margin: 0; font-size: 18px; font-weight: bold; }
+.about-app-version { font-size: 12px; opacity: 0.85; }
+.about-close-btn {
+    border: none; background: transparent; color: var(--header-text);
+    font-size: 26px; font-weight: bold; cursor: pointer; line-height: 1;
+    padding: 0 4px; border-radius: 4px;
+}
+.about-close-btn:hover { background: rgba(255, 255, 255, 0.15); }
+.about-body { padding: 18px; font-size: 13.5px; line-height: 1.5; }
+.about-desc { margin: 0 0 16px 0; color: var(--text-color); opacity: 0.9; }
+.about-section-title {
+    margin: 16px 0 8px 0; font-size: 13px; font-weight: bold;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--verse-num-color);
+}
+.about-trans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.about-trans-card {
+    background: var(--row-even-bg); border: 1px solid var(--row-border);
+    padding: 6px 10px; border-radius: 6px; font-size: 12px;
+}
+.about-trans-card strong { display: block; color: var(--btn-active-bg); margin-bottom: 2px; }
+.about-features-list { margin: 0; padding-left: 20px; color: var(--text-color); font-size: 12.5px; }
+.about-features-list li { margin-bottom: 4px; }
+.about-footer {
+    margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--row-border);
+    text-align: center; font-size: 12px; opacity: 0.8;
+}
+.about-copyright { margin-top: 4px; font-weight: 600; }
 </style>
 </head>
 <body>
 <div id="chapterToast" class="chapter-toast"></div>
+
+<!-- About Modal Dialog -->
+<div id="aboutModal" class="about-modal" onclick="onAboutModalBackdropClick(event)">
+    <div class="about-dialog">
+        <div class="about-header">
+            <div class="about-title-group">
+                <span class="about-app-icon">📖</span>
+                <div>
+                    <h2 class="about-app-name">Parallel Bible</h2>
+                    <span class="about-app-version">Version 1.0</span>
+                </div>
+            </div>
+            <button type="button" class="about-close-btn" onclick="closeAboutModal()" aria-label="Close">&times;</button>
+        </div>
+        <div class="about-body">
+            <p class="about-desc">
+                An offline, dual-pane parallel Bible study application designed for fast side-by-side translation comparison, verse searching, and responsive reading.
+            </p>
+
+            <h3 class="about-section-title">Supported Translations</h3>
+            <div class="about-trans-grid">
+                <div class="about-trans-card"><strong>KJV</strong> King James Version</div>
+                <div class="about-trans-card"><strong>NAS</strong> New American Standard</div>
+                <div class="about-trans-card"><strong>ORIG</strong> Hebrew &amp; Greek Original</div>
+                <div class="about-trans-card"><strong>ABEn</strong> Apostolic Bible (English)</div>
+                <div class="about-trans-card"><strong>ABGr</strong> Apostolic Bible (Greek)</div>
+                <div class="about-trans-card"><strong>T4T</strong> Translation for Translators</div>
+                <div class="about-trans-card"><strong>KAN</strong> Kannada Bible</div>
+            </div>
+
+            <h3 class="about-section-title">Key Features</h3>
+            <ul class="about-features-list">
+                <li>Side-by-side parallel verse comparison</li>
+                <li>Fast offline SQLite full-text search</li>
+                <li>Right-to-Left (RTL) Hebrew text rendering</li>
+                <li>Horizontal swipe gesture chapter navigation</li>
+                <li>Warm, Teal, and Midnight Dark themes</li>
+            </ul>
+
+            <div class="about-footer">
+                <p>Developed for Parallel Bible Study</p>
+                <p class="about-copyright">&copy; St. Paul's. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="container" id="scrollContainer">
     <div class="parallel-content" id="parallelContent"></div>
@@ -283,6 +385,7 @@ mark.search-hl {
         <button type="button" onclick="changeFontSize(-1)">A&minus;</button>
         <button type="button" onclick="changeFontSize(1)">A+</button>
         <button type="button" id="themeButton" onclick="cycleTheme()">D</button>
+        <button type="button" id="aboutBtn" onclick="openAboutModal()" title="About Parallel Bible">ℹ️</button>
     </div>
 </div>
 <script>
@@ -670,7 +773,28 @@ function navigateToPassage(book, chapter, verse = null, pushHistory = true, swip
     }
 }
 
+function openAboutModal() {
+    const modal = document.getElementById('aboutModal');
+    if (modal) modal.classList.add('show');
+}
+
+function closeAboutModal() {
+    const modal = document.getElementById('aboutModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function onAboutModalBackdropClick(e) {
+    if (e.target.id === 'aboutModal') {
+        closeAboutModal();
+    }
+}
+
 window.handleAndroidBack = function() {
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal && aboutModal.classList.contains('show')) {
+        closeAboutModal();
+        return true;
+    }
     if (searchState.active) {
         clearVerseSearch();
         return true;
