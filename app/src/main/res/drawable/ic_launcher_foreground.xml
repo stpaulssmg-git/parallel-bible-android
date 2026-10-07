@@ -5,9 +5,9 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Open Book Outer Shadow -->
+    <!-- Open Book Outer Drop Shadow -->
     <path
-        android:fillColor="#30000000"
+        android:fillColor="#35000000"
         android:pathData="M23,35 C23,33 54,34 54,36 C54,34 85,33 85,35 L85,78 C85,78 54,76 54,78 C54,76 23,78 23,78 Z" />
 
     <!-- Left Parchment Page -->
@@ -20,26 +20,24 @@
         android:fillColor="#F1E7D8"
         android:pathData="M55,34 C69,31 84,33 84,33 L84,74 C84,74 69,72 55,75 Z" />
 
-    <!-- Book Center Binding / Spine Line -->
+    <!-- Book Center Spine / Binding -->
     <path
         android:fillColor="#8C4A21"
         android:pathData="M53,33 H55 V76 H53 Z" />
 
     <!-- Red Bookmark Ribbon -->
     <path
-        android:fillColor="#9C27B0"
-        android:pathData="M53,74 L54,82 L55,74 Z" />
+        android:fillColor="#A63A18"
+        android:pathData="M53,74 L54,83 L55,74 Z" />
 
-    <!-- Golden Alpha (Α) Symbol on Left Page -->
-    <!-- Outer Triangle / Legs for Alpha -->
+    <!-- Golden Lowercase Greek Alpha (α) on Left Page -->
     <path
-        android:fillColor="#B8860B"
-        android:pathData="M38.5,43 L32,65 H36 L37.2,61 H43.8 L45,65 H49 L42.5,43 Z M40.5,48.5 L42.8,57.5 H38.2 Z" />
+        android:fillColor="#C69214"
+        android:pathData="M45,45.5 C42.5,45.5 39.8,48 37.8,51.2 C36.2,48.2 34.5,46.2 32,46.2 C28.5,46.2 25.5,49.2 25.5,53.8 C25.5,58.8 28.5,62.2 32.2,62.2 C35,62.2 37.2,60 39,56.8 C40.5,60 42.8,62.2 45.2,62.2 C48,62.2 50,60 50,57.2 H46.8 C46.8,58.5 45.8,59.5 44.8,59.5 C43.2,59.5 41.2,57 39.8,53.8 C42.5,49 44.5,48 45.8,48 C46.2,48 46.5,48.2 46.8,48.5 L49,46 C47.8,45.6 46.5,45.5 45,45.5 Z M32,49 C33.8,49 35.2,50.8 36.5,53.8 C35,56.8 33.5,59.2 32.2,59.2 C30.5,59.2 28.8,57.2 28.8,53.8 C28.8,51 30.2,49 32,49 Z" />
 
-    <!-- Golden Omega (Ω) Symbol on Right Page -->
-    <!-- Omega Arch and Feet -->
+    <!-- Golden Lowercase Greek Omega (ω) on Right Page -->
     <path
-        android:fillColor="#B8860B"
-        android:pathData="M59,65 H65 C64.8,61.5 65.5,58 67.5,55.5 C69,53.5 71.5,52.5 74,53.2 C76.5,54 78.2,56.2 78.5,58.8 C78.8,61 78,63 77,65 H83 V61.5 H80 C81.5,58 81.5,54 79.5,51 C76.8,47.2 71.2,46.5 67.5,49.2 C64.8,51.2 63.5,54.5 63.5,58 C63.5,59.2 63.2,60.5 62.5,61.5 H59 Z" />
+        android:fillColor="#C69214"
+        android:pathData="M59.5,47 L62,49.2 C61,51.5 60.5,54.2 60.5,56 C60.5,58.8 62.2,60.5 64.8,60.5 C67.2,60.5 68.8,58.2 69.5,54.8 C70.2,58.2 71.8,60.5 74.2,60.5 C76.8,60.5 78.5,58.8 78.5,56 C78.5,54.2 78,51.5 77,49.2 L79.5,47 C80.8,49.8 81.8,53.2 81.8,56 C81.8,60.8 78.8,63.2 74.2,63.2 C71.2,63.2 69.8,61.2 69.5,58 C69.2,61.2 67.8,63.2 64.8,63.2 C60.2,63.2 57.2,60.8 57.2,56 C57.2,53.2 58.2,49.8 59.5,47 Z" />
 
 </vector>
