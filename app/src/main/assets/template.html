@@ -334,7 +334,7 @@ mark.search-hl {
             <h3 class="about-section-title">Supported Translations</h3>
             <div class="about-trans-grid">
                 <div class="about-trans-card"><strong>KJV</strong> King James Version</div>
-                <!-- <div class="about-trans-card"><strong>NAS</strong> New American Standard</div> -->
+                <div class="about-trans-card"><strong>NAS</strong> New American Standard</div>
                 <div class="about-trans-card"><strong>ORIG</strong> Hebrew &amp; Greek Original</div>
                 <div class="about-trans-card"><strong>ABEn</strong> Apostolic Bible (English)</div>
                 <div class="about-trans-card"><strong>ABGr</strong> Apostolic Bible (Greek)</div>
@@ -344,13 +344,10 @@ mark.search-hl {
 
             <h3 class="about-section-title">Copyrights &amp; Permissions</h3>
             <div class="about-copyrights-box">
-                <!-- NASB Copyright - Temporarily commented out until Lockman permission is received -->
-                <!--
                 <div class="about-copyright-item">
                     <strong>New American Standard Bible® (NASB)</strong>
-                    <p>Scripture taken from the New American Standard Bible® (NASB), Copyright &copy; 1960, 1962, 1963, 1968, 1971, 1972, 1973, 1975, 1977, 1995, 2020 by The Lockman Foundation. Used by permission. <a href="https://www.lockman.org" target="_blank" class="about-link">www.Lockman.org</a></p>
+                    <p>Scripture taken from the New American Standard Bible® (NASB), Copyright &copy; 1960, 1962, 1963, 1968, 1971, 1972, 1973, 1975, 1977, 1995, 2020 by The Lockman Foundation. Used in accordance with the non-commercial digital media policy. <a href="https://www.lockman.org" target="_blank" class="about-link">www.Lockman.org</a></p>
                 </div>
-                -->
                 <div class="about-copyright-item">
                     <strong>Apostolic Bible Polyglot (ABEn / ABGr)</strong>
                     <p>&copy; Charles Van der Pool (<a href="https://www.apostolicbible.com" target="_blank" class="about-link">www.apostolicbible.com</a>). Inclusion in this app does not imply endorsement by the author.</p>
@@ -391,7 +388,7 @@ mark.search-hl {
     <div class="version-label left-label">
         <div class="header-version-switch">
             <button type="button" id="kjvButton" class="active" onclick="showLeftVersion('kjv')">KJV</button>
-            <!-- <button type="button" id="nasButton" onclick="showLeftVersion('nas')">NAS</button> -->
+            <button type="button" id="nasButton" onclick="showLeftVersion('nas')">NAS</button>
             <button type="button" id="origButton" onclick="showLeftVersion('orig')">ORIG</button>
         </div>
     </div>
@@ -695,8 +692,7 @@ function openSearchResult(book, chapter, verse) {
 }
 
 function showLeftVersion(version, skipRender = false) {
-    // NAS is temporarily disabled until Lockman permission is granted. To re-enable, uncomment 'nas' below and the header button.
-    if (!['kjv', /*'nas',*/ 'orig'].includes(version)) version = 'kjv';
+    if (!['kjv', 'nas', 'orig'].includes(version)) version = 'kjv';
     activeLeft = version;
     document.getElementById('kjvButton').classList.toggle('active', version === 'kjv');
     const nasBtn = document.getElementById('nasButton');
