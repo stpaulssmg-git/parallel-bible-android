@@ -1,6 +1,6 @@
-# Parallel Bible for Android
+# My Parallel Bible - Apostolic for Android
 
-An offline, dual-pane parallel Bible study application built for Android. **Parallel Bible** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, smart passage navigation, customizable themes, and responsive typography.
+An offline, dual-pane parallel Bible study application built for Android. **My Parallel Bible - Apostolic** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, smart passage navigation, customizable themes, and responsive typography.
 
 ---
 

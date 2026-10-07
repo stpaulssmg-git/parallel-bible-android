@@ -3,7 +3,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="Parallel Bible"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Material3.DayNight.NoActionBar">
         <activity
