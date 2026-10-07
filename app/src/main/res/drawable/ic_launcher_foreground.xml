@@ -1,30 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+
+    <!-- Open Book Outer Shadow -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:fillColor="#30000000"
+        android:pathData="M23,35 C23,33 54,34 54,36 C54,34 85,33 85,35 L85,78 C85,78 54,76 54,78 C54,76 23,78 23,78 Z" />
+
+    <!-- Left Parchment Page -->
+    <path
+        android:fillColor="#F9F4EB"
+        android:pathData="M24,33 C24,33 39,31 53,34 L53,75 C39,72 24,74 24,74 Z" />
+
+    <!-- Right Parchment Page -->
+    <path
+        android:fillColor="#F1E7D8"
+        android:pathData="M55,34 C69,31 84,33 84,33 L84,74 C84,74 69,72 55,75 Z" />
+
+    <!-- Book Center Binding / Spine Line -->
+    <path
+        android:fillColor="#8C4A21"
+        android:pathData="M53,33 H55 V76 H53 Z" />
+
+    <!-- Red Bookmark Ribbon -->
+    <path
+        android:fillColor="#9C27B0"
+        android:pathData="M53,74 L54,82 L55,74 Z" />
+
+    <!-- Golden Alpha (Α) Symbol on Left Page -->
+    <!-- Outer Triangle / Legs for Alpha -->
+    <path
+        android:fillColor="#B8860B"
+        android:pathData="M38.5,43 L32,65 H36 L37.2,61 H43.8 L45,65 H49 L42.5,43 Z M40.5,48.5 L42.8,57.5 H38.2 Z" />
+
+    <!-- Golden Omega (Ω) Symbol on Right Page -->
+    <!-- Omega Arch and Feet -->
+    <path
+        android:fillColor="#B8860B"
+        android:pathData="M59,65 H65 C64.8,61.5 65.5,58 67.5,55.5 C69,53.5 71.5,52.5 74,53.2 C76.5,54 78.2,56.2 78.5,58.8 C78.8,61 78,63 77,65 H83 V61.5 H80 C81.5,58 81.5,54 79.5,51 C76.8,47.2 71.2,46.5 67.5,49.2 C64.8,51.2 63.5,54.5 63.5,58 C63.5,59.2 63.2,60.5 62.5,61.5 H59 Z" />
+
 </vector>
