@@ -20,6 +20,13 @@ html[data-theme="teal"] {
     --bar-bg: rgba(15, 76, 92, 0.96); --btn-bg: #1b697d; --btn-hover-bg: #248199; --btn-text: #ffffff;
     --btn-active-bg: #99f6e4; --btn-active-text: #0f4c5c; --mark-bg: #fde047; --mark-text: #0f4c5c;
 }
+html[data-theme="crimson"] {
+    --bg-body: #fbf6f5; --header-bg: #8c1d1a; --header-text: #ffffff; --header-border: #a82724;
+    --row-odd-bg: #ffffff; --row-even-bg: #f7ebe9; --row-hover-bg: #f0d6d3; --row-border: #ebd0cc;
+    --cell-divider: #e2beba; --text-color: #2a1413; --verse-num-color: #bd2b27; --merged-text-color: #8f6e6c;
+    --bar-bg: rgba(140, 29, 26, 0.96); --btn-bg: #a82724; --btn-hover-bg: #c4322f; --btn-text: #ffffff;
+    --btn-active-bg: #ffd166; --btn-active-text: #4a0c0a; --mark-bg: #fce181; --mark-text: #4a0c0a;
+}
 html[data-theme="dark"] {
     --bg-body: #12161f; --header-bg: #0b111e; --header-text: #e2e8f0; --header-border: #1e293b;
     --row-odd-bg: #161d2a; --row-even-bg: #20293a; --row-hover-bg: #2a364b; --row-border: #2d384d;
@@ -492,7 +499,7 @@ mark.search-hl {
                 <li>Fast offline SQLite full-text search</li>
                 <li>Right-to-Left (RTL) Hebrew text rendering</li>
                 <li>Horizontal swipe gesture chapter navigation</li>
-                <li>Warm, Teal, and Midnight Dark themes</li>
+                <li>Warm, Teal, Alpha/Omega Crimson, and Midnight Dark themes</li>
             </ul>
 
             <div class="about-footer">
@@ -548,7 +555,7 @@ mark.search-hl {
 </div>
 <script>
 const rootEl = document.documentElement;
-const themes = ['warm', 'teal', 'dark'];
+const themes = ['warm', 'teal', 'crimson', 'dark'];
 let currentTheme = 'warm';
 let currentFontSize = window.innerWidth <= 600 ? 14 : 16;
 let activeLeft = 'kjv';
@@ -783,6 +790,10 @@ function applyTheme(theme) {
     if (!themes.includes(theme)) theme = 'warm';
     currentTheme = theme;
     rootEl.setAttribute('data-theme', theme);
+    const themeBtn = document.getElementById('themeButton');
+    if (themeBtn) {
+        themeBtn.textContent = theme === 'warm' ? 'W' : (theme === 'teal' ? 'T' : (theme === 'crimson' ? 'C' : 'D'));
+    }
     localStorage.setItem('bibleTheme', theme);
 }
 
