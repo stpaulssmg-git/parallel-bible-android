@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="warm">
+<html lang="en" data-theme="crimson">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -499,7 +499,7 @@ mark.search-hl {
                 <li>Fast offline SQLite full-text search</li>
                 <li>Right-to-Left (RTL) Hebrew text rendering</li>
                 <li>Horizontal swipe gesture chapter navigation</li>
-                <li>Warm, Teal, Alpha/Omega Crimson, and Midnight Dark themes</li>
+                <li>Alpha/Omega Crimson, Warm, Teal, and Midnight Dark themes</li>
             </ul>
 
             <div class="about-footer">
@@ -555,8 +555,8 @@ mark.search-hl {
 </div>
 <script>
 const rootEl = document.documentElement;
-const themes = ['warm', 'teal', 'crimson', 'dark'];
-let currentTheme = 'warm';
+const themes = ['crimson', 'warm', 'teal', 'dark'];
+let currentTheme = 'crimson';
 let currentFontSize = window.innerWidth <= 600 ? 14 : 16;
 let activeLeft = 'kjv';
 let activeRight = 'abp';
@@ -787,12 +787,12 @@ function showChapterToast(label) {
 }
 
 function applyTheme(theme) {
-    if (!themes.includes(theme)) theme = 'warm';
+    if (!themes.includes(theme)) theme = 'crimson';
     currentTheme = theme;
     rootEl.setAttribute('data-theme', theme);
     const themeBtn = document.getElementById('themeButton');
     if (themeBtn) {
-        themeBtn.textContent = theme === 'warm' ? 'W' : (theme === 'teal' ? 'T' : (theme === 'crimson' ? 'C' : 'D'));
+        themeBtn.textContent = theme === 'crimson' ? 'C' : (theme === 'warm' ? 'W' : (theme === 'teal' ? 'T' : 'D'));
     }
     localStorage.setItem('bibleTheme', theme);
 }
@@ -1433,6 +1433,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const savedTheme = localStorage.getItem('bibleTheme');
     if (savedTheme) applyTheme(savedTheme);
+    else applyTheme('crimson');
 
     const savedFontSize = parseInt(localStorage.getItem('bibleFontSize'), 10);
     if (!isNaN(savedFontSize)) applyFontSize(savedFontSize);
