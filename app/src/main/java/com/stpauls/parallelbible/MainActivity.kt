@@ -16,6 +16,14 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 import kotlin.concurrent.thread
 
+data class RegionalDbInfo(
+    val versionKey: String,
+    val schemaAlias: String,
+    val dbFileName: String,
+    val assetZipName: String,
+    val columnName: String
+)
+
 class MainActivity : Activity() {
 
     private lateinit var webView: WebView
@@ -26,6 +34,18 @@ class MainActivity : Activity() {
     private var sqliteDb: SQLiteDatabase? = null
     private var cachedBooks: List<String> = emptyList()
     private var cachedBookChapters: Map<String, List<Int>> = emptyMap()
+
+    private val regionalDbsMap = mapOf(
+        "kan" to RegionalDbInfo("kan", "kan_db", "kannada.db", "kannada.db.zip", "kan_text"),
+        "tlg" to RegionalDbInfo("tlg", "tlg_db", "telugu.db", "telugu.db.zip", "tlg_text"),
+        "mal" to RegionalDbInfo("mal", "mal_db", "malayalam.db", "malayalam.db.zip", "mal_text"),
+        "tam" to RegionalDbInfo("tam", "tam_db", "tamil.db", "tamil.db.zip", "tam_text"),
+        "hin" to RegionalDbInfo("hin", "hin_db", "hindi.db", "hindi.db.zip", "hin_text"),
+        "spa" to RegionalDbInfo("spa", "spa_db", "spanish.db", "spanish.db.zip", "spa_text"),
+        "lxx" to RegionalDbInfo("lxx", "lxx_db", "thomson.db", "thomson.db.zip", "lxx_text")
+    )
+
+    private val activeAttachedSchemas = mutableSetOf<String>()
 
     // In-memory LRU cache for visited and adjacent chapters
     private val chapterJsonCache = object : LruCache<String, String>(32) {}
@@ -40,7 +60,8 @@ class MainActivity : Activity() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            allowFileAccess = false
+            allowFileAccess = true
+            allowContentAccess = true
         }
 
         webView.addJavascriptInterface(BibleBridge(), "AndroidBridge")
@@ -51,7 +72,7 @@ class MainActivity : Activity() {
                 val initialHtml = buildInitialPageHtml()
                 runOnUiThread {
                     webView.loadDataWithBaseURL(
-                        "https://bible.local/",
+                        "file:///android_asset/",
                         initialHtml,
                         "text/html",
                         "UTF-8",
@@ -67,7 +88,7 @@ class MainActivity : Activity() {
                     </body></html>
                 """.trimIndent()
                 runOnUiThread {
-                    webView.loadDataWithBaseURL("https://bible.local/", errorReport, "text/html", "UTF-8", null)
+                    webView.loadDataWithBaseURL("file:///android_asset/", errorReport, "text/html", "UTF-8", null)
                 }
             }
         }
@@ -84,6 +105,82 @@ class MainActivity : Activity() {
         fun searchVerses(query: String, leftVer: String, rightVer: String, page: Int): String {
             ensureDatabaseReady()
             return executeVerseSearch(query, leftVer, rightVer, page).toString()
+        }
+
+        @JavascriptInterface
+        fun syncAttachedDatabases(enabledCodesJson: String) {
+            ensureDatabaseReady()
+            try {
+                val array = JSONArray(enabledCodesJson)
+                val enabledCodes = mutableSetOf<String>()
+                for (i in 0 until array.length()) {
+                    enabledCodes.add(array.getString(i))
+                }
+                updateAttachedDatabases(enabledCodes)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun updateAttachedDatabases(enabledCodes: Set<String>) {
+        val db = sqliteDb ?: return
+        synchronized(initLock) {
+            for ((code, info) in regionalDbsMap) {
+                if (enabledCodes.contains(code)) {
+                    if (!activeAttachedSchemas.contains(info.schemaAlias)) {
+                        attachRegionalDb(db, info)
+                    }
+                } else {
+                    if (activeAttachedSchemas.contains(info.schemaAlias)) {
+                        detachRegionalDb(db, info)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun attachRegionalDb(db: SQLiteDatabase, info: RegionalDbInfo) {
+        val targetFile = getDatabasePath(info.dbFileName)
+        targetFile.parentFile?.mkdirs()
+
+        if (!targetFile.exists() || targetFile.length() == 0L) {
+            try {
+                assets.open(info.assetZipName).use { rawInput ->
+                    ZipInputStream(rawInput).use { zipInput ->
+                        val entry = zipInput.nextEntry
+                        if (entry != null) {
+                            FileOutputStream(targetFile).use { output ->
+                                zipInput.copyTo(output, 65536)
+                            }
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+                return
+            }
+        }
+
+        if (targetFile.exists() && targetFile.length() > 0L) {
+            try {
+                val sql = "ATTACH DATABASE '${targetFile.absolutePath.replace("'", "''")}' AS ${info.schemaAlias}"
+                db.execSQL(sql)
+                activeAttachedSchemas.add(info.schemaAlias)
+                chapterJsonCache.evictAll()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun detachRegionalDb(db: SQLiteDatabase, info: RegionalDbInfo) {
+        try {
+            val sql = "DETACH DATABASE ${info.schemaAlias}"
+            db.execSQL(sql)
+            activeAttachedSchemas.remove(info.schemaAlias)
+            chapterJsonCache.evictAll()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -117,27 +214,6 @@ class MainActivity : Activity() {
         throw IllegalStateException("Neither bible.db.zip nor bible.db found in app/src/main/assets/")
     }
 
-    private fun hasUpdatedSchema(dbFile: File): Boolean {
-        if (!dbFile.exists() || dbFile.length() == 0L) return false
-        return try {
-            var hasNasb = false
-            var hasOrig = false
-            SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY).use { db ->
-                db.rawQuery("PRAGMA table_info(verses)", null).use { c ->
-                    while (c.moveToNext()) {
-                        when (c.getString(1)) {
-                            "nasb_text" -> hasNasb = true
-                            "orig_text" -> hasOrig = true
-                        }
-                    }
-                }
-            }
-            hasNasb && hasOrig
-        } catch (_: Exception) {
-            false
-        }
-    }
-
     private fun ensureDatabaseReady() {
         if (sqliteDb != null) return
         synchronized(initLock) {
@@ -146,12 +222,12 @@ class MainActivity : Activity() {
             val dbFile: File = getDatabasePath(dbFileName)
             dbFile.parentFile?.mkdirs()
 
-            val prefs = getSharedPreferences("bible_db_prefs", Context.MODE_PRIVATE)
+            val prefs = getSharedPreferences("bible_db_prefs", MODE_PRIVATE)
             @Suppress("DEPRECATION")
             val pkgUpdateTime = packageManager.getPackageInfo(packageName, 0).lastUpdateTime
             val savedUpdateTime = prefs.getLong("apk_update_time", -1L)
 
-            if (!dbFile.exists() || dbFile.length() == 0L || pkgUpdateTime != savedUpdateTime || !hasUpdatedSchema(dbFile)) {
+            if (!dbFile.exists() || dbFile.length() == 0L || pkgUpdateTime != savedUpdateTime) {
                 val assetPath = resolveAssetDbPath()
                 if (assetPath.endsWith(".zip")) {
                     assets.open(assetPath).use { rawInput ->
@@ -179,7 +255,7 @@ class MainActivity : Activity() {
             val db = SQLiteDatabase.openDatabase(
                 dbFile.absolutePath,
                 null,
-                SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS
+                SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.NO_LOCALIZED_COLLATORS
             )
 
             val books = mutableListOf<String>()
@@ -204,17 +280,6 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun versionKeyToColumn(ver: String): String = when (ver) {
-        "kjv"  -> "kjv_text"
-        "nas"  -> "nasb_text"
-        "orig" -> "orig_text"
-        "abp"  -> "aben_text"
-        "abgr" -> "abgr_text"
-        "t4t"  -> "t4t_text"
-        "kan"  -> "kan_text"
-        else   -> "kjv_text"
-    }
-
     private fun executeVerseSearch(
         rawQuery: String,
         leftVer: String,
@@ -235,23 +300,60 @@ class MainActivity : Activity() {
             }
         }
 
-        val leftCol = versionKeyToColumn(leftVer)
-        val rightCol = versionKeyToColumn(rightVer)
+        fun getColExpression(verKey: String): String? {
+            return when (verKey) {
+                "kjv"  -> "v.kjv_text"
+                "nas"  -> "v.nasb_text"
+                "orig" -> "v.orig_text"
+                "abp"  -> "v.aben_text"
+                "abgr" -> "v.abgr_text"
+                "t4t"  -> "v.t4t_text"
+                else -> {
+                    val info = regionalDbsMap[verKey]
+                    if (info != null && activeAttachedSchemas.contains(info.schemaAlias)) {
+                        "${info.schemaAlias}_tbl.${info.columnName}"
+                    } else null
+                }
+            }
+        }
+
+        val leftExpr = getColExpression(leftVer)
+        val rightExpr = getColExpression(rightVer)
+
+        if (leftExpr == null && rightExpr == null) {
+            return JSONObject().apply {
+                put("query", trimmed)
+                put("total", 0)
+                put("page", 1)
+                put("totalPages", 1)
+                put("pageSize", pageSize)
+                put("results", JSONArray())
+            }
+        }
+
+        val whereClause = when {
+            leftExpr != null && rightExpr != null -> "$leftExpr LIKE ? ESCAPE '\\' OR $rightExpr LIKE ? ESCAPE '\\'"
+            leftExpr != null -> "$leftExpr LIKE ? ESCAPE '\\'"
+            else -> "$rightExpr LIKE ? ESCAPE '\\'"
+        }
+
+        val joinClauses = StringBuilder()
+        for ((_, info) in regionalDbsMap) {
+            if (activeAttachedSchemas.contains(info.schemaAlias)) {
+                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
+            }
+        }
+
         val escapedLike = trimmed
             .replace("\\", "\\\\")
             .replace("%", "\\%")
             .replace("_", "\\_")
         val likeArg = "%$escapedLike%"
+        val countParams = if (leftExpr != null && rightExpr != null) arrayOf(likeArg, likeArg) else arrayOf(likeArg)
 
         var totalMatches = 0
-        db.rawQuery(
-            """
-            SELECT COUNT(*)
-            FROM verses v
-            WHERE v.$leftCol LIKE ? ESCAPE '\' OR v.$rightCol LIKE ? ESCAPE '\'
-            """.trimIndent(),
-            arrayOf(likeArg, likeArg)
-        ).use { c ->
+        val countSql = "SELECT COUNT(*) FROM verses v" + joinClauses.toString() + " WHERE " + whereClause
+        db.rawQuery(countSql, countParams).use { c ->
             if (c.moveToFirst()) {
                 totalMatches = c.getInt(0)
             }
@@ -261,21 +363,28 @@ class MainActivity : Activity() {
         val safePage = requestedPage.coerceIn(1, totalPages)
         val offset = (safePage - 1) * pageSize
 
+        val selectCols = mutableListOf(
+            "v.book", "v.chapter", "v.verse_num", "v.t4t_label",
+            "v.kjv_text", "v.nasb_text", "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text"
+        )
+        val regKeys = mutableListOf<Pair<String, String>>()
+        for ((_, info) in regionalDbsMap) {
+            if (activeAttachedSchemas.contains(info.schemaAlias)) {
+                selectCols.add("${info.schemaAlias}_tbl.${info.columnName}")
+                regKeys.add(Pair(info.columnName, info.versionKey))
+            }
+        }
+
+        val selectSql = "SELECT " + selectCols.joinToString(", ") +
+                " FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() +
+                " WHERE " + whereClause +
+                " ORDER BY b.book_order ASC, v.chapter ASC, v.verse_num ASC LIMIT ? OFFSET ?"
+
+        val queryParams = countParams + arrayOf(pageSize.toString(), offset.toString())
+
         val resultsArray = JSONArray()
         if (totalMatches > 0) {
-            db.rawQuery(
-                """
-                SELECT v.book, v.chapter, v.verse_num, v.t4t_label,
-                       v.kjv_text, v.nasb_text, v.orig_text,
-                       v.aben_text, v.abgr_text, v.t4t_text, v.kan_text
-                FROM verses v
-                JOIN books b ON v.book = b.book
-                WHERE v.$leftCol LIKE ? ESCAPE '\' OR v.$rightCol LIKE ? ESCAPE '\'
-                ORDER BY b.book_order ASC, v.chapter ASC, v.verse_num ASC
-                LIMIT ? OFFSET ?
-                """.trimIndent(),
-                arrayOf(likeArg, likeArg, pageSize.toString(), offset.toString())
-            ).use { c ->
+            db.rawQuery(selectSql, queryParams).use { c ->
                 while (c.moveToNext()) {
                     val obj = JSONObject()
                     obj.put("book", c.getString(0))
@@ -288,7 +397,14 @@ class MainActivity : Activity() {
                     if (!c.isNull(7)) obj.put("abp", c.getString(7))
                     if (!c.isNull(8)) obj.put("abgr", c.getString(8))
                     if (!c.isNull(9)) obj.put("t4t", c.getString(9))
-                    if (!c.isNull(10)) obj.put("kan", c.getString(10))
+
+                    var idx = 10
+                    for (pair in regKeys) {
+                        if (!c.isNull(idx)) {
+                            obj.put(pair.second, c.getString(idx))
+                        }
+                        idx++
+                    }
                     resultsArray.put(obj)
                 }
             }
@@ -389,16 +505,27 @@ class MainActivity : Activity() {
         val chapters = cachedBookChapters[selectedBook] ?: listOf(1)
         val (prev, next) = getAdjacentPassages(selectedBook, selectedChapter)
 
+        val selectCols = mutableListOf(
+            "v.verse_num", "v.t4t_label", "v.kjv_text", "v.nasb_text",
+            "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text"
+        )
+        val joinClauses = StringBuilder()
+        val regKeys = mutableListOf<Pair<String, String>>()
+
+        for ((_, info) in regionalDbsMap) {
+            if (activeAttachedSchemas.contains(info.schemaAlias)) {
+                selectCols.add("${info.schemaAlias}_tbl.${info.columnName}")
+                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
+                regKeys.add(Pair(info.columnName, info.versionKey))
+            }
+        }
+
+        val sql = "SELECT " + selectCols.joinToString(", ") +
+                " FROM verses v" + joinClauses.toString() +
+                " WHERE v.book = ? AND v.chapter = ? ORDER BY v.verse_num ASC"
+
         val versesArray = JSONArray()
-        db.rawQuery(
-            """
-            SELECT verse_num, t4t_label, kjv_text, nasb_text, orig_text, aben_text, abgr_text, t4t_text, kan_text
-            FROM verses
-            WHERE book = ? AND chapter = ?
-            ORDER BY verse_num ASC
-            """.trimIndent(),
-            arrayOf(selectedBook, selectedChapter.toString())
-        ).use { c ->
+        db.rawQuery(sql, arrayOf(selectedBook, selectedChapter.toString())).use { c ->
             while (c.moveToNext()) {
                 val obj = JSONObject()
                 obj.put("v", c.getInt(0))
@@ -409,7 +536,14 @@ class MainActivity : Activity() {
                 if (!c.isNull(5)) obj.put("abp", c.getString(5))
                 if (!c.isNull(6)) obj.put("abgr", c.getString(6))
                 if (!c.isNull(7)) obj.put("t4t", c.getString(7))
-                if (!c.isNull(8)) obj.put("kan", c.getString(8))
+
+                var idx = 8
+                for (pair in regKeys) {
+                    if (!c.isNull(idx)) {
+                        obj.put(pair.second, c.getString(idx))
+                    }
+                    idx++
+                }
                 versesArray.put(obj)
             }
         }

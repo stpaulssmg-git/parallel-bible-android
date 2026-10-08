@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+    <!-- Warm Golden Stone Background -->
+    <path fill="#DFC9A9" d="M0,0h108v108h-108z" />
+    <!-- Outer Sand Border -->
+    <path fill="none" stroke="#50BBA07C" stroke-width="1.5" d="M6,6h96v96h-96z" />
+
+    <!-- Carved Book Shadow Base -->
+    <path fill="rgba(0,0,0,0.21)" d="M21,30 C21,27 54,29 54,31 C54,29 87,27 87,30 L87,79 C87,79 54,77 54,79 C54,77 21,79 21,79 Z" />
+
+    <!-- Layered Bottom Pages (Golden Stone Texture) -->
+    <path fill="#CBAE82" d="M22,72 C22,72 38,76 54,75 C70,76 86,72 86,72 L87,77 C87,77 71,81 54,80 C37,81 21,77 21,77 Z" />
+    <path fill="#B79C6F" d="M23,74 C23,74 38,78 54,77 C70,78 85,74 85,74 L86,79 C86,79 70,83 54,82 C38,83 22,79 22,79 Z" />
+
+    <!-- Left Stone Page -->
+    <path fill="#EBE1D1" d="M23,29 C23,29 38,27 53,30 L53,74 C38,71 23,73 23,73 Z" />
+
+    <!-- Right Stone Page -->
+    <path fill="#E3D7C5" d="M55,30 C70,27 85,29 85,29 L85,73 C85,73 70,71 55,74 Z" />
+
+    <!-- Inner Page Border Trim -->
+    <path fill="none" stroke="#188C785B" stroke-width="0.8" d="M25,31 C25,31 38,29 51,32 L51,72 C38,69 25,71 25,71 Z" />
+    <path fill="none" stroke="#188C785B" stroke-width="0.8" d="M57,32 C70,29 83,31 83,31 L83,71 C83,71 70,69 57,72 Z" />
+
+    <!-- Book Center Spine Groove -->
+    <path fill="#9C825D" d="M53,29 H55 V76 H53 Z" />
+
+    <!-- Carved Dark Serif Capital Alpha (A) on Left Page -->
+    <path fill="#1A120B" d="M32.5,41 H44.5 V43.2 H32.5 Z" />
+    <path fill="#1A120B" d="M38.5,41.5 L31.5,64.5 H29.5 V66 H36.5 V64.5 H34.8 L36.2,59.8 H40.8 L42.2,64.5 H40.5 V66 H47.5 V64.5 H45.5 L38.5,41.5 Z M37.1,57 L38.5,52.2 L39.9,57 Z" />
+
+    <!-- Carved Dark Serif Capital Omega (Ω) on Right Page -->
+    <path fill="#1A120B" d="M58.5,64.5 H64.2 C64.2,60.2 65.5,56.2 67.2,53.2 C68.3,51.3 69.6,50.5 71,50.5 C72.4,50.5 73.7,51.3 74.8,53.2 C76.5,56.2 77.8,60.2 77.8,64.5 H83.5 V62.8 H81.8 C82.5,58.5 81.5,53.2 78.8,48.2 C76.5,44.2 73.2,41.5 69.5,41.5 C65.8,41.5 62.5,44.2 60.2,48.2 C57.5,53.2 56.5,58.5 57.2,62.8 H55.5 V64.5 H58.5 Z" />
+</svg>

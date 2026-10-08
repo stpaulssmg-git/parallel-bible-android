@@ -148,28 +148,99 @@ mark.search-hl {
 .verse-number { font-weight: bold; color: var(--verse-num-color); margin-right: 4px; font-size: 0.9em; }
 .verse-merged { color: var(--merged-text-color); font-style: italic; }
 .version-label {
-    position: fixed; top: 0; z-index: 10; width: 50%; height: 40px;
+    position: fixed; top: 0; z-index: 100; width: 50%; height: 40px;
     background: var(--header-bg); color: var(--header-text); padding: 0 4px;
     display: flex; align-items: center; justify-content: center;
     font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--header-border);
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     will-change: transform; transition: transform 0.18s ease;
+    overflow: visible;
 }
 .version-label.ui-hidden { transform: translateY(-100%); }
 .left-label { left: 0; border-right: 1px solid var(--header-border); }
-.right-label { left: 50%; }
+.right-label { left: 50%; z-index: 110; overflow: visible; }
 .header-version-switch {
     display: inline-flex; align-items: center; gap: 3px;
     background: rgba(0, 0, 0, 0.2); padding: 3px; border-radius: 6px;
-    max-width: 100%; overflow-x: auto; scrollbar-width: none;
+    max-width: 100%; overflow: visible;
 }
 .header-version-switch::-webkit-scrollbar { display: none; }
 .header-version-switch button {
     border: none; background: var(--btn-bg); color: var(--btn-text);
     padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
     cursor: pointer; line-height: 1.1; white-space: nowrap;
+    height: 26px; box-sizing: border-box; display: inline-flex;
+    align-items: center; justify-content: center;
 }
 .header-version-switch button.active { background: var(--btn-active-bg); color: var(--btn-active-text); }
+
+.more-version-wrapper {
+    position: relative; display: inline-flex; align-items: center; overflow: visible;
+}
+.more-version-btn {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 4px 7px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    cursor: pointer; line-height: 1.1; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+    height: 26px; box-sizing: border-box;
+}
+.more-version-btn.active { background: var(--btn-active-bg); color: var(--btn-active-text); }
+.dropdown-arrow { font-size: 9px; opacity: 0.85; transition: transform 0.15s ease; pointer-events: none; }
+.more-version-wrapper.open .dropdown-arrow { transform: rotate(180deg); }
+
+.more-version-dropdown {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 250;
+    min-width: 140px; background: var(--header-bg); border: 1px solid var(--header-border);
+    border-radius: 6px; padding: 4px; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    display: none; flex-direction: column; gap: 2px;
+}
+.more-version-dropdown.show { display: flex !important; }
+.more-option {
+    border: none; background: transparent; color: var(--header-text);
+    padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; width: 100%; box-sizing: border-box;
+}
+.more-option:hover { background: rgba(255, 255, 255, 0.15); }
+.more-option.selected { background: var(--btn-active-bg); color: var(--btn-active-text); }
+.more-opt-code { font-weight: bold; text-align: left; flex-shrink: 0; }
+.more-opt-name { font-size: 11px; opacity: 0.85; font-weight: normal; text-align: right; flex-grow: 1; margin-left: 10px; }
+.more-option.selected .more-opt-name { color: var(--btn-active-text); opacity: 0.9; }
+
+.about-oth-wrapper {
+    grid-column: 1 / -1; margin-top: 4px;
+}
+.about-oth-header {
+    width: 100%; background: var(--row-even-bg); border: 1px solid var(--row-border);
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; color: var(--text-color);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; text-align: left; transition: background 0.15s ease;
+}
+.about-oth-header:hover { background: var(--row-hover-bg); }
+.about-oth-header strong { color: var(--btn-active-bg); margin-right: 6px; }
+.oth-accordion-arrow { font-size: 11px; transition: transform 0.2s ease; }
+.about-oth-wrapper.open .oth-accordion-arrow { transform: rotate(180deg); }
+.about-oth-body {
+    display: none; flex-direction: column; gap: 4px; margin-top: 6px;
+    padding: 8px 10px; background: var(--row-odd-bg); border: 1px solid var(--row-border);
+    border-radius: 6px;
+}
+.about-oth-wrapper.open .about-oth-body { display: flex; }
+.oth-checkbox-item {
+    display: flex; align-items: center; gap: 8px; padding: 5px 6px;
+    border-radius: 4px; font-size: 12px; cursor: pointer; user-select: none;
+}
+.oth-checkbox-item:hover { background: var(--row-hover-bg); }
+.oth-checkbox-item input[type="checkbox"] {
+    accent-color: var(--btn-bg); width: 15px; height: 15px; cursor: pointer;
+}
+.oth-chk-code { font-weight: bold; color: var(--btn-active-bg); min-width: 32px; }
+.oth-chk-name { color: var(--text-color); font-size: 12px; }
+.oth-empty-msg {
+    font-size: 11.5px; padding: 8px 10px; color: var(--header-text);
+    opacity: 0.85; text-align: center; cursor: pointer;
+}
+.oth-empty-msg:hover { color: var(--btn-active-bg); text-decoration: underline; }
 .bottom-dock {
     position: fixed; bottom: 8px; left: 8px; right: 8px; z-index: 100;
     display: flex; justify-content: space-between; align-items: center; gap: 6px;
@@ -189,6 +260,13 @@ mark.search-hl {
     border: none; background: var(--btn-bg); color: var(--btn-text);
     padding: 6px 9px; border-radius: 4px; font-size: 13px; font-weight: bold;
     text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+}
+#aboutBtn i {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 1;
 }
 .search-bar {
     position: relative; pointer-events: auto; display: flex; align-items: center; gap: 4px;
@@ -318,7 +396,7 @@ mark.search-hl {
     <div class="about-dialog">
         <div class="about-header">
             <div class="about-title-group">
-                <img src="app_logo.png" class="about-app-icon-img" alt="App Logo">
+                <img src="file:///android_asset/app_logo.svg" class="about-app-icon-img" alt="App Logo">
                 <div>
                     <h2 class="about-app-name">My Parallel Bible - Apostolic</h2>
                     <span class="about-app-version">Version 1.0</span>
@@ -335,11 +413,53 @@ mark.search-hl {
             <div class="about-trans-grid">
                 <div class="about-trans-card"><strong>KJV</strong> King James Version</div>
                 <div class="about-trans-card"><strong>NAS</strong> New American Standard</div>
-                <div class="about-trans-card"><strong>ORIG</strong> Hebrew &amp; Greek Original</div>
-                <div class="about-trans-card"><strong>ABEn</strong> Apostolic Bible (English)</div>
-                <div class="about-trans-card"><strong>ABGr</strong> Apostolic Bible (Greek)</div>
+                <div class="about-trans-card"><strong>H/G</strong> Hebrew &amp; Greek Original</div>
+                <div class="about-trans-card"><strong>ABe</strong> Apostolic Bible (English)</div>
+                <div class="about-trans-card"><strong>ABg</strong> Apostolic Bible (Greek)</div>
                 <div class="about-trans-card"><strong>T4T</strong> Translation for Translators</div>
-                <div class="about-trans-card"><strong>KAN</strong> Kannada Bible</div>
+                <div class="about-oth-wrapper" id="aboutOthWrapper">
+                    <button type="button" class="about-oth-header" onclick="toggleOthAccordion(event)">
+                        <span><strong>OTH</strong> Regional / Other Versions <small style="opacity:0.75;">(Tap to configure)</small></span>
+                        <span class="oth-accordion-arrow" id="othAccordionArrow">▾</span>
+                    </button>
+                    <div class="about-oth-body" id="aboutOthBody">
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="kan" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">KAN</span>
+                            <span class="oth-chk-name">Kannada IRV</span>
+                        </label>
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="tlg" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">TLG</span>
+                            <span class="oth-chk-name">Telugu 2017</span>
+                        </label>
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="mal" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">MAL</span>
+                            <span class="oth-chk-name">Malayalam VPL</span>
+                        </label>
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="tam" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">TAM</span>
+                            <span class="oth-chk-name">Tamil 2017</span>
+                        </label>
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="hin" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">HIN</span>
+                            <span class="oth-chk-name">Hindi 2017</span>
+                        </label>
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="spa" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">SPA</span>
+                            <span class="oth-chk-name">Spanish Reina Valera</span>
+                        </label>
+                        <label class="oth-checkbox-item">
+                            <input type="checkbox" value="lxx" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
+                            <span class="oth-chk-code">LXX</span>
+                            <span class="oth-chk-name">Thomson Septuagint Eng</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <h3 class="about-section-title">Copyrights &amp; Permissions</h3>
@@ -389,15 +509,20 @@ mark.search-hl {
         <div class="header-version-switch">
             <button type="button" id="kjvButton" class="active" onclick="showLeftVersion('kjv')">KJV</button>
             <button type="button" id="nasButton" onclick="showLeftVersion('nas')">NAS</button>
-            <button type="button" id="origButton" onclick="showLeftVersion('orig')">ORIG</button>
+            <button type="button" id="origButton" onclick="showLeftVersion('orig')">H/G</button>
         </div>
     </div>
     <div class="version-label right-label">
         <div class="header-version-switch">
-            <button type="button" id="abpButton" class="active" onclick="showRightVersion('abp')">ABEn</button>
-            <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABGr</button>
+            <button type="button" id="abpButton" class="active" onclick="showRightVersion('abp')">ABe</button>
+            <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABg</button>
             <button type="button" id="t4tButton" onclick="showRightVersion('t4t')">T4T</button>
-            <button type="button" id="kanButton" onclick="showRightVersion('kan')">KAN</button>
+            <div class="more-version-wrapper" id="moreVersionWrapper">
+                <button type="button" id="moreVersionBtn" class="more-version-btn" onclick="toggleMoreDropdown(event)">
+                    <span id="moreBtnLabel">OTH</span> <span class="dropdown-arrow">▾</span>
+                </button>
+                <div id="moreVersionDropdown" class="more-version-dropdown"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -418,7 +543,7 @@ mark.search-hl {
         <button type="button" onclick="changeFontSize(-1)">A&minus;</button>
         <button type="button" onclick="changeFontSize(1)">A+</button>
         <button type="button" id="themeButton" onclick="cycleTheme()">D</button>
-        <button type="button" id="aboutBtn" onclick="openAboutModal()" title="About Parallel Bible">ℹ️</button>
+        <button type="button" id="aboutBtn" onclick="openAboutModal()" title="About Parallel Bible"><i>i</i></button>
     </div>
 </div>
 <script>
@@ -430,19 +555,170 @@ let activeLeft = 'kjv';
 let activeRight = 'abp';
 
 const versionLabels = {
-    kjv: 'KJV', nas: 'NAS', orig: 'ORIG',
-    abp: 'ABEn', abgr: 'ABGr', t4t: 'T4T', kan: 'KAN'
+    kjv: 'KJV', nas: 'NAS', orig: 'H/G',
+    abp: 'ABe', abgr: 'ABg', t4t: 'T4T',
+    kan: 'KAN', tlg: 'TLG', mal: 'MAL', tam: 'TAM',
+    hin: 'HIN', spa: 'SPA', lxx: 'LXX'
 };
 
 const missingFallbacks = {
     kjv:  '[Not available in KJV]',
     nas:  '[Not available in NAS]',
-    orig: '[Not available in ORIG]',
-    abp:  '[Not available in ABEn]',
-    abgr: '[Not available in ABGr]',
+    orig: '[Not available in H/G]',
+    abp:  '[Not available in ABe]',
+    abgr: '[Not available in ABg]',
     t4t:  '[Included in previous verse]',
-    kan:  '[Merged with adjacent verse]'
+    kan:  '[Not available in KAN]',
+    tlg:  '[Not available in TLG]',
+    mal:  '[Not available in MAL]',
+    tam:  '[Not available in TAM]',
+    hin:  '[Not available in HIN]',
+    spa:  '[Not available in SPA]',
+    lxx:  '[Not available in LXX]'
 };
+
+const allOthVersions = [
+    { code: 'kan', label: 'KAN', name: 'Kannada IRV' },
+    { code: 'tlg', label: 'TLG', name: 'Telugu 2017' },
+    { code: 'mal', label: 'MAL', name: 'Malayalam VPL' },
+    { code: 'tam', label: 'TAM', name: 'Tamil 2017' },
+    { code: 'hin', label: 'HIN', name: 'Hindi 2017' },
+    { code: 'spa', label: 'SPA', name: 'Spanish Reina Valera' },
+    { code: 'lxx', label: 'LXX', name: 'Thomson Septuagint Eng' }
+];
+
+const moreVersions = ['kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
+let enabledOthVersions = ['kan'];
+let currentMoreVersion = 'kan';
+
+function loadOthSettings() {
+    try {
+        const saved = localStorage.getItem('enabledOthVersions');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+                enabledOthVersions = parsed.filter(v => allOthVersions.some(a => a.code === v));
+            }
+        }
+    } catch (_) {}
+}
+
+function saveOthSettings() {
+    localStorage.setItem('enabledOthVersions', JSON.stringify(enabledOthVersions));
+}
+
+function syncOthCheckboxes() {
+    document.querySelectorAll('.oth-chk-input').forEach(chk => {
+        chk.checked = enabledOthVersions.includes(chk.value);
+    });
+}
+
+function renderOthDropdownMenu() {
+    const dropdown = document.getElementById('moreVersionDropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = '';
+
+    if (enabledOthVersions.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'oth-empty-msg';
+        emptyDiv.textContent = 'No versions enabled. Tap to configure in About.';
+        emptyDiv.onclick = (e) => {
+            if (e) e.stopPropagation();
+            closeAllMoreDropdowns();
+            openAboutModal();
+        };
+        dropdown.appendChild(emptyDiv);
+        return;
+    }
+
+    allOthVersions.forEach(ver => {
+        if (!enabledOthVersions.includes(ver.code)) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'more-option';
+        btn.setAttribute('data-ver', ver.code);
+        btn.onclick = (e) => selectMoreVersion(ver.code, e);
+
+        const codeSpan = document.createElement('span');
+        codeSpan.className = 'more-opt-code';
+        codeSpan.textContent = ver.label;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'more-opt-name';
+        nameSpan.textContent = ver.name;
+
+        btn.appendChild(codeSpan);
+        btn.appendChild(nameSpan);
+        dropdown.appendChild(btn);
+    });
+}
+
+function syncAndroidAttachedDbs() {
+    if (window.AndroidBridge && window.AndroidBridge.syncAttachedDatabases) {
+        window.AndroidBridge.syncAttachedDatabases(JSON.stringify(enabledOthVersions));
+    }
+}
+
+function toggleOthAccordion(e) {
+    if (e) e.stopPropagation();
+    const wrapper = document.getElementById('aboutOthWrapper');
+    if (wrapper) wrapper.classList.toggle('open');
+}
+
+function onOthCheckboxChange(chk) {
+    const val = chk.value;
+    if (chk.checked) {
+        if (!enabledOthVersions.includes(val)) enabledOthVersions.push(val);
+    } else {
+        enabledOthVersions = enabledOthVersions.filter(v => v !== val);
+    }
+    saveOthSettings();
+    syncAndroidAttachedDbs();
+    renderOthDropdownMenu();
+
+    if (moreVersions.includes(activeRight) && !enabledOthVersions.includes(activeRight)) {
+        if (enabledOthVersions.length > 0) {
+            selectMoreVersion(enabledOthVersions[0]);
+        } else {
+            showRightVersion('abp');
+        }
+    } else {
+        showRightVersion(activeRight, true);
+    }
+
+    if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+        const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter);
+        renderChapterData(JSON.parse(rawJson), null);
+    }
+}
+
+function toggleMoreDropdown(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('moreVersionDropdown');
+    const wrapper = document.getElementById('moreVersionWrapper');
+    if (!dropdown) return;
+    const isShowing = dropdown.classList.contains('show');
+    closeAllMoreDropdowns();
+    if (!isShowing) {
+        dropdown.classList.add('show');
+        if (wrapper) wrapper.classList.add('open');
+    }
+}
+
+function closeAllMoreDropdowns() {
+    const dropdown = document.getElementById('moreVersionDropdown');
+    const wrapper = document.getElementById('moreVersionWrapper');
+    if (dropdown) dropdown.classList.remove('show');
+    if (wrapper) wrapper.classList.remove('open');
+}
+
+function selectMoreVersion(ver, e) {
+    if (e) e.stopPropagation();
+    currentMoreVersion = ver;
+    localStorage.setItem('selectedMoreVersion', ver);
+    closeAllMoreDropdowns();
+    showRightVersion(ver);
+}
 
 const availableBooks = {{AVAILABLE_BOOKS_JSON}};
 const availableChapters = {{AVAILABLE_CHAPTERS_JSON}};
@@ -706,12 +982,49 @@ function showLeftVersion(version, skipRender = false) {
 }
 
 function showRightVersion(version, skipRender = false) {
-    if (!['abp', 'abgr', 't4t', 'kan'].includes(version)) version = 'abp';
+    const validRightVersions = ['abp', 'abgr', 't4t', 'kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
+    if (!validRightVersions.includes(version)) version = 'abp';
+
+    if (moreVersions.includes(version) && !enabledOthVersions.includes(version)) {
+        if (enabledOthVersions.length > 0) {
+            version = enabledOthVersions[0];
+        } else {
+            version = 'abp';
+        }
+    }
+
     activeRight = version;
-    document.getElementById('abpButton').classList.toggle('active', version === 'abp');
-    document.getElementById('abgrButton').classList.toggle('active', version === 'abgr');
-    document.getElementById('t4tButton').classList.toggle('active', version === 't4t');
-    document.getElementById('kanButton').classList.toggle('active', version === 'kan');
+
+    const abpBtn = document.getElementById('abpButton');
+    const abgrBtn = document.getElementById('abgrButton');
+    const t4tBtn = document.getElementById('t4tButton');
+
+    if (abpBtn) abpBtn.classList.toggle('active', version === 'abp');
+    if (abgrBtn) abgrBtn.classList.toggle('active', version === 'abgr');
+    if (t4tBtn) t4tBtn.classList.toggle('active', version === 't4t');
+
+    const isMoreSelected = enabledOthVersions.includes(version);
+    const moreBtn = document.getElementById('moreVersionBtn');
+    const moreLabel = document.getElementById('moreBtnLabel');
+
+    if (isMoreSelected) {
+        currentMoreVersion = version;
+        localStorage.setItem('selectedMoreVersion', version);
+    }
+
+    if (moreBtn) {
+        moreBtn.classList.toggle('active', isMoreSelected);
+    }
+    if (moreLabel) {
+        const displayCode = versionLabels[currentMoreVersion] || currentMoreVersion.toUpperCase();
+        moreLabel.textContent = isMoreSelected ? displayCode : 'OTH';
+    }
+
+    document.querySelectorAll('.more-option').forEach(opt => {
+        const optVer = opt.getAttribute('data-ver');
+        opt.classList.toggle('selected', optVer === currentMoreVersion);
+    });
+
     localStorage.setItem('selectedSecondVersion', version);
     if (!skipRender) {
         if (searchState.active) runKeywordSearch(searchState.query, 1);
@@ -824,6 +1137,11 @@ function onAboutModalBackdropClick(e) {
 }
 
 window.handleAndroidBack = function() {
+    const dropdown = document.getElementById('moreVersionDropdown');
+    if (dropdown && dropdown.classList.contains('show')) {
+        closeAllMoreDropdowns();
+        return true;
+    }
     const aboutModal = document.getElementById('aboutModal');
     if (aboutModal && aboutModal.classList.contains('show')) {
         closeAboutModal();
@@ -1084,8 +1402,20 @@ function renderSearchResults(matches, requestedChapter = null, requestedVerse = 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadOthSettings();
+    syncOthCheckboxes();
+    syncAndroidAttachedDbs();
+    renderOthDropdownMenu();
+
     const savedLeft = localStorage.getItem('selectedFirstVersion');
     if (savedLeft) showLeftVersion(savedLeft, true);
+
+    const savedMore = localStorage.getItem('selectedMoreVersion');
+    if (savedMore && enabledOthVersions.includes(savedMore)) {
+        currentMoreVersion = savedMore;
+    } else if (enabledOthVersions.length > 0) {
+        currentMoreVersion = enabledOthVersions[0];
+    }
 
     const savedRight = localStorage.getItem('selectedSecondVersion');
     showRightVersion(savedRight || 'abp', true);
@@ -1101,6 +1431,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedChap = parseInt(localStorage.getItem('lastChapter'), 10);
     if (savedBook && !isNaN(savedChap) && (savedBook !== initialChapterData.book || savedChap !== initialChapterData.chapter) && window.AndroidBridge) {
         const rawJson = window.AndroidBridge.getChapterData(savedBook, savedChap);
+        renderChapterData(JSON.parse(rawJson), null);
+    } else if (window.AndroidBridge) {
+        const rawJson = window.AndroidBridge.getChapterData(initialChapterData.book, initialChapterData.chapter);
         renderChapterData(JSON.parse(rawJson), null);
     } else {
         renderChapterData(initialChapterData, null);
@@ -1121,7 +1454,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSearchResults(bookMatches, chapter, verse, rawVal);
         });
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-bar')) results.classList.remove('show');
+            if (!e.target.closest('.search-bar') && results) results.classList.remove('show');
+            if (!e.target.closest('.more-version-wrapper')) closeAllMoreDropdowns();
         });
     }
 
@@ -1131,6 +1465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (container && bottomDock) {
         let lastScrollTop = container.scrollTop;
         container.addEventListener('scroll', () => {
+            closeAllMoreDropdowns();
             if (document.activeElement === input) return;
             const currentScroll = container.scrollTop;
             const delta = currentScroll - lastScrollTop;
