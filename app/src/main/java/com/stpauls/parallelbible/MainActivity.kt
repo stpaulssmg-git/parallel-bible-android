@@ -107,10 +107,23 @@ class MainActivity : Activity() {
             rightVer: String,
             page: Int,
             testamentFilter: String = "all",
+            verFilter: String = "both",
+            bookFilter: String = "all"
+        ): String {
+            ensureDatabaseReady()
+            return executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter, bookFilter).toString()
+        }
+
+        @JavascriptInterface
+        fun getBookCounts(
+            query: String,
+            leftVer: String,
+            rightVer: String,
+            testamentFilter: String = "all",
             verFilter: String = "both"
         ): String {
             ensureDatabaseReady()
-            return executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter).toString()
+            return executeBookCountsQuery(query, leftVer, rightVer, testamentFilter, verFilter).toString()
         }
 
         @JavascriptInterface
@@ -286,13 +299,84 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun executeBookCountsQuery(
+        rawQuery: String,
+        leftVer: String,
+        rightVer: String,
+        testamentFilter: String,
+        verFilter: String
+    ): JSONArray {
+        val db = sqliteDb ?: return JSONArray()
+        val trimmed = rawQuery.trim()
+        if (trimmed.isEmpty()) return JSONArray()
+
+        fun getColExpression(verKey: String): String? {
+            return when (verKey) {
+                "kjv"  -> "v.kjv_text"
+                "nas"  -> "v.nasb_text"
+                "orig" -> "v.orig_text"
+                "abp"  -> "v.aben_text"
+                "abgr" -> "v.abgr_text"
+                "t4t"  -> "v.t4t_text"
+                else -> {
+                    val info = regionalDbsMap[verKey]
+                    if (info != null && activeAttachedSchemas.contains(info.schemaAlias)) {
+                        "${info.schemaAlias}_tbl.${info.columnName}"
+                    } else null
+                }
+            }
+        }
+
+        val leftExpr = getColExpression(leftVer) ?: "'__NONE__'"
+        val rightExpr = getColExpression(rightVer) ?: "'__NONE__'"
+
+        val baseSearchExpr = when (verFilter) {
+            "left" -> "$leftExpr LIKE ? ESCAPE '\\'"
+            "right" -> "$rightExpr LIKE ? ESCAPE '\\'"
+            else -> "($leftExpr LIKE ? ESCAPE '\\' OR $rightExpr LIKE ? ESCAPE '\\')"
+        }
+
+        val testamentCond = when (testamentFilter) {
+            "ot" -> "b.book_order BETWEEN 1 AND 39"
+            "nt" -> "b.book_order BETWEEN 40 AND 66"
+            else -> null
+        }
+
+        val fullWhereClause = if (testamentCond != null) "$testamentCond AND ($baseSearchExpr)" else baseSearchExpr
+
+        val joinClauses = StringBuilder()
+        for ((_, info) in regionalDbsMap) {
+            if (activeAttachedSchemas.contains(info.schemaAlias)) {
+                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
+            }
+        }
+
+        val escapedLike = trimmed.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        val likeArg = "%$escapedLike%"
+        val queryParams = if (verFilter == "both" && leftExpr != "'__NONE__'" && rightExpr != "'__NONE__'") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
+
+        val sql = "SELECT v.book, COUNT(*) FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() + " WHERE " + fullWhereClause + " GROUP BY v.book ORDER BY b.book_order ASC"
+
+        val resultArray = JSONArray()
+        db.rawQuery(sql, queryParams).use { c ->
+            while (c.moveToNext()) {
+                val obj = JSONObject()
+                obj.put("book", c.getString(0))
+                obj.put("count", c.getInt(1))
+                resultArray.put(obj)
+            }
+        }
+        return resultArray
+    }
+
     private fun executeVerseSearch(
         rawQuery: String,
         leftVer: String,
         rightVer: String,
         requestedPage: Int,
         testamentFilter: String = "all",
-        verFilter: String = "both"
+        verFilter: String = "both",
+        bookFilter: String = "all"
     ): JSONObject {
         val db = sqliteDb ?: throw IllegalStateException("Database not initialized")
         val trimmed = rawQuery.trim()
@@ -418,7 +502,9 @@ class MainActivity : Activity() {
             else -> null
         }
 
-        val fullWhereClause = if (testamentCond != null) "$testamentCond AND ($baseSearchExpr)" else baseSearchExpr
+        val bookCond = if (bookFilter != "all" && bookFilter.isNotBlank()) "v.book = '${bookFilter.replace("'", "''")}'" else null
+
+        val fullWhereClause = listOfNotNull(testamentCond, bookCond, baseSearchExpr).joinToString(" AND ") { "($it)" }
         val searchParams = if (verFilter == "both" && safeLeftExpr != "'__NONE__'" && safeRightExpr != "'__NONE__'") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
 
         var totalMatches = 0
