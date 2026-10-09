@@ -832,6 +832,139 @@ const bookFullNameMap = {
     '2PE': '2 Peter', '1JO': '1 John', '2JO': '2 John', '3JO': '3 John', JUD: 'Jude', REV: 'Revelation'
 };
 
+const origBookNames = {
+    GEN: 'בְּרֵאשִׁית', EXO: 'שְׁמוֹת', LEV: 'וַיִּקְרָא', NUM: 'בְּמִדְבַּר', DEU: 'דְּבָרִים',
+    JOS: 'יְהוֹשֻׁעַ', JDG: 'שֹׁפְטִים', RUT: 'רוּת', '1SA': 'שְׁמוּאֵל א', '2SA': 'שְׁמוּאֵל ב',
+    '1KI': 'מְלָכִים א', '2KI': 'מְלָכִים ב', '1CH': 'דִּבְרֵי הַיָּמִים א', '2CH': 'דִּבְרֵי הַיָּמִים ב',
+    EZR: 'עֶזְרָא', NEH: 'נְחֶמְיָה', EST: 'אֶסְתֵּר', JOB: 'אִיּוֹב', PSA: 'תְּהִלִּים',
+    PRO: 'מִשְׁלֵי', ECC: 'קֹהֶלֶת', SOL: 'שִׁיר הַשִּׁירִים', ISA: 'יְשַׁעְיָהוּ',
+    JER: 'יִרְמְיָהוּ', LAM: 'אֵיכָה', EZE: 'יְחֶזְקֵאל', DAN: 'דָּנִיֵּאל',
+    HOS: 'הוֹשֵׁעַ', JOE: 'יוֹאֵל', AMO: 'עָמוֹס', OBA: 'עֹבַדְיָה', JON: 'יוֹנָה',
+    MIC: 'מִיכָה', NAH: 'נַחוּם', HAB: 'חֲבַקּוּק', ZEP: 'צְפַנְיָה', HAG: 'חַגַּי',
+    ZEC: 'זְכַרְיָה', MAL: 'מַלְאָכִי', MAT: 'Κατὰ Μαθθαῖον', MAR: 'Κατὰ Μᾶρκον', LUK: 'Κατὰ Λουκᾶν',
+    JOH: 'Κατὰ Ἰωάννην', ACT: 'Πράξεις', ROM: 'Πρὸς Ῥωμαίους', '1CO': 'Πρὸς Κορινθίους Α', '2CO': 'Πρὸς Κορινθίους Β',
+    GAL: 'Πρὸς Γαλάτας', EPH: 'Πρὸς Ἐφεσίους', PHI: 'Πρὸς Φιλιππησίους', COL: 'Πρὸς Κολασσαεῖς',
+    '1TH': 'Πρὸς Θεσσαλονικεῖς Α', '2TH': 'Πρὸς Θεσσαλονικεῖς Β', '1TI': 'Πρὸς Τιμόθεον Α', '2TI': 'Πρὸς Τιμόθεον Β',
+    TIT: 'Πρὸς Τίτον', PHM: 'Πρὸς Φιλήμονα', HEB: 'Πρὸς Ἑβραίους', JAM: 'Ἰακώβου', '1PE': 'Πέτρου Α',
+    '2PE': 'Πέτρου Β', '1JO': 'Ἰωάννου Α', '2JO': 'Ἰωάννου Β', '3JO': 'Ἰωάννου Γ', JUD: 'Ἰούδα', REV: 'Ἀποκάλυψις'
+};
+
+const regionalBookNames = {
+    kan: {
+        GEN: 'ಆದಿಕಾಂಡ', EXO: 'ವಿಮೋಚನಾಕಾಂಡ', LEV: 'ಲೇವ್ಯಕಾಂಡ', NUM: 'ಅರಣ್ಯಕಾಂಡ', DEU: 'ದ್ವಿತೀಯೋಪದೇಶಕಾಂಡ',
+        JOS: 'ಯೆಹೋಶುವ', JDG: 'ನ್ಯಾಯಾಧಿಪತಿಗಳು', RUT: 'ರೂತಳು', '1SA': '1 ಸಮುವೇಲ', '2SA': '2 ಸಮುವೇಲ',
+        '1KI': '1 ಅರಸುಗಳು', '2KI': '2 ಅರಸುಗಳು', '1CH': '1 ಪೂರ್ವಕಾಲದ', '2CH': '2 ಪೂರ್ವಕಾಲದ', EZR: 'ಎಜ್ರ',
+        NEH: 'ನೆಹೆಮೀಯ', EST: 'ಎಸ್ತೇರಳು', JOB: 'ಅಯ್ಯೋಬ', PSA: 'ಕೀರ್ತನೆಗಳು', PRO: 'ಸಾಮೆಗಳು',
+        ECC: 'ಪ್ರಸಂಗಿ', SOL: 'ಪರಮಗೀತ', ISA: 'ಯೆಶಾಯ', JER: 'ಯೆರೆಮೀಯ', LAM: 'ಪ್ರಲಾಪಗಳು',
+        EZE: 'ಯೆಹೆಜ್ಕೇಲ', DAN: 'ದಾನಿಯೇಲ', HOS: 'ಹೋಶೇಾಯ', JOE: 'ಮDialogWhenಾ', AMO: 'ಆಮೋಸ',
+        OBA: 'ಓಬದ್ಯ', JON: 'ಯೋನ', MIC: 'ಮೀಕ', NAH: 'ನಹೂಮ', HAB: 'ಹಬಕ್ಕೂಕ',
+        ZEP: 'ಚೆಫನ್ಯ', HAG: 'ಹಗ್ಗಾಯ', ZEC: 'ಚೆಕರ್ಯ', MAL: 'ಮಲಾಕಿಯ', MAT: 'ಮತ್ತಾಯ',
+        MRK: 'ಮಾರ್ಕ', LUK: 'ಲೂಕ', JOH: 'ಯೋಹಾನ', ACT: 'ಅಪೊಸ್ತಲರ', ROM: 'ರೋಮಾಪುರದವರಿಗೆ',
+        '1CO': '1 ಕೊರಿಂಥದವರಿಗೆ', '2CO': '2 ಕೊರಿಂಥದವರಿಗೆ', GAL: 'గలత్యದವರಿಗೆ', EPH: 'ಎಫೆಸದವರಿಗೆ', PHP: 'ಫಿಲಿಪ್ಪಿಯವರಿಗೆ',
+        COL: 'ಕೊಲೊಸ್ಸೆಯವರಿಗೆ', '1TH': '1 തെസ്സലോനിക', '2TH': '2 തെസ്സലോനിക', '1TI': '1 തിമൊഥെയൊസ്', '2TI': '2 തിമൊഥെയൊസ്',
+        TIT: 'തീത്തൊസ്', PHM: 'ഫിലേമൊൻ', HEB: 'ഹെബ്രായർ', JAM: 'യാക്കോബ്', '1PE': '1 പത്രൊസ്',
+        '2PE': '2 പത്രൊസ്', '1JO': '1 യോഹന്നാൻ', '2JO': '2 യോഹന്നാൻ', '3JO': '3 യോഹന്നാൻ', JUD: 'യൂദാ', REV: 'ಪ್ರಕಟಣೆ'
+    },
+    tlg: {
+        GEN: 'ఆదికాండము', EXO: 'నిర్గమకాండము', LEV: 'లేవీయకాండము', NUM: 'సంఖ్యాకాండము', DEU: 'ద్వితీయోపదేశకాండము',
+        JOS: 'యెహోషువ', JDG: 'న్యాయాధిపతులు', RUT: 'రూతు', '1SA': '1 సమూయేలు', '2SA': '2 సమూయేలు',
+        '1KI': '1 రాజులు', '2KI': '2 రాజులు', '1CH': '1 దినవృత్తాంతములు', '2CH': '2 దినవృత్తాంతములు', EZR: 'ఎజ్రా',
+        NEH: 'నెహెమ్యా', EST: 'ఎస్తేరు', JOB: 'యోబు', PSA: 'కీర్తనలు', PRO: 'సామెతలు',
+        ECC: 'ప్రసంగి', SOL: 'పరమగీతము', ISA: 'యెషయా', JER: 'యిర్మియా', LAM: 'విలాపవాక్యములు',
+        EZE: 'యెహెజ్కేలు', DAN: 'దానియేలు', HOS: 'హోషేయ', JOE: 'యోవేలు', AMO: 'ఆమోసు',
+        OBA: 'ఓబద్యా', JON: 'యోనా', MIC: 'మీకా', NAH: 'నహూము', HAB: 'హబక్కూకు',
+        ZEP: 'జెఫన్యా', HAG: 'హగ్గయి', ZEC: 'జెకర్యా', MAL: 'మలాకీ', MAT: 'మత్తయి',
+        MRK: 'మార్కు', LUK: 'లూకా', JOH: 'యోహాను', ACT: 'అపొస్తలుల', ROM: 'రోమీయులకు',
+        '1CO': '1 కొరింథీయులకు', '2CO': '2 కొరింథీయులకు', GAL: 'గలతీయులకు', EPH: 'ఎఫెసీయులకు', PHI: 'ఫిలిప్పీయులకు',
+        COL: 'కొలొస్సయులకు', '1TH': '1 థెస్సలొనీకయులకు', '2TH': '2 థెస్సలొనీకయులకు', '1TI': '1 తిమోతికి', '2TI': '2 తిమోతికి',
+        TIT: 'తీతుకు', PHM: 'ఫిలేమోనుకు', HEB: 'హెబ్రీయులకు', JAM: 'యాకోబు', '1PE': '1 పేతురు',
+        '2PE': '2 పేతురు', '1JO': '1 యోహాను', '2JO': '2 యోహాను', '3JO': '3 యోహాను', JUD: 'యూదా', REV: 'ప్రకటన'
+    },
+    mal: {
+        GEN: 'ഉല്പത്തി', EXO: 'പുറപ്പാടു്', LEV: 'ലേവ്യപുസ്തകം', NUM: 'സംഖ്യാപുസ്തകം', DEU: 'ആവർത്തനം',
+        JOS: 'യോശുവ', JDG: 'ന്യായാധിപന്മാർ', RUT: 'രൂത്ത്', '1SA': '1 ശമൂവേൽ', '2SA': '2 ശമൂവേൽ',
+        '1KI': '1 രാജാക്കന്മാർ', '2KI': '2 രാജാക്കന്മാർ', '1CH': '1 ദിനവൃത്താന്തം', '2CH': '2 ദിനവൃത്താന്തം', EZR: 'എസ്രാ',
+        NEH: 'നെഹെമ്യാവു്', EST: 'എസ്ഥേർ', JOB: 'ഇയ്യോബ്', PSA: 'സങ്കീർത്തനങ്ങൾ', PRO: 'സദൃശവാക്യങ്ങൾ',
+        ECC: 'സഭാപ്രസംഗി', SOL: 'ഉത്തമഗീതം', ISA: 'യെശയ്യാവു്', JER: 'യിരെമ്യാവു്', LAM: 'വിലാപങ്ങൾ',
+        EZE: 'യെഹെസ്കേൽ', DAN: 'ദാനീയേൽ', HOS: 'ഹോശേയ', JOE: 'യോവേൽ', AMO: 'ആമോസ്',
+        OBA: 'ഓബദ്യാവു്', JON: 'യോനാ', MIC: 'മീഖാ', NAH: 'നഹൂം', HAB: 'ഹബക്കൂക്',
+        ZEP: 'സെഫന്യാവു്', HAG: 'ഹഗ്ഗായി', ZEC: 'സെഖർയ്യാവു്', MAL: 'മലാഖി', MAT: 'മത്തായി',
+        MRK: 'മർക്കൊസ്', LUK: 'ലൂക്കൊസ്', JOH: 'യോഹന്നാൻ', ACT: 'പ്രവൃത്തികൾ', ROM: 'റോമർ',
+        '1CO': '1 കൊരിന്ത്യർ', '2CO': '2 കൊരിന്ത്യർ', GAL: 'ഗലാത്യർ', EPH: 'എഫെസ്യർ', PHI: 'ഫിലിപ്പിയർ',
+        COL: 'ക്കൊലൊസ്സ്യർ', '1TH': '1 തെസ്സലോനിക്യർ', '2TH': '2 തെസ്സലോനിക്യർ', '1TI': '1 തിമൊഥെയൊസ്', '2TI': '2 തിമൊഥെയൊസ്',
+        TIT: 'തീത്തോസ്', PHM: 'ഫിലേമോൻ', HEB: 'എബ്രായർ', JAM: 'യാക്കോബ്', '1PE': '1 പത്രൊസ്',
+        '2PE': '2 പത്രൊസ്', '1JO': '1 യോഹന്നാൻ', '2JO': '2 യോഹന്നാൻ', '3JO': '3 യോഹന്നാൻ', JUD: 'യൂദാ', REV: 'വെളിപ്പാടു്'
+    },
+    tam: {
+        GEN: 'ஆதியாகமம்', EXO: 'யாத்திராகமம்', LEV: 'லேவியராகமம்', NUM: 'எண்ணாகமம்', DEU: 'உபாகமம்',
+        JOS: 'யோசுவா', JDG: 'நியாயாதிபதிகள்', RUT: 'ரூத்', '1SA': '1 சாமுவேல்', '2SA': '2 சாமுவேல்',
+        '1KI': '1 இராஜாக்கள்', '2KI': '2 இராஜாக்கள்', '1CH': '1 நாளாகமம்', '2CH': '2 நாளாகமம்', EZR: 'எஸ்ரா',
+        NEH: 'நெகேமியா', EST: 'எஸ்தர்', JOB: 'யோபு', PSA: 'சங்கீதம்', PRO: 'நீதிமொழிகள்',
+        ECC: 'பிரசங்கி', SOL: 'உன்னதப்பாட்டு', ISA: 'ஏசாயா', JER: 'எரேமியா', LAM: 'புலம்பல்',
+        EZE: 'எசேக்கியேல்', DAN: 'தானியேல்', HOS: 'ஓசியா', JOE: 'யோவேல்', AMO: 'ஆமோஸ்',
+        OBA: 'ஒபதியா', JON: 'யோனா', MIC: 'மீகா', NAH: 'நாகூம்', HAB: 'ஆபகூக்',
+        ZEP: 'செப்பனியா', HAG: 'ஆகாய்', ZEC: 'சகரியா', MAL: 'மல்கியா', MAT: 'மத்தேயு',
+        MRK: 'மாற்கு', LUK: 'லூக்கா', JOH: 'யோவான்', ACT: 'அப்போஸ்தலர்', ROM: 'ரோமர்',
+        '1CO': '1 கொரிந்தியர்', '2CO': '2 கொரிந்தியர்', GAL: 'கலாத்தியர்', EPH: 'எபேசியர்', PHI: 'பிலிப்பியர்',
+        COL: 'கொலோசெயர்', '1TH': '1 தெசலோனிக்கேயர்', '2TH': '2 தெசலோனிக்கேயர்', '1TI': '1 தீமோத்தேயு', '2TI': '2 தீமோத்தேயு',
+        TIT: 'தீத்து', PHM: 'பிலேமோன்', HEB: 'எபிரெயர்', JAM: 'யாக்கோபு', '1PE': '1 பேதுரு',
+        '2PE': '2 பேதுரு', '1JO': '1 யோவான்', '2JO': '2 யோவான்', '3JO': '3 யோவான்', JUD: 'யூதா', REV: 'வெளிப்படுத்தின விசேஷம்'
+    },
+    hin: {
+        GEN: 'उत्पत्ति', EXO: 'निर्गमन', LEV: 'लैव्यव्यवस्था', NUM: 'गिनती', DEU: 'व्यवस्थाविवरण',
+        JOS: 'यहोशू', JDG: 'न्यायियों', RUT: 'रुत', '1SA': '1 शमूएल', '2SA': '2 शमूएल',
+        '1KI': '1 राजा', '2KI': '2 राजा', '1CH': '1 इतिहास', '2CH': '2 इतिहास', EZR: 'एज्रा',
+        NEH: 'नहेमायाह', EST: 'एस्तेर', JOB: 'अय्यूब', PSA: 'भजन संहिता', PRO: 'नीतिवचन',
+        ECC: 'सभोपदेशक', SOL: 'श्रेष्ठगीत', ISA: 'यशायाह', JER: 'यिर्मयाह', LAM: 'विलापगीत',
+        EZE: 'यहेजकेल', DAN: 'दानिय्येल', HOS: 'होशे', JOE: 'योएल', AMO: 'आमोस',
+        OBA: 'ओबद्याह', JON: 'योना', MIC: 'मीका', NAH: 'नहूम', HAB: 'हबक्कूक',
+        ZEP: 'सपन्याह', HAG: 'हाग्गै', ZEC: 'जकर्याह', MAL: 'मलाकी', MAT: 'मत्ती',
+        MRK: 'मरकुस', LUK: 'लूका', JOH: 'यूहन्ना', ACT: 'प्रेरितों के काम', ROM: 'रोमियों',
+        '1CO': '1 कुरिन्थियों', '2CO': '2 कुरिन्थियों', GAL: 'गलातियों', EPH: 'इफिसियों', PHI: 'फिलिप्पियों',
+        COL: 'कुलुस्सियों', '1TH': '1 थिस्सलुनीकियों', '2TH': '2 थिस्सलुनीकियों', '1TI': '1 तीमुथियुस', '2TI': '2 तीमुथियुस',
+        TIT: 'तीतुस', PHM: 'फिलेमोन', HEB: 'इब्रानियों', JAM: 'याकूब', '1PE': '1 पतरस',
+        '2PE': '2 पतरस', '1JO': '1 यूहन्ना', '2JO': '2 यूहन्ना', '3JO': '3 यूहन्ना', JUD: 'यहूदा', REV: 'प्रकाशितवाक्य'
+    },
+    spa: {
+        GEN: 'Génesis', EXO: 'Éxodo', LEV: 'Levítico', NUM: 'Números', DEU: 'Deuteronomio',
+        JOS: 'Josué', JDG: 'Jueces', RUT: 'Rut', '1SA': '1 Samuel', '2SA': '2 Samuel',
+        '1KI': '1 Reyes', '2KI': '2 Reyes', '1CH': '1 Crónicas', '2CH': '2 Crónicas', EZR: 'Esdras',
+        NEH: 'Nehemías', EST: 'Ester', JOB: 'Job', PSA: 'Salmos', PRO: 'Proverbios',
+        ECC: 'Eclesiastés', SOL: 'Cantar de los Cantares', ISA: 'Isaías', JER: 'Jeremías', LAM: 'Lamentaciones',
+        EZE: 'Ezequiel', DAN: 'Daniel', HOS: 'Oseas', JOE: 'Joel', AMO: 'Amós',
+        OBA: 'Abdías', JON: 'Jonás', MIC: 'Miqueas', NAH: 'Nahúm', HAB: 'Habacuc',
+        ZEP: 'Sofonías', HAG: 'Hageo', ZEC: 'Zacarías', MAL: 'Malaquías', MAT: 'Mateo',
+        MRK: 'Marcos', LUK: 'Lucas', JOH: 'Juan', ACT: 'Hechos', ROM: 'Romanos',
+        '1CO': '1 Corintios', '2CO': '2 Corintios', GAL: 'Gálatas', EPH: 'Efesios', PHP: 'Filipenses',
+        COL: 'Colosenses', '1TH': '1 Tesalonicenses', '2TH': '2 Tesalonicenses', '1TI': '1 Timoteo', '2TI': '2 Timoteo',
+        TIT: 'Tito', PHM: 'Filemón', HEB: 'Hebreos', JAM: 'Santiago', '1PE': '1 Pedro',
+        '2PE': '2 Pedro', '1JO': '1 Juan', '2JO': '2 Juan', '3JO': '3 Juan', JUD: 'Judas', REV: 'Apocalipsis'
+    }
+};
+
+function getBookNameForVer(code, verKey) {
+    if (['kjv', 'nas', 'abp', 't4t', 'lxx'].includes(verKey)) {
+        return bookFullNameMap[code] || code;
+    }
+    if (verKey === 'orig') {
+        return (typeof origBookNames !== 'undefined' && origBookNames[code]) ? origBookNames[code] : (bookFullNameMap[code] || code);
+    }
+    if (typeof regionalBookNames !== 'undefined' && regionalBookNames[verKey] && regionalBookNames[verKey][code]) {
+        return regionalBookNames[verKey][code];
+    }
+    return bookFullNameMap[code] || code;
+}
+
+function getDualBookName(code) {
+    const leftName = getBookNameForVer(code, activeLeft);
+    const rightName = getBookNameForVer(code, activeRight);
+
+    if (leftName === rightName) {
+        return leftName;
+    }
+    return leftName + ' / ' + rightName;
+}
+
 const moreVersions = ['kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
 let enabledOthVersions = ['kan'];
 let currentMoreVersion = 'kan';
@@ -1621,7 +1754,7 @@ function openBookPickerModal() {
         codeSpan.className = 'picker-book-code';
         codeSpan.textContent = code;
 
-        const fullName = (typeof bookFullNameMap !== 'undefined' && bookFullNameMap[code]) ? bookFullNameMap[code] : code;
+        const fullName = getDualBookName(code);
         const nameSpan = document.createElement('span');
         nameSpan.className = 'picker-book-name';
         nameSpan.textContent = fullName;
@@ -1648,7 +1781,7 @@ function closeBookPickerModal() {
 
 function openChapterPickerModal() {
     const titleEl = document.getElementById('chapterPickerModalTitle');
-    const bookFullName = (typeof bookFullNameMap !== 'undefined' && bookFullNameMap[currentBook]) ? bookFullNameMap[currentBook] : currentBook;
+    const bookFullName = getDualBookName(currentBook);
     if (titleEl) {
         titleEl.textContent = currentBook + ' (' + bookFullName + ')';
     }
