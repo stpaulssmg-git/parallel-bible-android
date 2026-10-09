@@ -255,6 +255,25 @@ mark.search-hl {
     pointer-events: none; will-change: transform; transition: transform 0.18s ease;
 }
 .bottom-dock.ui-hidden { transform: translateY(calc(100% + 14px)); }
+.search-return-bar {
+    position: fixed; bottom: 58px; left: 50%; transform: translateX(-50%);
+    z-index: 110; background: var(--bar-bg); color: var(--btn-text);
+    border: 1px solid var(--header-border); border-radius: 20px;
+    padding: 6px 14px; font-size: 12.5px; font-weight: bold;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: none;
+    align-items: center; gap: 10px; cursor: pointer; white-space: nowrap;
+    will-change: transform, opacity; transition: transform 0.18s ease, opacity 0.18s ease;
+    pointer-events: auto;
+}
+.search-return-bar.show { display: flex !important; }
+.search-return-bar.ui-hidden { transform: translate(-50%, calc(100% + 70px)); opacity: 0; pointer-events: none; }
+.search-return-info strong { color: var(--btn-active-bg); }
+.search-return-close {
+    border: none; background: transparent; color: var(--btn-text);
+    font-size: 18px; font-weight: bold; cursor: pointer; line-height: 1;
+    padding: 0 4px; border-radius: 4px; opacity: 0.85;
+}
+.search-return-close:hover { opacity: 1; color: var(--btn-active-bg); }
 .nav-bar, .utility-bar {
     pointer-events: auto; display: flex; align-items: center; gap: 4px;
     background: var(--bar-bg); padding: 4px; border-radius: 7px;
@@ -535,6 +554,12 @@ mark.search-hl {
             </div>
         </div>
     </div>
+</div>
+<div id="searchReturnBar" class="search-return-bar" onclick="restoreRetainedSearch(event)">
+    <span class="search-return-info">
+        🔍 Return to &ldquo;<strong id="searchReturnQuery"></strong>&rdquo; (<span id="searchReturnPage"></span>)
+    </span>
+    <button type="button" class="search-return-close" onclick="dismissRetainedSearch(event)" title="Dismiss Search">&times;</button>
 </div>
 <div class="bottom-dock" id="bottomDock">
     <div class="nav-bar">
@@ -924,7 +949,43 @@ function renderSearchVersesDom() {
     document.getElementById('parallelContent').innerHTML = html;
 }
 
+let retainedSearch = null; // { query: string, page: number }
+
+function showSearchReturnBar() {
+    if (!retainedSearch) return;
+    const bar = document.getElementById('searchReturnBar');
+    const queryEl = document.getElementById('searchReturnQuery');
+    const pageEl = document.getElementById('searchReturnPage');
+    if (!bar) return;
+    if (queryEl) queryEl.textContent = retainedSearch.query;
+    if (pageEl) pageEl.textContent = 'Pg ' + retainedSearch.page;
+    bar.classList.add('show');
+}
+
+function hideSearchReturnBar() {
+    const bar = document.getElementById('searchReturnBar');
+    if (bar) bar.classList.remove('show');
+}
+
+function dismissRetainedSearch(e) {
+    if (e) e.stopPropagation();
+    retainedSearch = null;
+    hideSearchReturnBar();
+    navHistory = navHistory.filter(item => !item.isSearchSnapshot);
+}
+
+function restoreRetainedSearch(e) {
+    if (e) e.stopPropagation();
+    if (!retainedSearch) return;
+    const q = retainedSearch.query;
+    const p = retainedSearch.page;
+    retainedSearch = null;
+    hideSearchReturnBar();
+    runKeywordSearch(q, p);
+}
+
 function runKeywordSearch(query, page = 1) {
+    hideSearchReturnBar();
     const trimmed = query.trim();
     if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
 
@@ -960,6 +1021,7 @@ function changeSearchPage(delta) {
 }
 
 function clearVerseSearch() {
+    dismissRetainedSearch();
     const input = document.getElementById('chapterSearch');
     const resultsPopup = document.getElementById('searchResults');
     if (input) input.value = '';
@@ -976,9 +1038,20 @@ function clearVerseSearch() {
 }
 
 function openSearchResult(book, chapter, verse) {
+    if (searchState.active) {
+        retainedSearch = {
+            query: searchState.query,
+            page: searchState.page
+        };
+        navHistory.push({
+            isSearchSnapshot: true,
+            query: searchState.query,
+            page: searchState.page
+        });
+        showSearchReturnBar();
+    }
+
     searchState.active = false;
-    searchState.query = '';
-    searchState.results = [];
     const input = document.getElementById('chapterSearch');
     if (input) input.value = '';
     updateInlineClearButton();
@@ -988,7 +1061,7 @@ function openSearchResult(book, chapter, verse) {
         renderVersesDom();
         requestAnimationFrame(() => scrollToVerse(verse));
     } else {
-        navigateToPassage(book, chapNum, verse);
+        navigateToPassage(book, chapNum, verse, false);
     }
 }
 
@@ -1180,6 +1253,10 @@ window.handleAndroidBack = function() {
     }
     if (navHistory.length > 0) {
         const prev = navHistory.pop();
+        if (prev.isSearchSnapshot) {
+            restoreRetainedSearch();
+            return true;
+        }
         navigateToPassage(prev.book, prev.chapter, null, false, 'prev');
         return true;
     }
@@ -1558,9 +1635,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (delta > 12 && currentScroll > 60) {
                 bottomDock.classList.add('ui-hidden');
                 topHeaders.forEach(h => h.classList.add('ui-hidden'));
+                const returnBar = document.getElementById('searchReturnBar');
+                if (returnBar) returnBar.classList.add('ui-hidden');
             } else if (delta < -10 || currentScroll <= 30) {
                 bottomDock.classList.remove('ui-hidden');
                 topHeaders.forEach(h => h.classList.remove('ui-hidden'));
+                const returnBar = document.getElementById('searchReturnBar');
+                if (returnBar) returnBar.classList.remove('ui-hidden');
             }
             lastScrollTop = currentScroll;
         }, { passive: true });
