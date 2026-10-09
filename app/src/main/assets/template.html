@@ -367,6 +367,72 @@ mark.search-hl {
     display: flex; align-items: center; justify-content: space-between;
     width: 100%; gap: 6px;
 }
+.dock-picker-btn {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 6px 9px; border-radius: 4px; font-size: 13px; font-weight: bold;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    box-sizing: border-box; transition: background 0.15s ease;
+}
+.dock-picker-btn:hover { background: var(--btn-hover-bg); }
+
+.picker-modal-overlay {
+    position: fixed; inset: 0; z-index: 310; background: rgba(0,0,0,0.45);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.picker-modal-overlay.show { display: flex !important; }
+.picker-modal-card {
+    background: var(--bg-body); border: 1px solid var(--row-border);
+    border-radius: 12px; width: 100%; max-width: 380px; max-height: 80vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: var(--text-color);
+}
+.picker-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--row-even-bg);
+    border-bottom: 1px solid var(--row-border);
+    font-weight: bold; font-size: 14px; color: var(--text-color);
+}
+.picker-modal-close {
+    border: none; background: transparent; color: var(--text-color);
+    font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1; padding: 0 4px;
+}
+.picker-modal-close:hover { color: var(--verse-num-color); }
+.picker-modal-body {
+    padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;
+    background: var(--bg-body);
+}
+.picker-book-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-radius: 7px; background: var(--row-odd-bg);
+    border: 1px solid var(--row-border); font-size: 12.5px; font-weight: bold;
+    color: var(--text-color); cursor: pointer; transition: background 0.15s ease;
+}
+.picker-book-item:hover { background: var(--row-hover-bg); }
+.picker-book-item.active {
+    background: var(--btn-active-bg); color: var(--btn-active-text);
+    border-color: var(--btn-active-bg);
+}
+.picker-book-code { font-weight: bold; color: var(--verse-num-color); min-width: 36px; }
+.picker-book-item.active .picker-book-code { color: var(--btn-active-text); }
+.picker-book-name { font-size: 11.5px; opacity: 0.9; text-align: right; flex-grow: 1; margin-left: 8px; }
+
+.picker-modal-grid-body {
+    padding: 14px; overflow-y: auto; display: grid;
+    grid-template-columns: repeat(5, 1fr); gap: 8px;
+    background: var(--bg-body);
+}
+.picker-chapter-btn {
+    border: 1px solid var(--row-border); background: var(--row-odd-bg);
+    color: var(--text-color); padding: 10px 0; border-radius: 7px;
+    font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.picker-chapter-btn:hover { background: var(--row-hover-bg); }
+.picker-chapter-btn.active {
+    background: var(--btn-active-bg); color: var(--btn-active-text);
+    border-color: var(--btn-active-bg);
+}
+
 .nav-bar, .utility-bar {
     pointer-events: auto; display: flex; align-items: center; gap: 4px;
     background: var(--bar-bg); padding: 4px; border-radius: 7px;
@@ -664,10 +730,34 @@ mark.search-hl {
     </span>
     <button type="button" class="search-return-close" onclick="dismissRetainedSearch(event)" title="Dismiss Search">&times;</button>
 </div>
+<div id="bookPickerModal" class="picker-modal-overlay" onclick="onPickerBackdropClick(event, 'bookPickerModal')">
+    <div class="picker-modal-card">
+        <div class="picker-modal-header">
+            <span>Select Book</span>
+            <button type="button" class="picker-modal-close" onclick="closeBookPickerModal()">&times;</button>
+        </div>
+        <div id="bookPickerBody" class="picker-modal-body"></div>
+    </div>
+</div>
+
+<div id="chapterPickerModal" class="picker-modal-overlay" onclick="onPickerBackdropClick(event, 'chapterPickerModal')">
+    <div class="picker-modal-card">
+        <div class="picker-modal-header">
+            <span id="chapterPickerModalTitle">Select Chapter</span>
+            <button type="button" class="picker-modal-close" onclick="closeChapterPickerModal()">&times;</button>
+        </div>
+        <div id="chapterPickerBody" class="picker-modal-grid-body"></div>
+    </div>
+</div>
+
 <div class="bottom-dock" id="bottomDock">
     <div class="nav-bar">
-        <select id="bookSelect" aria-label="Book" onchange="onBookSelectChange(this.value)">{{BOOK_OPTIONS}}</select>
-        <select id="chapterSelect" aria-label="Chapter" onchange="onChapterSelectChange(this.value)"></select>
+        <button type="button" id="bookPickerBtn" class="dock-picker-btn" onclick="openBookPickerModal()" aria-label="Select Book">
+            <span id="bookPickerLabel">GEN</span> <span class="dropdown-arrow">▾</span>
+        </button>
+        <button type="button" id="chapterPickerBtn" class="dock-picker-btn" onclick="openChapterPickerModal()" aria-label="Select Chapter">
+            <span id="chapterPickerLabel">1</span> <span class="dropdown-arrow">▾</span>
+        </button>
     </div>
     <form class="search-bar" onsubmit="return submitChapterSearch();">
         <div class="search-results" id="searchResults"></div>
@@ -1430,18 +1520,11 @@ function renderChapterData(data, targetVerse = null, swipeDir = null) {
         showChapterToast(currentBook + ' ' + currentChapter);
     }
 
-    document.getElementById('bookSelect').value = currentBook;
+    const bookLabel = document.getElementById('bookPickerLabel');
+    if (bookLabel) bookLabel.textContent = currentBook;
 
-    const chapSelect = document.getElementById('chapterSelect');
-    if (chapSelect) {
-        const chaps = data.chapters || [1];
-        let opts = '';
-        for (let i = 0; i < chaps.length; i++) {
-            const c = chaps[i];
-            opts += '<option value="' + c + '"' + (c === currentChapter ? ' selected' : '') + '>' + c + '</option>';
-        }
-        chapSelect.innerHTML = opts;
-    }
+    const chapLabel = document.getElementById('chapterPickerLabel');
+    if (chapLabel) chapLabel.textContent = currentChapter;
 
     prevTarget = (data.prevBook && data.prevChapter)
         ? { book: data.prevBook, chapter: data.prevChapter }
@@ -1502,6 +1585,94 @@ function navigateToPassage(book, chapter, verse = null, pushHistory = true, swip
     }
 }
 
+function openBookPickerModal() {
+    const bodyEl = document.getElementById('bookPickerBody');
+    if (!bodyEl) return;
+    bodyEl.innerHTML = '';
+
+    availableBooks.forEach(code => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'picker-book-item' + (code === currentBook ? ' active' : '');
+        itemDiv.onclick = () => {
+            closeBookPickerModal();
+            navigateToPassage(code, 1);
+        };
+
+        const codeSpan = document.createElement('span');
+        codeSpan.className = 'picker-book-code';
+        codeSpan.textContent = code;
+
+        const fullName = bookFullNameMap[code] || code;
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'picker-book-name';
+        nameSpan.textContent = fullName;
+
+        itemDiv.appendChild(codeSpan);
+        itemDiv.appendChild(nameSpan);
+        bodyEl.appendChild(itemDiv);
+    });
+
+    const modal = document.getElementById('bookPickerModal');
+    if (modal) {
+        modal.classList.add('show');
+        setTimeout(() => {
+            const activeItem = bodyEl.querySelector('.picker-book-item.active');
+            if (activeItem) activeItem.scrollIntoView({ block: 'center' });
+        }, 50);
+    }
+}
+
+function closeBookPickerModal() {
+    const modal = document.getElementById('bookPickerModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function openChapterPickerModal() {
+    const titleEl = document.getElementById('chapterPickerModalTitle');
+    const bookFullName = bookFullNameMap[currentBook] || currentBook;
+    if (titleEl) {
+        titleEl.textContent = currentBook + ' (' + bookFullName + ')';
+    }
+
+    const bodyEl = document.getElementById('chapterPickerBody');
+    if (!bodyEl) return;
+    bodyEl.innerHTML = '';
+
+    const chaps = availableChapters[currentBook] || [1];
+    chaps.forEach(chapNum => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'picker-chapter-btn' + (chapNum === currentChapter ? ' active' : '');
+        btn.textContent = chapNum;
+        btn.onclick = () => {
+            closeChapterPickerModal();
+            navigateToPassage(currentBook, chapNum);
+        };
+        bodyEl.appendChild(btn);
+    });
+
+    const modal = document.getElementById('chapterPickerModal');
+    if (modal) {
+        modal.classList.add('show');
+        setTimeout(() => {
+            const activeBtn = bodyEl.querySelector('.picker-chapter-btn.active');
+            if (activeBtn) activeBtn.scrollIntoView({ block: 'center' });
+        }, 50);
+    }
+}
+
+function closeChapterPickerModal() {
+    const modal = document.getElementById('chapterPickerModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function onPickerBackdropClick(e, modalId) {
+    if (e.target.id === modalId) {
+        if (modalId === 'bookPickerModal') closeBookPickerModal();
+        if (modalId === 'chapterPickerModal') closeChapterPickerModal();
+    }
+}
+
 function openAboutModal() {
     const modal = document.getElementById('aboutModal');
     if (modal) modal.classList.add('show');
@@ -1519,6 +1690,16 @@ function onAboutModalBackdropClick(e) {
 }
 
 window.handleAndroidBack = function() {
+    const bookPicker = document.getElementById('bookPickerModal');
+    if (bookPicker && bookPicker.classList.contains('show')) {
+        closeBookPickerModal();
+        return true;
+    }
+    const chapPicker = document.getElementById('chapterPickerModal');
+    if (chapPicker && chapPicker.classList.contains('show')) {
+        closeChapterPickerModal();
+        return true;
+    }
     const bookModal = document.getElementById('bookFilterModal');
     if (bookModal && bookModal.classList.contains('show')) {
         closeBookFilterModal();
