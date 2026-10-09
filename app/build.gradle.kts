@@ -4,8 +4,10 @@ plugins {
 
 android {
     namespace = "com.stpauls.parallelbible"
-    compileSdk {
-        version = release(37)
+    compileSdk = 37
+
+    androidResources {
+        ignoreAssetsPattern = "*.txt"
     }
 
     defaultConfig {
