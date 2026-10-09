@@ -316,39 +316,41 @@ mark.search-hl {
 .search-plus-btn:hover { background: var(--btn-hover-bg); color: var(--btn-text); }
 
 .book-modal-overlay {
-    position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.6);
+    position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.45);
     display: none; align-items: center; justify-content: center; padding: 16px;
 }
 .book-modal-overlay.show { display: flex !important; }
 .book-modal-card {
-    background: var(--header-bg); border: 1px solid var(--header-border);
-    border-radius: 10px; width: 100%; max-width: 380px; max-height: 80vh;
+    background: var(--bg-body); border: 1px solid var(--row-border);
+    border-radius: 12px; width: 100%; max-width: 380px; max-height: 80vh;
     display: flex; flex-direction: column; overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5); color: var(--text-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: var(--text-color);
 }
 .book-modal-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; border-bottom: 1px solid var(--row-border);
-    font-weight: bold; font-size: 14px;
+    padding: 12px 16px; background: var(--row-even-bg);
+    border-bottom: 1px solid var(--row-border);
+    font-weight: bold; font-size: 14px; color: var(--text-color);
 }
 .book-modal-close {
     border: none; background: transparent; color: var(--text-color);
     font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1; padding: 0 4px;
 }
-.book-modal-close:hover { color: var(--btn-active-bg); }
+.book-modal-close:hover { color: var(--verse-num-color); }
 .book-modal-body {
-    padding: 8px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+    background: var(--bg-body);
 }
 .book-modal-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; border-radius: 6px; background: var(--row-odd-bg);
+    padding: 9px 12px; border-radius: 7px; background: var(--row-odd-bg);
     border: 1px solid var(--row-border); font-size: 13px; font-weight: bold;
-    cursor: pointer; transition: background 0.15s ease;
+    color: var(--text-color); cursor: pointer; transition: background 0.15s ease;
 }
 .book-modal-item:hover { background: var(--row-hover-bg); }
 .book-modal-count {
     background: var(--btn-bg); color: var(--btn-text);
-    padding: 2px 8px; border-radius: 12px; font-size: 11.5px;
+    padding: 2px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold;
 }
 .search-pagination-v2 {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
