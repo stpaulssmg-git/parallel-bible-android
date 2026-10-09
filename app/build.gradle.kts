@@ -6,8 +6,13 @@ android {
     namespace = "com.stpauls.parallelbible"
     compileSdk = 37
 
+    @Suppress("DEPRECATION")
+    aaptOptions {
+        ignoreAssetsPattern = "!*.txt:*.txt"
+    }
+
     androidResources {
-        ignoreAssetsPattern = "*.txt"
+        ignoreAssetsPattern = "!*.txt:*.txt"
     }
 
     defaultConfig {
