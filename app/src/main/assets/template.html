@@ -1486,6 +1486,11 @@ function onAboutModalBackdropClick(e) {
 }
 
 window.handleAndroidBack = function() {
+    const bookModal = document.getElementById('bookFilterModal');
+    if (bookModal && bookModal.classList.contains('show')) {
+        closeBookFilterModal();
+        return true;
+    }
     const dropdown = document.getElementById('moreVersionDropdown');
     if (dropdown && dropdown.classList.contains('show')) {
         closeAllMoreDropdowns();
