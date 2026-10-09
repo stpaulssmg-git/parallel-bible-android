@@ -369,8 +369,8 @@ mark.search-hl {
 }
 .dock-picker-btn {
     border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 6px 9px; border-radius: 4px; font-size: 13px; font-weight: bold;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
     box-sizing: border-box; transition: background 0.15s ease;
 }
 .dock-picker-btn:hover { background: var(--btn-hover-bg); }
@@ -464,18 +464,20 @@ mark.search-hl {
 .search-input {
     width: 100%; min-width: 0; border: none; outline: none;
     background: var(--btn-bg); color: var(--btn-text);
-    padding: 6px 8px; border-radius: 4px; font-size: 13px; font-weight: 600;
+    padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    box-sizing: border-box;
 }
 .search-input::placeholder { color: var(--btn-text); opacity: 0.65; }
 .search-clear-inline {
     display: none; border: none; background: var(--btn-active-bg); color: var(--btn-active-text);
-    padding: 5px 7px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;
-    line-height: 1;
+    padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;
+    line-height: 1; box-sizing: border-box;
 }
-.search-clear-inline.show { display: inline-flex; align-items: center; }
+.search-clear-inline.show { display: inline-flex; align-items: center; justify-content: center; }
 .search-button {
     border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 6px 8px; border-radius: 4px; display: inline-flex; align-items: center; cursor: pointer;
+    padding: 0 8px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    box-sizing: border-box;
 }
 .search-button svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; }
 .search-results {
