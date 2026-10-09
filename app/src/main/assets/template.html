@@ -274,6 +274,41 @@ mark.search-hl {
     padding: 0 4px; border-radius: 4px; opacity: 0.85;
 }
 .search-return-close:hover { opacity: 1; color: var(--btn-active-bg); }
+
+.search-banner-title {
+    font-size: 13.5px; font-weight: bold; color: var(--text-color); margin-bottom: 4px;
+}
+.search-breakdown-container {
+    display: flex; flex-direction: column; gap: 5px; width: 100%; margin-top: 4px;
+}
+.search-breakdown-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--row-odd-bg); border: 1px solid var(--row-border);
+    border-radius: 6px; padding: 5px 8px; font-size: 12px;
+}
+.search-ver-code { font-weight: bold; color: var(--verse-num-color); min-width: 32px; }
+.search-badges-group { display: flex; align-items: center; gap: 4px; }
+.search-badge-btn {
+    border: none; background: var(--btn-bg); color: var(--btn-text);
+    padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: bold;
+    cursor: pointer; transition: background 0.15s ease;
+}
+.search-badge-btn:hover { background: var(--btn-hover-bg); }
+.search-badge-btn.active {
+    background: var(--btn-active-bg); color: var(--btn-active-text);
+}
+.search-banner-clear-wrap {
+    display: flex; justify-content: center; margin-top: 4px; width: 100%;
+}
+.search-pagination-v2 {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 12px; background: var(--row-even-bg); border-top: 1px solid var(--row-border);
+}
+.search-page-info { font-weight: bold; font-size: 13px; color: var(--text-color); }
+.search-page-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; gap: 6px;
+}
 .nav-bar, .utility-bar {
     pointer-events: auto; display: flex; align-items: center; gap: 4px;
     background: var(--bar-bg); padding: 4px; border-radius: 7px;
@@ -786,6 +821,13 @@ let searchState = {
     total: 0,
     totalPages: 1,
     pageSize: 24,
+    testament: 'all',
+    verFilter: 'both',
+    counts: {
+        leftOt: 0, leftNt: 0, leftAll: 0,
+        rightOt: 0, rightNt: 0, rightAll: 0,
+        totalOt: 0, totalNt: 0, totalAll: 0
+    },
     results: []
 };
 
@@ -907,25 +949,52 @@ function renderSearchVersesDom() {
     const page = searchState.page;
     const totalPages = searchState.totalPages;
     const rows = searchState.results || [];
-    const startIdx = total === 0 ? 0 : ((page - 1) * searchState.pageSize) + 1;
-    const endIdx = Math.min(total, startIdx + rows.length - 1);
-    const pairLabel = (versionLabels[activeLeft] || activeLeft.toUpperCase()) + ' + ' + (versionLabels[activeRight] || activeRight.toUpperCase());
+    const counts = searchState.counts || {};
+    const curTestament = searchState.testament || 'all';
+    const curVerFilter = searchState.verFilter || 'both';
+
+    const leftCode = (versionLabels[activeLeft] || activeLeft.toUpperCase());
+    const rightCode = (versionLabels[activeRight] || activeRight.toUpperCase());
+
+    function isBadgeActive(t, vf) {
+        return curTestament === t && curVerFilter === vf;
+    }
 
     let html = '<div class="search-banner">'
-        + '<div class="search-banner-info">'
-        + 'Search: &ldquo;' + escHtml(q) + '&rdquo; in ' + escHtml(pairLabel) + ' &mdash; '
-        + (total > 0 ? ('Showing ' + startIdx + '&ndash;' + endIdx + ' of ' + total) : '0 matches')
+        + '<div class="search-banner-title">Search: &ldquo;<strong>' + escHtml(q) + '</strong>&rdquo;</div>'
+        + '<div class="search-breakdown-container">'
+
+        // Row 1: Left Version Badges
+        + '<div class="search-breakdown-row">'
+        + '<span class="search-ver-code">' + escHtml(leftCode) + '</span>'
+        + '<div class="search-badges-group">'
+        + '<button type="button" class="search-badge-btn' + (isBadgeActive('ot', 'left') ? ' active' : '') + '" onclick="applySearchFilter(\'ot\', \'left\')">OT: ' + (counts.leftOt || 0) + '</button>'
+        + '<button type="button" class="search-badge-btn' + (isBadgeActive('nt', 'left') ? ' active' : '') + '" onclick="applySearchFilter(\'nt\', \'left\')">NT: ' + (counts.leftNt || 0) + '</button>'
+        + '<button type="button" class="search-badge-btn' + (isBadgeActive('all', 'left') ? ' active' : '') + '" onclick="applySearchFilter(\'all\', \'left\')">Total: ' + (counts.leftAll || 0) + '</button>'
         + '</div>'
-        + '<div class="search-banner-actions">'
-        + '<button type="button" class="filter-btn" onclick="changeSearchPage(-1)" ' + (page <= 1 ? 'disabled' : '') + '>&larr; Prev</button>'
-        + '<button type="button" class="filter-btn" onclick="changeSearchPage(1)" ' + (page >= totalPages ? 'disabled' : '') + '>Next &rarr;</button>'
+        + '</div>'
+
+        // Row 2: Right Version Badges
+        + '<div class="search-breakdown-row">'
+        + '<span class="search-ver-code">' + escHtml(rightCode) + '</span>'
+        + '<div class="search-badges-group">'
+        + '<button type="button" class="search-badge-btn' + (isBadgeActive('ot', 'right') ? ' active' : '') + '" onclick="applySearchFilter(\'ot\', \'right\')">OT: ' + (counts.rightOt || 0) + '</button>'
+        + '<button type="button" class="search-badge-btn' + (isBadgeActive('nt', 'right') ? ' active' : '') + '" onclick="applySearchFilter(\'nt\', \'right\')">NT: ' + (counts.rightNt || 0) + '</button>'
+        + '<button type="button" class="search-badge-btn' + (isBadgeActive('all', 'right') ? ' active' : '') + '" onclick="applySearchFilter(\'all\', \'right\')">Total: ' + (counts.rightAll || 0) + '</button>'
+        + '</div>'
+        + '</div>'
+
+        // Centered Clear Filter button
+        + '<div class="search-banner-clear-wrap">'
         + '<button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">&times; Clear Filter</button>'
         + '</div>'
-        + '</div>';
+
+        + '</div>' // end search-breakdown-container
+        + '</div>'; // end search-banner
 
     if (rows.length === 0) {
         html += '<div style="padding: 28px 16px; text-align: center; font-size: 15px;">'
-              + 'No verses containing <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong> found in ' + escHtml(pairLabel) + '.'
+              + 'No matching verses found for <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong>.'
               + '<div style="margin-top:14px;"><button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">Return to ' + escHtml(currentBook + ' ' + currentChapter) + '</button></div>'
               + '</div>';
     } else {
@@ -938,11 +1007,15 @@ function renderSearchVersesDom() {
                   + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
                   + '</div>';
         }
-        html += '<div class="search-pagination">'
+
+        // Bottom 3-Column Pagination Controls
+        html += '<div class="search-pagination-v2">'
+              + '<div class="search-page-info">Page ' + page + ' of ' + totalPages + ' (' + total + ' verses)</div>'
+              + '<div class="search-page-actions">'
               + '<button type="button" class="filter-btn" onclick="changeSearchPage(-1)" ' + (page <= 1 ? 'disabled' : '') + '>&larr; Prev 24</button>'
-              + '<span style="font-weight:bold;">Page ' + page + ' of ' + totalPages + ' (' + total + ' verses)</span>'
-              + '<button type="button" class="filter-btn" onclick="changeSearchPage(1)" ' + (page >= totalPages ? 'disabled' : '') + '>Next 24 &rarr;</button>'
               + '<button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">&times; Clear Filter</button>'
+              + '<button type="button" class="filter-btn" onclick="changeSearchPage(1)" ' + (page >= totalPages ? 'disabled' : '') + '>Next 24 &rarr;</button>'
+              + '</div>'
               + '</div>';
     }
 
@@ -984,7 +1057,7 @@ function restoreRetainedSearch(e) {
     runKeywordSearch(q, p);
 }
 
-function runKeywordSearch(query, page = 1) {
+function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both') {
     hideSearchReturnBar();
     const trimmed = query.trim();
     if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
@@ -997,7 +1070,7 @@ function runKeywordSearch(query, page = 1) {
         input.blur();
     }
 
-    const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page);
+    const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter);
     const data = JSON.parse(rawJson);
 
     searchState.active = true;
@@ -1006,6 +1079,13 @@ function runKeywordSearch(query, page = 1) {
     searchState.total = data.total || 0;
     searchState.totalPages = data.totalPages || 1;
     searchState.pageSize = data.pageSize || 24;
+    searchState.testament = testament;
+    searchState.verFilter = verFilter;
+    searchState.counts = data.counts || {
+        leftOt: 0, leftNt: 0, leftAll: 0,
+        rightOt: 0, rightNt: 0, rightAll: 0,
+        totalOt: 0, totalNt: 0, totalAll: 0
+    };
     searchState.results = data.results || [];
 
     renderVersesDom();
@@ -1013,11 +1093,15 @@ function runKeywordSearch(query, page = 1) {
     if (container) container.scrollTop = 0;
 }
 
+function applySearchFilter(testament, verFilter) {
+    runKeywordSearch(searchState.query, 1, testament, verFilter);
+}
+
 function changeSearchPage(delta) {
     if (!searchState.active) return;
     const targetPage = searchState.page + delta;
     if (targetPage < 1 || targetPage > searchState.totalPages) return;
-    runKeywordSearch(searchState.query, targetPage);
+    runKeywordSearch(searchState.query, targetPage, searchState.testament, searchState.verFilter);
 }
 
 function clearVerseSearch() {

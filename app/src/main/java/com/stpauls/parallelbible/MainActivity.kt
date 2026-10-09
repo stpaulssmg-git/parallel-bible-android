@@ -2,7 +2,6 @@ package com.stpauls.parallelbible
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.text.TextUtils
@@ -102,9 +101,16 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun searchVerses(query: String, leftVer: String, rightVer: String, page: Int): String {
+        fun searchVerses(
+            query: String,
+            leftVer: String,
+            rightVer: String,
+            page: Int,
+            testamentFilter: String = "all",
+            verFilter: String = "both"
+        ): String {
             ensureDatabaseReady()
-            return executeVerseSearch(query, leftVer, rightVer, page).toString()
+            return executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter).toString()
         }
 
         @JavascriptInterface
@@ -284,11 +290,19 @@ class MainActivity : Activity() {
         rawQuery: String,
         leftVer: String,
         rightVer: String,
-        requestedPage: Int
+        requestedPage: Int,
+        testamentFilter: String = "all",
+        verFilter: String = "both"
     ): JSONObject {
         val db = sqliteDb ?: throw IllegalStateException("Database not initialized")
         val trimmed = rawQuery.trim()
         val pageSize = 24
+
+        fun emptyCounts() = JSONObject().apply {
+            put("leftOt", 0); put("leftNt", 0); put("leftAll", 0)
+            put("rightOt", 0); put("rightNt", 0); put("rightAll", 0)
+            put("totalOt", 0); put("totalNt", 0); put("totalAll", 0)
+        }
 
         if (trimmed.isEmpty()) {
             return JSONObject().apply {
@@ -296,6 +310,7 @@ class MainActivity : Activity() {
                 put("total", 0)
                 put("page", 1)
                 put("pageSize", pageSize)
+                put("counts", emptyCounts())
                 put("results", JSONArray())
             }
         }
@@ -327,20 +342,8 @@ class MainActivity : Activity() {
                 put("page", 1)
                 put("totalPages", 1)
                 put("pageSize", pageSize)
+                put("counts", emptyCounts())
                 put("results", JSONArray())
-            }
-        }
-
-        val whereClause = when {
-            leftExpr != null && rightExpr != null -> "$leftExpr LIKE ? ESCAPE '\\' OR $rightExpr LIKE ? ESCAPE '\\'"
-            leftExpr != null -> "$leftExpr LIKE ? ESCAPE '\\'"
-            else -> "$rightExpr LIKE ? ESCAPE '\\'"
-        }
-
-        val joinClauses = StringBuilder()
-        for ((_, info) in regionalDbsMap) {
-            if (activeAttachedSchemas.contains(info.schemaAlias)) {
-                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
             }
         }
 
@@ -349,11 +352,78 @@ class MainActivity : Activity() {
             .replace("%", "\\%")
             .replace("_", "\\_")
         val likeArg = "%$escapedLike%"
-        val countParams = if (leftExpr != null && rightExpr != null) arrayOf(likeArg, likeArg) else arrayOf(likeArg)
+
+        val joinClauses = StringBuilder()
+        for ((_, info) in regionalDbsMap) {
+            if (activeAttachedSchemas.contains(info.schemaAlias)) {
+                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
+            }
+        }
+
+        val safeLeftExpr = leftExpr ?: "'__NONE__'"
+        val safeRightExpr = rightExpr ?: "'__NONE__'"
+
+        val countsSql = """
+            SELECT 
+                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 AND $safeLeftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_ot,
+                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 AND $safeLeftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_nt,
+                COUNT(CASE WHEN $safeLeftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_all,
+
+                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 AND $safeRightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_ot,
+                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 AND $safeRightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_nt,
+                COUNT(CASE WHEN $safeRightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_all,
+
+                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 THEN 1 END) AS total_ot,
+                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 THEN 1 END) AS total_nt,
+                COUNT(*) AS total_all
+            FROM verses v JOIN books b ON v.book = b.book
+            $joinClauses
+            WHERE ($safeLeftExpr LIKE ? ESCAPE '\' OR $safeRightExpr LIKE ? ESCAPE '\')
+        """.trimIndent()
+
+        val countsParams = arrayOf(
+            likeArg, likeArg, likeArg,
+            likeArg, likeArg, likeArg,
+            likeArg, likeArg
+        )
+
+        val countsObj = JSONObject()
+        db.rawQuery(countsSql, countsParams).use { c ->
+            if (c.moveToFirst()) {
+                countsObj.put("leftOt", c.getInt(0))
+                countsObj.put("leftNt", c.getInt(1))
+                countsObj.put("leftAll", c.getInt(2))
+                countsObj.put("rightOt", c.getInt(3))
+                countsObj.put("rightNt", c.getInt(4))
+                countsObj.put("rightAll", c.getInt(5))
+                countsObj.put("totalOt", c.getInt(6))
+                countsObj.put("totalNt", c.getInt(7))
+                countsObj.put("totalAll", c.getInt(8))
+            } else {
+                countsObj.put("leftOt", 0); countsObj.put("leftNt", 0); countsObj.put("leftAll", 0)
+                countsObj.put("rightOt", 0); countsObj.put("rightNt", 0); countsObj.put("rightAll", 0)
+                countsObj.put("totalOt", 0); countsObj.put("totalNt", 0); countsObj.put("totalAll", 0)
+            }
+        }
+
+        val baseSearchExpr = when (verFilter) {
+            "left" -> "$safeLeftExpr LIKE ? ESCAPE '\\'"
+            "right" -> "$safeRightExpr LIKE ? ESCAPE '\\'"
+            else -> "($safeLeftExpr LIKE ? ESCAPE '\\' OR $safeRightExpr LIKE ? ESCAPE '\\')"
+        }
+
+        val testamentCond = when (testamentFilter) {
+            "ot" -> "b.book_order BETWEEN 1 AND 39"
+            "nt" -> "b.book_order BETWEEN 40 AND 66"
+            else -> null
+        }
+
+        val fullWhereClause = if (testamentCond != null) "$testamentCond AND ($baseSearchExpr)" else baseSearchExpr
+        val searchParams = if (verFilter == "both" && safeLeftExpr != "'__NONE__'" && safeRightExpr != "'__NONE__'") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
 
         var totalMatches = 0
-        val countSql = "SELECT COUNT(*) FROM verses v" + joinClauses.toString() + " WHERE " + whereClause
-        db.rawQuery(countSql, countParams).use { c ->
+        val totalCountSql = "SELECT COUNT(*) FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() + " WHERE " + fullWhereClause
+        db.rawQuery(totalCountSql, searchParams).use { c ->
             if (c.moveToFirst()) {
                 totalMatches = c.getInt(0)
             }
@@ -377,10 +447,10 @@ class MainActivity : Activity() {
 
         val selectSql = "SELECT " + selectCols.joinToString(", ") +
                 " FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() +
-                " WHERE " + whereClause +
+                " WHERE " + fullWhereClause +
                 " ORDER BY b.book_order ASC, v.chapter ASC, v.verse_num ASC LIMIT ? OFFSET ?"
 
-        val queryParams = countParams + arrayOf(pageSize.toString(), offset.toString())
+        val queryParams = searchParams + arrayOf(pageSize.toString(), offset.toString())
 
         val resultsArray = JSONArray()
         if (totalMatches > 0) {
@@ -416,6 +486,7 @@ class MainActivity : Activity() {
             put("page", safePage)
             put("totalPages", totalPages)
             put("pageSize", pageSize)
+            put("counts", countsObj)
             put("results", resultsArray)
         }
     }
