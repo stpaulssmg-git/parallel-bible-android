@@ -308,12 +308,18 @@ mark.search-hl {
     background: var(--btn-active-bg); color: var(--btn-active-text);
     text-decoration: none;
 }
+.search-count-link.disabled {
+    opacity: 0.38; cursor: default; text-decoration: none; pointer-events: none; color: var(--merged-text-color);
+}
 .search-plus-btn {
     color: var(--btn-active-bg); font-weight: bold; font-size: 11.5px;
     cursor: pointer; padding: 1px 4px; border-radius: 3px; margin-left: -2px;
     transition: background 0.15s ease, color 0.15s ease;
 }
 .search-plus-btn:hover { background: var(--btn-hover-bg); color: var(--btn-text); }
+.search-plus-btn.disabled {
+    opacity: 0.28; cursor: default; pointer-events: none; color: var(--merged-text-color);
+}
 
 .book-modal-overlay {
     position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.45);
@@ -1032,6 +1038,21 @@ function renderSearchVersesDom() {
         return curTestament === t && curVerFilter === vf && curBookFilter === 'all';
     }
 
+    function renderBadge(count, testament, verFilter, labelPrefix) {
+        const isActive = isBadgeActive(testament, verFilter);
+        if (!count || count <= 0) {
+            return '<span class="search-count-link disabled">[' + labelPrefix + '-0]</span>';
+        }
+        return '<span class="search-count-link' + (isActive ? ' active' : '') + '" onclick="applySearchFilter(\'' + testament + '\', \'' + verFilter + '\')">[' + labelPrefix + '-' + count + ']</span>';
+    }
+
+    function renderPlusBtn(count, testament, verFilter) {
+        if (!count || count <= 0) {
+            return '<span class="search-plus-btn disabled">[ + ]</span>';
+        }
+        return '<span class="search-plus-btn" onclick="openBookFilterModal(\'' + testament + '\', \'' + verFilter + '\', event)" title="Select ' + (testament === 'ot' ? 'Old Testament' : 'New Testament') + ' book">[ + ]</span>';
+    }
+
     const bookSuffix = (curBookFilter !== 'all') ? (' in ' + curBookFilter) : '';
     const pageInfoText = total > 0 ? ('(Pg ' + page + ' of ' + totalPages + ' &mdash; ' + total + ' verses)') : '(0 matches)';
 
@@ -1046,11 +1067,11 @@ function renderSearchVersesDom() {
         + '<div class="search-breakdown-row">'
         + '<span class="search-ver-code">' + escHtml(leftCode) + ':</span>'
         + '<div class="search-badges-group">'
-        + '<span class="search-count-link' + (isBadgeActive('ot', 'left') ? ' active' : '') + '" onclick="applySearchFilter(\'ot\', \'left\')">[O-' + (counts.leftOt || 0) + ']</span>'
-        + '<span class="search-plus-btn" onclick="openBookFilterModal(\'ot\', \'left\', event)" title="Select Old Testament book">[ + ]</span>'
-        + '<span class="search-count-link' + (isBadgeActive('nt', 'left') ? ' active' : '') + '" onclick="applySearchFilter(\'nt\', \'left\')">[N-' + (counts.leftNt || 0) + ']</span>'
-        + '<span class="search-plus-btn" onclick="openBookFilterModal(\'nt\', \'left\', event)" title="Select New Testament book">[ + ]</span>'
-        + '<span class="search-count-link' + (isBadgeActive('all', 'left') ? ' active' : '') + '" onclick="applySearchFilter(\'all\', \'left\')">[T-' + (counts.leftAll || 0) + ']</span>'
+        + renderBadge(counts.leftOt, 'ot', 'left', 'O')
+        + renderPlusBtn(counts.leftOt, 'ot', 'left')
+        + renderBadge(counts.leftNt, 'nt', 'left', 'N')
+        + renderPlusBtn(counts.leftNt, 'nt', 'left')
+        + renderBadge(counts.leftAll, 'all', 'left', 'T')
         + '</div>'
         + '</div>'
 
@@ -1058,11 +1079,11 @@ function renderSearchVersesDom() {
         + '<div class="search-breakdown-row">'
         + '<span class="search-ver-code">' + escHtml(rightCode) + ':</span>'
         + '<div class="search-badges-group">'
-        + '<span class="search-count-link' + (isBadgeActive('ot', 'right') ? ' active' : '') + '" onclick="applySearchFilter(\'ot\', \'right\')">[O-' + (counts.rightOt || 0) + ']</span>'
-        + '<span class="search-plus-btn" onclick="openBookFilterModal(\'ot\', \'right\', event)" title="Select Old Testament book">[ + ]</span>'
-        + '<span class="search-count-link' + (isBadgeActive('nt', 'right') ? ' active' : '') + '" onclick="applySearchFilter(\'nt\', \'right\')">[N-' + (counts.rightNt || 0) + ']</span>'
-        + '<span class="search-plus-btn" onclick="openBookFilterModal(\'nt\', \'right\', event)" title="Select New Testament book">[ + ]</span>'
-        + '<span class="search-count-link' + (isBadgeActive('all', 'right') ? ' active' : '') + '" onclick="applySearchFilter(\'all\', \'right\')">[T-' + (counts.rightAll || 0) + ']</span>'
+        + renderBadge(counts.rightOt, 'ot', 'right', 'O')
+        + renderPlusBtn(counts.rightOt, 'ot', 'right')
+        + renderBadge(counts.rightNt, 'nt', 'right', 'N')
+        + renderPlusBtn(counts.rightNt, 'nt', 'right')
+        + renderBadge(counts.rightAll, 'all', 'right', 'T')
         + '</div>'
         + '</div>'
 
