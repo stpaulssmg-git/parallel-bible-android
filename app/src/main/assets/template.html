@@ -144,6 +144,7 @@ mark.search-hl {
 .verse-cell {
     min-width: 0; padding: 12px 14px; font-size: var(--verse-font-size);
     line-height: 1.65; color: var(--text-color); overflow-wrap: break-word;
+    transition: font-size 0.05s ease-out;
 }
 .left-cell { border-right: 1px solid var(--cell-divider); }
 .mt-rtl {
@@ -265,14 +266,16 @@ mark.search-hl {
 }
 .utility-bar button {
     border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 6px 9px; border-radius: 4px; font-size: 13px; font-weight: bold;
-    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+    padding: 0 10px; min-width: 36px; height: 32px; border-radius: 6px;
+    font-size: 14px; font-weight: bold; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-sizing: border-box; cursor: pointer;
 }
 #aboutBtn i {
     font-family: 'Georgia', 'Times New Roman', serif;
     font-style: italic;
     font-weight: bold;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1;
 }
 .search-bar {
@@ -525,7 +528,7 @@ mark.search-hl {
             <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABg</button>
             <button type="button" id="t4tButton" onclick="showRightVersion('t4t')">T4T</button>
             <div class="more-version-wrapper" id="moreVersionWrapper">
-                <button type="button" id="moreVersionBtn" class="more-version-btn" onclick="toggleMoreDropdown(event)">
+                <button type="button" id="moreVersionBtn" class="more-version-btn" onclick="onMoreBtnClick(event)">
                     <span id="moreBtnLabel">OTH</span> <span class="dropdown-arrow">▾</span>
                 </button>
                 <div id="moreVersionDropdown" class="more-version-dropdown"></div>
@@ -694,6 +697,19 @@ function onOthCheckboxChange(chk) {
     if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
         const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter);
         renderChapterData(JSON.parse(rawJson), null);
+    }
+}
+
+function onMoreBtnClick(e) {
+    if (e) e.stopPropagation();
+    const isMoreActive = moreVersions.includes(activeRight);
+    if (!isMoreActive && enabledOthVersions.length > 0) {
+        const targetVer = (currentMoreVersion && enabledOthVersions.includes(currentMoreVersion))
+            ? currentMoreVersion
+            : enabledOthVersions[0];
+        showRightVersion(targetVer);
+    } else {
+        toggleMoreDropdown(e);
     }
 }
 
@@ -1025,8 +1041,10 @@ function showRightVersion(version, skipRender = false) {
         moreBtn.classList.toggle('active', isMoreSelected);
     }
     if (moreLabel) {
-        const displayCode = versionLabels[currentMoreVersion] || currentMoreVersion.toUpperCase();
-        moreLabel.textContent = isMoreSelected ? displayCode : 'OTH';
+        const displayCode = (currentMoreVersion && versionLabels[currentMoreVersion])
+            ? versionLabels[currentMoreVersion]
+            : 'OTH';
+        moreLabel.textContent = displayCode;
     }
 
     document.querySelectorAll('.more-option').forEach(opt => {
@@ -1210,7 +1228,7 @@ function initSwipeNavigation() {
     }, { passive: true });
 }
 
-/* Multi-Touch Pinch-to-Zoom Gesture for Dynamic Font Resizing */
+/* Ultra-Smooth Multi-Touch Pinch-to-Zoom Gesture for Dynamic Font Resizing */
 function initPinchToZoom() {
     const container = document.getElementById('scrollContainer');
     if (!container) return;
@@ -1218,6 +1236,7 @@ function initPinchToZoom() {
     let initialPinchDist = 0;
     let initialPinchFontSize = 16;
     let isPinching = false;
+    let rAFPending = false;
 
     function getTouchDist(e) {
         const t1 = e.touches[0];
@@ -1241,8 +1260,16 @@ function initPinchToZoom() {
             const currentDist = getTouchDist(e);
             if (initialPinchDist > 0) {
                 const scale = currentDist / initialPinchDist;
-                const targetSize = Math.round(initialPinchFontSize * scale);
-                applyFontSize(targetSize);
+                const floatSize = Math.min(32, Math.max(12, initialPinchFontSize * scale));
+
+                if (!rAFPending) {
+                    rAFPending = true;
+                    requestAnimationFrame(() => {
+                        rAFPending = false;
+                        currentFontSize = floatSize;
+                        rootEl.style.setProperty('--verse-font-size', floatSize.toFixed(1) + 'px');
+                    });
+                }
             }
         }
     }, { passive: false });
@@ -1251,8 +1278,9 @@ function initPinchToZoom() {
         if (isPinching && e.touches.length < 2) {
             isPinching = false;
             initialPinchDist = 0;
-            localStorage.setItem('bibleFontSize', currentFontSize);
-            showChapterToast('Font size: ' + currentFontSize + 'px');
+            const finalSize = Math.round(currentFontSize);
+            applyFontSize(finalSize);
+            showChapterToast('Font size: ' + finalSize + 'px');
         }
     }, { passive: true });
 }
