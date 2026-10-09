@@ -376,12 +376,6 @@ mark.search-hl {
     border: none; background: var(--btn-bg); color: var(--btn-text);
     padding: 6px 8px; border-radius: 4px; font-size: 13px; font-weight: bold;
 }
-.nav-bar select#bookSelect {
-    max-width: 68px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
-}
-#bookSelect option {
-    font-size: 11.5px; font-weight: normal; background: var(--header-bg); color: var(--header-text);
-}
 .utility-bar button {
     border: none; background: var(--btn-bg); color: var(--btn-text);
     padding: 0 10px; min-width: 36px; height: 32px; border-radius: 6px;
@@ -728,125 +722,6 @@ const allOthVersions = [
     { code: 'spa', label: 'SPA', name: 'Spanish Reina Valera' },
     { code: 'lxx', label: 'LXX', name: 'Thomson Septuagint Eng' }
 ];
-
-const bookFullNameMap = {
-    GEN: 'Genesis', EXO: 'Exodus', LEV: 'Leviticus', NUM: 'Numbers', DEU: 'Deuteronomy',
-    JOS: 'Joshua', JDG: 'Judges', RUT: 'Ruth', '1SA': '1 Samuel', '2SA': '2 Samuel',
-    '1KI': '1 Kings', '2KI': '2 Kings', '1CH': '1 Chronicles', '2CH': '2 Chronicles',
-    EZR: 'Ezra', NEH: 'Nehemiah', EST: 'Esther', JOB: 'Job', PSA: 'Psalms',
-    PRO: 'Proverbs', ECC: 'Ecclesiastes', SNG: 'Song of Solomon', ISA: 'Isaiah',
-    JER: 'Jeremiah', LAM: 'Lamentations', EZK: 'EZEKIEL', DAN: 'Daniel',
-    HOS: 'Hosea', JOL: 'Joel', AMO: 'Amos', OBA: 'Obadiah', JON: 'Jonah',
-    MIC: 'Micah', NAM: 'Nahum', HAB: 'Habakkuk', ZEP: 'Zephaniah', HAG: 'Haggai',
-    ZEC: 'Zechariah', MAL: 'Malachi', MAT: 'Matthew', MRK: 'Mark', LUK: 'Luke',
-    JHN: 'John', ACT: 'Acts', ROM: 'Romans', '1CO': '1 Corinthians', '2CO': '2 Corinthians',
-    GAL: 'Galatians', EPH: 'Ephesians', PHP: 'Philippians', COL: 'Colossians',
-    '1TH': '1 Thessalonians', '2TH': '2 Thessalonians', '1TI': '1 Timothy', '2TI': '2 Timothy',
-    TIT: 'Titus', PHM: 'Philemon', HEB: 'Hebrews', JAS: 'James', '1PE': '1 Peter',
-    '2PE': '2 Peter', '1JN': '1 John', '2JN': '2 John', '3JN': '3 John', JDE: 'Jude', REV: 'Revelation'
-};
-
-const regionalBookNames = {
-    kan: {
-        GEN: 'ಆದಿಕಾಂಡ', EXO: 'ವಿಮೋಚನಾಕಾಂಡ', LEV: 'ಲೇವ್ಯಕಾಂಡ', NUM: 'ಅರಣ್ಯಕಾಂಡ', DEU: 'ದ್ವಿತೀಯೋಪದೇಶಕಾಂಡ',
-        JOS: 'ಯೆಹೋಶುವ', JDG: 'ನ್ಯಾಯಾಧಿಪತಿಗಳು', RUT: 'ರೂತಳು', '1SA': '1 ಸಮುವೇಲ', '2SA': '2 ಸಮುವೇಲ',
-        '1KI': '1 ಅರಸುಗಳು', '2KI': '2 ಅರಸುಗಳು', '1CH': '1 ಪೂರ್ವಕಾಲದ', '2CH': '2 ಪೂರ್ವಕಾಲದ', EZR: 'ಎಜ್ರ',
-        NEH: 'ನೆಹೆಮೀಯ', EST: 'ಎಸ್ತೇರಳು', JOB: 'ಅಯ್ಯೋಬ', PSA: 'ಕೀರ್ತನೆಗಳು', PRO: 'ಸಾಮೆಗಳು',
-        ECC: 'ಪ್ರಸಂಗಿ', SNG: 'ಪರಮಗೀತ', ISA: 'ಯೆಶಾಯ', JER: 'ಯೆರೆಮೀಯ', LAM: 'ಪ್ರಲಾಪಗಳು',
-        EZK: 'ಯೆಹೆಜ್ಕೇಲ', DAN: 'ದಾನಿಯೇಲ', HOS: 'ಹೋಶೇಾಯ', JOL: 'ಮDialogWhenಾ', AMO: 'ಆಮೋಸ',
-        OBA: 'ಓಬದ್ಯ', JON: 'ಯೋನ', MIC: 'ಮೀಕ', NAM: 'ನಹೂಮ', HAB: 'ಹಬಕ್ಕೂಕ',
-        ZEP: 'ಚೆಫನ್ಯ', HAG: 'ಹಗ್ಗಾಯ', ZEC: 'ಚೆಕರ್ಯ', MAL: 'ಮಲಾಕಿಯ', MAT: 'ಮತ್ತಾಯ',
-        MRK: 'ಮಾರ್ಕ', LUK: 'ಲೂಕ', JHN: 'ಯೋಹಾನ', ACT: 'ಅಪೊಸ್ತಲರ', ROM: 'ರೋಮಾಪುರದವರಿಗೆ',
-        REV: 'ಪ್ರಕಟಣೆ'
-    },
-    tlg: {
-        GEN: 'ఆదికాండము', EXO: 'నిర్గమకాండము', LEV: 'లేవీయకాండము', NUM: 'సంఖ్యాకాండము', DEU: 'ద్వితీయోపదేశకాండము',
-        JOS: 'యెహోషువ', JDG: 'న్యాయాధిపతులు', RUT: 'రూతు', '1SA': '1 సమూయేలు', '2SA': '2 సమూయేలు',
-        '1KI': '1 రాజులు', '2KI': '2 రాజులు', '1CH': '1 దినవృత్తాంతములు', '2CH': '2 దినవృత్తాంతములు', EZR: 'ఎజ్రా',
-        NEH: 'నెహెమ్యా', EST: 'ఎస్తేరు', JOB: 'యోబు', PSA: 'కీర్తనలు', PRO: 'సామెతలు',
-        ECC: 'ప్రసంగి', SNG: 'పరమగీతము', ISA: 'యెషయా', JER: 'యిర్మియా', LAM: 'విలాపవాక్యములు',
-        EZK: 'యెహెజ్కేలు', DAN: 'దానియేలు', HOS: 'హోషేయ', JOL: 'యోవేలు', AMO: 'ఆమోసు',
-        OBA: 'ఓబద్యా', JON: 'యోనా', MIC: 'మీకా', NAM: 'నహూము', HAB: 'హబక్కూకు',
-        ZEP: 'జెఫన్యా', HAG: 'హగ్గయి', ZEC: 'జెకర్యా', MAL: 'మలాకీ', MAT: 'మత్తయి',
-        MRK: 'మార్కు', LUK: 'లూకా', JHN: 'యోహాను', ACT: 'అపొస్తలుల', ROM: 'రోమీయులకు',
-        REV: 'ప్రకటన'
-    },
-    mal: {
-        GEN: 'ഉല്പത്തി', EXO: 'പുറപ്പാടു്', LEV: 'ലേവ്യപുസ്തകം', NUM: 'സംഖ്യാപുസ്തകം', DEU: 'ആവർത്തനം',
-        JOS: 'യോശുവ', JDG: 'ന്യായാധിപന്മാർ', RUT: 'രൂത്ത്', '1SA': '1 ശമൂവേൽ', '2SA': '2 ശമൂവേൽ',
-        '1KI': '1 രാജാക്കന്മാർ', '2KI': '2 രാജാക്കന്മാർ', '1CH': '1 ദിനവൃത്താന്തം', '2CH': '2 ദിനവൃത്താന്തം', EZR: 'എസ്രാ',
-        NEH: 'നെഹെമ്യാവു്', EST: 'എസ്ഥേർ', JOB: 'ഇയ്യോബ്', PSA: 'സങ്കീർത്തനങ്ങൾ', PRO: 'സദൃശവാക്യങ്ങൾ',
-        ECC: 'സഭാപ്രസംഗി', SNG: 'ഉത്തമഗീതം', ISA: 'യെശയ്യാവു്', JER: 'യിരെമ്യാവു്', LAM: 'വിലാപങ്ങൾ',
-        EZK: 'യെഹെസ്കേൽ', DAN: 'ദാനീയേൽ', HOS: 'ഹോശേയ', JOL: 'യോവേൽ', AMO: 'ആമോസ്',
-        OBA: 'ഓബദ്യാവു്', JON: 'യോനാ', MIC: 'മീഖാ', NAM: 'നഹൂം', HAB: 'ഹബക്കൂക്',
-        ZEP: 'സെഫന്യാവു്', HAG: 'ഹഗ്ഗായി', ZEC: 'സെഖർയ്യാവു്', MAL: 'മലാഖി', MAT: 'മത്തായി',
-        MRK: 'മർക്കൊസ്', LUK: 'ലൂക്കൊസ്', JHN: 'യോഹന്നാൻ', ACT: 'പ്രവൃത്തികൾ', ROM: 'റോമർ',
-        REV: 'വെളിപ്പാടു്'
-    },
-    tam: {
-        GEN: 'ஆதியாகமம்', EXO: 'யாத்திராகமம்', LEV: 'லேவியராகமம்', NUM: 'எண்ணாகமம்', DEU: 'உபாகமம்',
-        JOS: 'யோசுவா', JDG: 'நியாயாதிபதிகள்', RUT: 'ரூத்', '1SA': '1 சாமுவேல்', '2SA': '2 சாமுவேல்',
-        '1KI': '1 இராஜாக்கள்', '2KI': '2 இராஜாக்கள்', '1CH': '1 நாளாகமம்', '2CH': '2 நாளாகமம்', EZR: 'எஸ்ரா',
-        NEH: 'நெகேமியா', EST: 'எஸ்தர்', JOB: 'யோபு', PSA: 'சங்கீதம்', PRO: 'நீதிமொழிகள்',
-        ECC: 'பிரசங்கி', SNG: 'உன்னதப்பாட்டு', ISA: 'ஏசாயா', JER: 'எரேமியா', LAM: 'புலம்பல்',
-        EZK: 'எசேக்கியேல்', DAN: 'தானியேல்', HOS: 'ஓசியா', JOL: 'யோவேல்', AMO: 'ஆமோஸ்',
-        OBA: 'ஒபதியா', JON: 'யோனா', MIC: 'மீகா', NAM: 'நாகூம்', HAB: 'ஆபகூக்',
-        ZEP: 'செப்பனியா', HAG: 'ஆகாய்', ZEC: 'சகரியா', MAL: 'மல்கியா', MAT: 'மத்தேயு',
-        MRK: 'மாற்கு', LUK: 'லூக்கா', JHN: 'யோவான்', ACT: 'அப்போஸ்தலர்', ROM: 'ரோமர்',
-        REV: 'வெளிப்படுத்தின விசேஷம்'
-    },
-    hin: {
-        GEN: 'उत्पत्ति', EXO: 'निर्गमन', LEV: 'लैव्यव्यवस्था', NUM: 'गिनती', DEU: 'व्यवस्थाविवरण',
-        JOS: 'यहोशू', JDG: 'न्यायियों', RUT: 'रुत', '1SA': '1 शमूएल', '2SA': '2 शमूएल',
-        '1KI': '1 राजा', '2KI': '2 राजा', '1CH': '1 इतिहास', '2CH': '2 इतिहास', EZR: 'एज्रा',
-        NEH: 'नहेमायाह', EST: 'एस्तेर', JOB: 'अय्यूब', PSA: 'भजन संहिता', PRO: 'नीतिवचन',
-        ECC: 'सभोपदेशक', SNG: 'श्रेष्ठगीत', ISA: 'यशायाह', JER: 'यिर्मयाह', LAM: 'विलापगीत',
-        EZK: 'यहेजकेल', DAN: 'दानिय्येल', HOS: 'होशे', JOL: 'योएल', AMO: 'आमोस',
-        OBA: 'ओबद्याह', JON: 'योना', MIC: 'मीका', NAM: 'नहूम', HAB: 'हबक्कूक',
-        ZEP: 'सपन्याह', HAG: 'हाग्गै', ZEC: 'जकर्याह', MAL: 'मलाकी', MAT: 'मत्ती',
-        MRK: 'मरकुस', LUK: 'लूका', JHN: 'यूहन्ना', ACT: 'प्रेरितों के काम', ROM: 'रोमियों',
-        REV: 'प्रकाशितवाक्य'
-    },
-    spa: {
-        GEN: 'Génesis', EXO: 'Éxodo', LEV: 'Levítico', NUM: 'Números', DEU: 'Deuteronomio',
-        JOS: 'Josué', JDG: 'Jueces', RUT: 'Rut', '1SA': '1 Samuel', '2SA': '2 Samuel',
-        '1KI': '1 Reyes', '2KI': '2 Reyes', '1CH': '1 Crónicas', '2CH': '2 Crónicas', EZR: 'Esdras',
-        NEH: 'Nehemías', EST: 'Ester', JOB: 'Job', PSA: 'Salmos', PRO: 'Proverbios',
-        ECC: 'Eclesiastés', SNG: 'Cantar de los Cantares', ISA: 'Isaías', JER: 'Jeremías', LAM: 'Lamentaciones',
-        EZK: 'Ezequiel', DAN: 'Daniel', HOS: 'Oseas', JOL: 'Joel', AMO: 'Amós',
-        OBA: 'Abdías', JON: 'Jonás', MIC: 'Miqueas', NAM: 'Nahúm', HAB: 'Habacuc',
-        ZEP: 'Sofonías', HAG: 'Hageo', ZEC: 'Zacarías', MAL: 'Malaquías', MAT: 'Mateo',
-        MRK: 'Marcos', LUK: 'Lucas', JHN: 'Juan', ACT: 'Hechos', ROM: 'Romanos',
-        REV: 'Apocalipsis'
-    }
-};
-
-function getFormattedBookLabel(code) {
-    const englishName = bookFullNameMap[code] || code;
-    const activeVer = activeRight;
-    const regName = (regionalBookNames[activeVer] && regionalBookNames[activeVer][code])
-        ? regionalBookNames[activeVer][code]
-        : null;
-
-    if (regName) {
-        return code + ' (' + regName + ' / ' + englishName + ')';
-    }
-    return code + ' (' + englishName + ')';
-}
-
-function updateBookSelectOptions() {
-    const select = document.getElementById('bookSelect');
-    if (!select) return;
-    const curVal = select.value || currentBook;
-
-    let html = '';
-    availableBooks.forEach(code => {
-        const sel = (code === curVal) ? ' selected' : '';
-        const label = getFormattedBookLabel(code);
-        html += '<option value="' + escHtml(code) + '"' + sel + '>' + escHtml(label) + '</option>';
-    });
-    select.innerHTML = html;
-}
 
 const moreVersions = ['kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
 let enabledOthVersions = ['kan'];
@@ -1533,7 +1408,6 @@ function showRightVersion(version, skipRender = false) {
     });
 
     localStorage.setItem('selectedSecondVersion', version);
-    updateBookSelectOptions();
     if (!skipRender) {
         if (searchState.active) runKeywordSearch(searchState.query, 1);
         else renderVersesDom();
@@ -1993,7 +1867,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const savedRight = localStorage.getItem('selectedSecondVersion');
     showRightVersion(savedRight || 'abp', true);
-    updateBookSelectOptions();
 
     const savedTheme = localStorage.getItem('bibleTheme');
     if (savedTheme) applyTheme(savedTheme);
