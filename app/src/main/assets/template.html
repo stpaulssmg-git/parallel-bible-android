@@ -968,9 +968,11 @@ function renderSearchVersesDom() {
         return curTestament === t && curVerFilter === vf;
     }
 
+    const pageInfoText = total > 0 ? ('(Pg ' + page + ' of ' + totalPages + ' &mdash; ' + total + ' verses)') : '(0 matches)';
+
     let html = '<div class="search-banner">'
         + '<div class="search-banner-top-row">'
-        + '<div class="search-banner-title">Search: &ldquo;<strong>' + escHtml(q) + '</strong>&rdquo;</div>'
+        + '<div class="search-banner-title">Search: &ldquo;<strong>' + escHtml(q) + '</strong>&rdquo; <span style="font-weight:normal;opacity:0.85;font-size:12px;margin-left:6px;">' + pageInfoText + '</span></div>'
         + '<button type="button" class="search-banner-close-btn" onclick="clearVerseSearch()" title="Clear Search">&times;</button>'
         + '</div>'
         + '<div class="search-breakdown-container">'
@@ -1013,16 +1015,6 @@ function renderSearchVersesDom() {
                   + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
                   + '</div>';
         }
-
-        // Bottom 3-Column Pagination Controls
-        html += '<div class="search-pagination-v2">'
-              + '<div class="search-page-info">Page ' + page + ' of ' + totalPages + ' (' + total + ' verses)</div>'
-              + '<div class="search-page-actions">'
-              + '<button type="button" class="filter-btn" onclick="changeSearchPage(-1)" ' + (page <= 1 ? 'disabled' : '') + '>&larr; Prev 12</button>'
-              + '<button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">&times; Clear Filter</button>'
-              + '<button type="button" class="filter-btn" onclick="changeSearchPage(1)" ' + (page >= totalPages ? 'disabled' : '') + '>Next 12 &rarr;</button>'
-              + '</div>'
-              + '</div>';
     }
 
     document.getElementById('parallelContent').innerHTML = html;
