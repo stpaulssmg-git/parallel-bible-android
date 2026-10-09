@@ -804,6 +804,14 @@ function onOthCheckboxChange(chk) {
     syncAndroidAttachedDbs();
     renderOthDropdownMenu();
 
+    if (enabledOthVersions.length === 0) {
+        currentMoreVersion = '';
+        localStorage.removeItem('selectedMoreVersion');
+    } else if (!enabledOthVersions.includes(currentMoreVersion)) {
+        currentMoreVersion = enabledOthVersions[0];
+        localStorage.setItem('selectedMoreVersion', currentMoreVersion);
+    }
+
     if (moreVersions.includes(activeRight) && !enabledOthVersions.includes(activeRight)) {
         if (enabledOthVersions.length > 0) {
             selectMoreVersion(enabledOthVersions[0]);
@@ -1363,9 +1371,11 @@ function showRightVersion(version, skipRender = false) {
         moreBtn.classList.toggle('active', isMoreSelected);
     }
     if (moreLabel) {
-        const displayCode = (currentMoreVersion && versionLabels[currentMoreVersion])
+        const displayCode = (enabledOthVersions.length > 0 && currentMoreVersion && enabledOthVersions.includes(currentMoreVersion) && versionLabels[currentMoreVersion])
             ? versionLabels[currentMoreVersion]
-            : 'OTH';
+            : (enabledOthVersions.length > 0 && enabledOthVersions[0] && versionLabels[enabledOthVersions[0]])
+                ? versionLabels[enabledOthVersions[0]]
+                : 'OTH';
         moreLabel.textContent = displayCode;
     }
 
