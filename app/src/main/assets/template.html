@@ -1065,6 +1065,7 @@ function renderSearchVersesDom() {
               + '<div style="margin-top:14px;"><button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">Return to ' + escHtml(currentBook + ' ' + currentChapter) + '</button></div>'
               + '</div>';
     } else {
+        html += '<div id="searchResultsList">';
         const isOrig = (activeLeft === 'orig');
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -1074,6 +1075,7 @@ function renderSearchVersesDom() {
                   + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
                   + '</div>';
         }
+        html += '</div>';
     }
 
     document.getElementById('parallelContent').innerHTML = html;
@@ -1234,15 +1236,16 @@ function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both'
     };
     searchState.results = data.results || [];
 
-    const contentEl = document.getElementById('parallelContent');
-    if (contentEl && (swipeDir === 'next' || swipeDir === 'prev')) {
-        contentEl.classList.remove('swipe-next', 'swipe-prev');
-        void contentEl.offsetWidth;
-        contentEl.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
+    renderVersesDom();
+
+    const resultsList = document.getElementById('searchResultsList');
+    if (resultsList && (swipeDir === 'next' || swipeDir === 'prev')) {
+        resultsList.classList.remove('swipe-next', 'swipe-prev');
+        void resultsList.offsetWidth;
+        resultsList.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
         showChapterToast('Page ' + searchState.page + ' of ' + searchState.totalPages);
     }
 
-    renderVersesDom();
     const container = document.getElementById('scrollContainer');
     if (container) container.scrollTop = 0;
 
