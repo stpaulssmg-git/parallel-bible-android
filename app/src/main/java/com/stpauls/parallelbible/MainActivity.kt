@@ -296,7 +296,7 @@ class MainActivity : Activity() {
     ): JSONObject {
         val db = sqliteDb ?: throw IllegalStateException("Database not initialized")
         val trimmed = rawQuery.trim()
-        val pageSize = 24
+        val pageSize = 12
 
         fun emptyCounts() = JSONObject().apply {
             put("leftOt", 0); put("leftNt", 0); put("leftAll", 0)
