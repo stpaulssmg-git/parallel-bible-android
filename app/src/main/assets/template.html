@@ -1055,7 +1055,23 @@ function restoreRetainedSearch(e) {
     runKeywordSearch(q, p);
 }
 
-function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both') {
+const searchPageCache = new Map();
+
+function prefetchSearchPage(query, page, testament, verFilter) {
+    if (!query || page < 1 || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
+    const cacheKey = `${query.trim()}:${page}:${testament}:${verFilter}:${activeLeft}:${activeRight}`;
+    if (searchPageCache.has(cacheKey)) return;
+    setTimeout(() => {
+        try {
+            const rawJson = window.AndroidBridge.searchVerses(query.trim(), activeLeft, activeRight, page, testament, verFilter);
+            if (rawJson) {
+                searchPageCache.set(cacheKey, JSON.parse(rawJson));
+            }
+        } catch (_) {}
+    }, 60);
+}
+
+function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both', swipeDir = null) {
     hideSearchReturnBar();
     const trimmed = query.trim();
     if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
@@ -1068,17 +1084,21 @@ function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both'
         input.blur();
     }
 
-    const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter);
-    const data = JSON.parse(rawJson);
+    const cacheKey = `${trimmed}:${page}:${testament}:${verFilter}:${activeLeft}:${activeRight}`;
+    let data = searchPageCache.get(cacheKey);
+
+    if (!data) {
+        const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter);
+        data = JSON.parse(rawJson);
+        searchPageCache.set(cacheKey, data);
+    }
 
     searchState.active = true;
     searchState.query = data.query || trimmed;
-    searchState.page = data.page || 1;
+    searchState.page = data.page || page;
     searchState.total = data.total || 0;
     searchState.totalPages = data.totalPages || 1;
     searchState.pageSize = data.pageSize || 12;
-    searchState.testament = testament;
-    searchState.verFilter = verFilter;
     searchState.testament = testament;
     searchState.verFilter = verFilter;
     searchState.counts = data.counts || {
@@ -1088,9 +1108,24 @@ function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both'
     };
     searchState.results = data.results || [];
 
+    const contentEl = document.getElementById('parallelContent');
+    if (contentEl && (swipeDir === 'next' || swipeDir === 'prev')) {
+        contentEl.classList.remove('swipe-next', 'swipe-prev');
+        void contentEl.offsetWidth;
+        contentEl.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
+        showChapterToast('Page ' + searchState.page + ' of ' + searchState.totalPages);
+    }
+
     renderVersesDom();
     const container = document.getElementById('scrollContainer');
     if (container) container.scrollTop = 0;
+
+    if (page < searchState.totalPages) {
+        prefetchSearchPage(trimmed, page + 1, testament, verFilter);
+    }
+    if (page > 1) {
+        prefetchSearchPage(trimmed, page - 1, testament, verFilter);
+    }
 }
 
 function applySearchFilter(testament, verFilter) {
@@ -1101,7 +1136,8 @@ function changeSearchPage(delta) {
     if (!searchState.active) return;
     const targetPage = searchState.page + delta;
     if (targetPage < 1 || targetPage > searchState.totalPages) return;
-    runKeywordSearch(searchState.query, targetPage, searchState.testament, searchState.verFilter);
+    const swipeDir = delta > 0 ? 'next' : 'prev';
+    runKeywordSearch(searchState.query, targetPage, searchState.testament, searchState.verFilter, swipeDir);
 }
 
 function clearVerseSearch() {
