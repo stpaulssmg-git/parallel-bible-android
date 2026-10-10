@@ -1,9 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ParallelBible" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Core Colors -->
         <item name="colorPrimary">#000000</item>
         <item name="colorPrimaryDark">#121212</item>
+        <item name="colorSecondary">#8C1D1A</item>
+
+        <!-- Material3 Surface & Background Roles -->
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorSurfaceVariant">#FFFFFF</item>
+        <item name="colorSurfaceContainer">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#FFFFFF</item>
+
+        <!-- Window & System Bar Colors -->
         <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
         <item name="android:statusBarColor">#8C1D1A</item>
         <item name="android:navigationBarColor">#8C1D1A</item>
     </style>
