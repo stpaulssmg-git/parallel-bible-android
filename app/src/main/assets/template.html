@@ -508,7 +508,12 @@ mark.search-hl {
     .nav-bar, .search-bar, .utility-bar { padding: 3px; gap: 3px; }
     .search-bar { max-width: none; }
     .nav-bar select, .utility-bar button, .search-button, .search-input { padding: 0 6px; height: 30px; font-size: 12px; }
+    .chapter-toast { top: 44px; }
+    .search-banner { padding: 8px 10px; font-size: 12px; }
+    .about-dialog { max-width: 92%; }
+    .about-trans-grid { grid-template-columns: 1fr; }
 }
+
 /* Responsive Tablet Rules (7" and 10" Tablets in Portrait and Landscape) */
 @media (min-width: 601px) and (max-width: 1024px) {
     :root { --verse-font-size: 15px; }
@@ -522,13 +527,6 @@ mark.search-hl {
     .bottom-dock { left: 50%; transform: translateX(-50%); width: 760px; }
     .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 14px)); }
     .search-bar { max-width: 420px; }
-}
-        padding: 5px 6px; font-size: 12px;
-    }
-    .chapter-toast { top: 44px; }
-    .search-banner { padding: 8px 10px; font-size: 12px; }
-    .about-dialog { max-width: 92%; }
-    .about-trans-grid { grid-template-columns: 1fr; }
 }
 
 /* About Modal Overlay */
