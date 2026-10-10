@@ -1,7 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ParallelBible" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">#FFFFFF</item>
+        <item name="colorPrimaryDark">#000000</item>
+        <item name="android:windowBackground">#12161F</item>
+        <item name="android:statusBarColor">#0B111E</item>
+        <item name="android:navigationBarColor">#0B111E</item>
     </style>
 </resources>
