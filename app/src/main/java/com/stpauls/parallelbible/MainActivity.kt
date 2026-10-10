@@ -7,7 +7,9 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.LruCache
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -61,6 +63,12 @@ class MainActivity : Activity() {
             domStorageEnabled = true
             allowFileAccess = true
             allowContentAccess = true
+        }
+
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                return true // Intercept and block internal webview url redirects
+            }
         }
 
         webView.addJavascriptInterface(BibleBridge(), "AndroidBridge")

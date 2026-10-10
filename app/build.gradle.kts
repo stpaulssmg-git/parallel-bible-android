@@ -8,11 +8,11 @@ android {
 
     @Suppress("DEPRECATION")
     aaptOptions {
-        ignoreAssetsPattern = "!*.txt:*.txt"
+        ignoreAssetsPattern = "*.txt"
     }
 
     androidResources {
-        ignoreAssetsPattern = "!*.txt:*.txt"
+        ignoreAssetsPattern = "*.txt"
     }
 
     defaultConfig {
