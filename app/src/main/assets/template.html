@@ -981,8 +981,8 @@ function getDualBookName(code) {
 }
 
 const moreVersions = ['kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
-let enabledOthVersions = ['kan'];
-let currentMoreVersion = 'kan';
+let enabledOthVersions = [];
+let currentMoreVersion = '';
 
 function loadOthSettings() {
     try {
@@ -1095,6 +1095,11 @@ function onOthCheckboxChange(chk) {
 
 function onMoreBtnClick(e) {
     if (e) e.stopPropagation();
+    if (enabledOthVersions.length === 0) {
+        closeAllMoreDropdowns();
+        openAboutModal();
+        return;
+    }
     const isMoreActive = moreVersions.includes(activeRight);
     if (!isMoreActive && enabledOthVersions.length > 0) {
         const targetVer = (currentMoreVersion && enabledOthVersions.includes(currentMoreVersion))
