@@ -1,23 +1,22 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ParallelBible" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Core Brand Colors -->
-        <item name="colorPrimary">#0B111E</item>
+        <!-- Core System Dark Mode Colors -->
+        <item name="colorPrimary">#FFFFFF</item>
         <item name="colorPrimaryDark">#000000</item>
-        <item name="colorSecondary">#8C1D1A</item>
 
-        <!-- Material3 Surface & Background Roles -->
-        <item name="colorSurface">#0B111E</item>
-        <item name="colorSurfaceVariant">#0B111E</item>
-        <item name="colorSurfaceContainer">#0B111E</item>
-        <item name="colorPrimaryContainer">#0B111E</item>
-        <item name="colorSecondaryContainer">#0B111E</item>
+        <!-- System Surface & Window Background -->
+        <item name="colorSurface">#12161F</item>
+        <item name="colorSurfaceVariant">#12161F</item>
+        <item name="colorSurfaceContainer">#12161F</item>
+        <item name="colorPrimaryContainer">#12161F</item>
+        <item name="colorSecondaryContainer">#12161F</item>
 
-        <!-- Window & System Bar & Splash Colors -->
-        <item name="android:windowBackground">#0B111E</item>
-        <item name="android:colorBackground">#0B111E</item>
-        <item name="android:statusBarColor">#0B111E</item>
-        <item name="android:navigationBarColor">#0B111E</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">#0B111E</item>
+        <item name="android:windowBackground">#12161F</item>
+        <item name="android:colorBackground">#12161F</item>
+        <item name="android:statusBarColor">#12161F</item>
+        <item name="android:navigationBarColor">#12161F</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">#12161F</item>
     </style>
 </resources>

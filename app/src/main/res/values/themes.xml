@@ -1,24 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ParallelBible" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Core Brand Colors -->
-        <item name="colorPrimary">#8C1D1A</item>
-        <item name="colorPrimaryDark">#4A1521</item>
-        <item name="colorSecondary">#8C1D1A</item>
+        <!-- Core System Light Mode Colors -->
+        <item name="colorPrimary">#000000</item>
+        <item name="colorPrimaryDark">#121212</item>
 
-        <!-- Material3 Surface & Background Roles -->
-        <item name="colorSurface">#8C1D1A</item>
-        <item name="colorSurfaceVariant">#8C1D1A</item>
-        <item name="colorSurfaceContainer">#8C1D1A</item>
-        <item name="colorPrimaryContainer">#8C1D1A</item>
-        <item name="colorSecondaryContainer">#8C1D1A</item>
+        <!-- System Surface & Window Background -->
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorSurfaceVariant">#FFFFFF</item>
+        <item name="colorSurfaceContainer">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#FFFFFF</item>
 
-        <!-- Window & System Bar & Splash Colors -->
-        <item name="android:windowBackground">#8C1D1A</item>
-        <item name="android:colorBackground">#8C1D1A</item>
-        <item name="android:statusBarColor">#8C1D1A</item>
-        <item name="android:navigationBarColor">#8C1D1A</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">#8C1D1A</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@android:color/white</item>
     </style>
 
     <style name="Theme.ParallelBible" parent="Base.Theme.ParallelBible" />
