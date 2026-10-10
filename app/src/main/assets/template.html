@@ -133,7 +133,7 @@ mark.search-hl {
 .version-row {
     display: grid; grid-template-columns: 50% 50%; width: 100%;
     border-bottom: 1px solid var(--row-border); scroll-margin-top: 48px;
-    contain: layout style;
+    contain: layout style; box-sizing: border-box;
 }
 .version-row:nth-child(odd) { background-color: var(--row-odd-bg); }
 .version-row:nth-child(even) { background-color: var(--row-even-bg); }
@@ -143,8 +143,9 @@ mark.search-hl {
 }
 .verse-cell {
     min-width: 0; padding: 12px 14px; font-size: var(--verse-font-size);
-    line-height: 1.65; color: var(--text-color); overflow-wrap: break-word;
-    transition: font-size 0.05s ease-out;
+    line-height: 1.65; color: var(--text-color);
+    overflow-wrap: anywhere; word-break: break-word; hyphens: auto;
+    transition: font-size 0.05s ease-out; box-sizing: border-box;
 }
 .left-cell { border-right: 1px solid var(--cell-divider); }
 .mt-rtl {
@@ -295,9 +296,10 @@ mark.search-hl {
     display: flex; align-items: center; justify-content: space-between;
     background: var(--row-odd-bg); border: 1px solid var(--row-border);
     border-radius: 6px; padding: 4px 8px; font-size: 12px;
+    flex-wrap: wrap; gap: 4px; box-sizing: border-box;
 }
 .search-ver-code { font-weight: bold; color: var(--verse-num-color); min-width: 32px; }
-.search-badges-group { display: flex; align-items: center; gap: 6px; }
+.search-badges-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .search-count-link {
     color: var(--verse-num-color); font-weight: bold; font-size: 12px;
     cursor: pointer; text-decoration: underline; padding: 2px 4px;
@@ -505,7 +507,22 @@ mark.search-hl {
     .bottom-dock { bottom: 4px; left: 4px; right: 4px; gap: 4px; }
     .nav-bar, .search-bar, .utility-bar { padding: 3px; gap: 3px; }
     .search-bar { max-width: none; }
-    .nav-bar select, .utility-bar button, .search-button, .search-input {
+    .nav-bar select, .utility-bar button, .search-button, .search-input { padding: 0 6px; height: 30px; font-size: 12px; }
+}
+/* Responsive Tablet Rules (7" and 10" Tablets in Portrait and Landscape) */
+@media (min-width: 601px) and (max-width: 1024px) {
+    :root { --verse-font-size: 15px; }
+    .verse-cell { padding: 12px 16px; line-height: 1.65; }
+    .bottom-dock { left: 16px; right: 16px; max-width: 720px; margin: 0 auto; }
+    .search-bar { max-width: 360px; }
+}
+@media (min-width: 1025px) {
+    :root { --verse-font-size: 16px; }
+    .verse-cell { padding: 14px 20px; line-height: 1.7; }
+    .bottom-dock { left: 50%; transform: translateX(-50%); width: 760px; }
+    .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 14px)); }
+    .search-bar { max-width: 420px; }
+}
         padding: 5px 6px; font-size: 12px;
     }
     .chapter-toast { top: 44px; }
