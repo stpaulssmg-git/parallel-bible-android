@@ -1352,7 +1352,7 @@ function renderSearchVersesDom() {
 
     if (rows.length === 0) {
         html += '<div style="padding: 28px 16px; text-align: center; font-size: 15px;">'
-              + 'No matching verses found for <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong>' + escHtml(bookSuffix) + '.'
+              + 'No matching verses found for <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong>' + escHtml(bookSuffix) + ' in versions <strong>' + escHtml(leftCode) + '</strong> and <strong>' + escHtml(rightCode) + '</strong>.'
               + '<div style="margin-top:14px;"><button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">Return to ' + escHtml(currentBook + ' ' + currentChapter) + '</button></div>'
               + '</div>';
     } else {
