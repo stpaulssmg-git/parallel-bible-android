@@ -597,17 +597,17 @@ mark.search-hl {
 <div id="chapterToast" class="chapter-toast"></div>
 
 <!-- About Modal Dialog -->
-<div id="aboutModal" class="about-modal" onclick="onAboutModalBackdropClick(event)">
+<div id="aboutModal" class="about-modal" style="display: none;" onclick="onAboutModalBackdropClick(event)">
     <div class="about-dialog">
         <div class="about-header">
             <div class="about-title-group">
-                <img src="file:///android_asset/app_logo.png" class="about-app-icon-img" alt="App Logo">
+                <img src="app_logo.png" class="about-app-icon-img" alt="App Logo">
                 <div>
                     <h2 class="about-app-name">Apostolic Parallel Bible</h2>
                     <span class="about-app-version">Version 1.0</span>
                 </div>
             </div>
-            <button type="button" class="about-close-btn" onclick="closeAboutModal()" aria-label="Close">&times;</button>
+            <button type="button" class="about-close-btn" onclick="closeAboutModal(event)" aria-label="Close">&times;</button>
         </div>
         <div class="about-body">
             <p class="about-desc">
@@ -1845,14 +1845,22 @@ function onPickerBackdropClick(e, modalId) {
     }
 }
 
-function openAboutModal() {
+function openAboutModal(e) {
+    if (e) e.stopPropagation();
     const modal = document.getElementById('aboutModal');
-    if (modal) modal.classList.add('show');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+    }
 }
 
-function closeAboutModal() {
+function closeAboutModal(e) {
+    if (e) e.stopPropagation();
     const modal = document.getElementById('aboutModal');
-    if (modal) modal.classList.remove('show');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+    }
 }
 
 function onAboutModalBackdropClick(e) {
