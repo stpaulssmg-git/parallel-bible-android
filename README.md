@@ -1,74 +1,90 @@
-# My Parallel Bible - Apostolic for Android
+# Apostolic Parallel Bible - Android
 
-An offline, dual-pane parallel Bible study application built for Android. **My Parallel Bible - Apostolic** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, smart passage navigation, customizable themes, and responsive typography.
+An offline, dual-pane parallel Bible study application built for Android. **Apostolic Parallel Bible** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, book-level drill-down filtering, modular regional language support, smart passage navigation, customizable themes, and responsive gesture typography.
 
 ---
 
 ## 🌟 Comprehensive Feature List
 
 ### 📖 Dual-Pane Parallel Verse Comparison
-- **Synchronized Row Layout**: Verses are aligned side-by-side in synchronized grid rows for direct, verse-by-verse comparison.
+- **Synchronized Grid Layout**: Verses are aligned side-by-side in synchronized grid rows for direct, verse-by-verse comparison.
 - **Left Column Translations**:
   - **KJV**: King James Version
-  - **MT**: Masoretic / Hebrew & Greek Original Text
-  - **TR**: Textus Receptus
+  - **NAS**: New American Standard Bible (1995/2020)
+  - **H/G**: Original Hebrew Masoretic & Greek Textus Receptus
 - **Right Column Translations**:
-  - **ABEn**: Apostolic Bible Polyglot (English)
-  - **ABGr**: Apostolic Bible Polyglot (Greek)
+  - **ABe**: Apostolic Bible Polyglot (English)
+  - **ABg**: Apostolic Bible Polyglot (Greek)
   - **T4T**: Translation for Translators
-  - **KAN**: Kannada Bible
-- **Independent Version Switchers**: Quick-toggle buttons located in the top header for each column.
-- **Persistent Preferences**: Selected versions are saved automatically to `localStorage`.
+  - **OTH**: Regional & Other Languages (Configurable 4th Button)
+- **Persistent Preferences**: Selected versions, themes, font sizes, and regional language configurations are saved automatically.
+
+---
+
+### 🌐 Modular Regional Databases (`ATTACH DATABASE`)
+- **Dynamic SQLite Attachment**: Regional translations are stored in separate compressed `.db.zip` asset packages and dynamically attached on demand using SQLite `ATTACH DATABASE`:
+  - **KAN**: Kannada IRV (`kannada.db.zip`)
+  - **TLG**: Telugu 2017 (`telugu.db.zip`)
+  - **MAL**: Malayalam VPL (`malayalam.db.zip`)
+  - **TAM**: Tamil 2017 (`tamil.db.zip`)
+  - **HIN**: Hindi 2017 (`hindi.db.zip`)
+  - **SPA**: Spanish Reina Valera 1909 (`spanish.db.zip`)
+  - **LXX**: Thomson Septuagint English (`thomson.db.zip`)
+- **Active Memory Retention**: The 4th top bar button retains the last chosen regional language (e.g. `KAN ▾`) even when switching back to `ABe` or `T4T`.
 
 ---
 
 ### ✍️ Native Right-to-Left (RTL) Hebrew Support
 - **RTL Text Rendering**: Hebrew text in the Original/Masoretic column is automatically formatted right-to-left (`direction: rtl`).
-- **Tailored Typography**: Integrated Hebrew font family cascade (`SBL Hebrew`, `Ezra SIL`, `David`, `Noto Serif Hebrew`) with +15% font scaling and adjusted line height for high legibility.
+- **Tailored Typography**: Integrated Hebrew font family cascade (`SBL Hebrew`, `Ezra SIL`, `David`) with +15% font scaling and adjusted line height for high legibility.
 
 ---
 
-### 🧭 Navigation & Passage Selection
-- **Canonical Book Dropdown**: Select any book from the Old or New Testament ordered by canonical book sequence.
-- **Dynamic Chapter Selector**: Automatically populates chapter dropdowns based on the chosen book.
-- **Chapter Quick-Nav**: Instant Previous (`‹`) and Next (`›`) chapter navigation buttons.
-- **Verse-Level Deep Linking**:
-  - Direct navigation via query parameters (e.g., `?book=GEN&chapter=1&verse=10`) or hash fragments (`#v10`).
-  - Smooth scrolling animation directly to the requested verse with visual target highlight.
+### 🔍 Smart Full-Text Search & Drill-Down Engine
+- **Per-Version & Testament Breakdown Links**:
+  - Displays match counts per translation: `KJV: [O-250] [ + ]  [N-30] [ + ]  [T-280]`.
+  - Clickable count badges filter results instantly by **Old Testament (`O`)**, **New Testament (`N`)**, or **Total (`T`)**.
+  - Grayed-out non-clickable links for zero matches (`[O-0]`).
+- **Book-Level Drill-Down (`[ + ]`)**:
+  - Tapping **`[ + ]`** opens a popup modal listing only the specific books containing search matches along with their verse counts.
+  - Tapping a book filters search results directly to that book.
+- **Search Retention & Return Bar**:
+  - Tapping a verse reference opens the full chapter context without losing search results.
+  - A floating return bar (`🔍 Return to "query" (Pg 1)`) + Android Back button integration allows 1-tap return to active search results.
+- **12 Verses Per Page & 60fps Swipe Navigation**:
+  - Background search page prefetching (`searchPageCache`) for zero-latency, 60fps hardware-accelerated horizontal swipe page transitions.
 
 ---
 
-### 🔍 Smart Passage Search & Full-Text Engine
-- **Passage Search**: Type passage references directly into the search bar (e.g., `GEN 23:10` or `Jn 3:16`) for instant jump-to-verse navigation.
-- **Auto-Complete Results**: Displays matching book/chapter suggestions in real time as you type.
-- **Full-Text SQLite Search**:
-  - Perform SQL `LIKE` queries across translations.
-  - Paginated search results (24 results per page) displaying book, chapter, verse number, and matching text snippets.
-  - Safe character escaping for special characters (`\`, `%`, `_`).
+### 🧭 Custom Touch Pickers & Navigation
+- **Custom Book Picker Modal**:
+  - Displays dual-translation book names matching active left and right translations (e.g. `GEN Genesis / ಆದಿಕಾಂಡ` or `GEN Genesis`).
+- **Custom Chapter Grid Modal**:
+  - 5-column touch grid for instant chapter selection.
+- **Uniform Bottom Dock**:
+  - 32px height and 6px corner radius synchronized across Book Picker, Chapter Picker, Search Input, Search Submit, Theme Selector (`C`), and About Modal (`i`) buttons.
 
 ---
 
-### 🎨 Distraction-Free Reading Mode & Themes
-- **Auto-Hiding Interface**: Top headers and bottom navigation dock automatically slide out of view when scrolling down for an immersive reading experience, and reappear when scrolling up or returning to the top.
-- **3 Built-in Color Themes**:
-  1. **Warm Parchment & Mahogany** (`warm`) — Classic paper feel with dark brown accents (Default).
-  2. **Teal & Crisp Light** (`teal`) — High-contrast daylight reading mode.
-  3. **Midnight Dark** (`dark`) — Deep dark theme optimized for night reading and OLED displays.
-- **Dynamic Font Size Control**: `A-` and `A+` buttons allow users to adjust verse text size incrementally from 12px to 28px with automatic device-width responsive defaults.
+### 🎨 4 Reading Themes & Pinch-to-Zoom Gesture
+- **4 Built-in Color Themes**:
+  1. 🍷 **Alpha/Omega Crimson** (`crimson`) — Signature default theme.
+  2. 📜 **Warm Sepia** (`warm`) — Paper-like comfort reading.
+  3. 🌊 **Modern Teal** (`teal`) — High-contrast daylight mode.
+  4. 🌙 **Night Dark** (`dark`) — Deep dark theme optimized for OLED screens.
+- **Silky-Smooth 60fps Pinch-to-Zoom**: Sub-pixel floating-point font scaling driven by `requestAnimationFrame`.
 
 ---
 
-### ⚡ Offline Performance & Architecture
+### ⚡ Build Optimization & Performance
 
-- **Compressed Database Packaging (`bible.db.zip`)**:
-  - The full ~110 MB SQLite database is compressed into a ~15 MB asset (`bible.db.zip`).
-  - On app launch or update, `MainActivity` transparently decompresses `bible.db` directly into the app's internal database folder via `ZipInputStream`.
+- **34.7 MB Optimized Release Bundle**:
+  - Raw `.txt` source files are excluded from APK/AAB builds (`ignoreAssetsPattern = "*.txt"`), saving 20.5 MB of build size.
 - **Multi-Level In-Memory Caching**:
-  - **`LruCache` (32 Chapters)**: Retains generated JSON representations of visited chapters for instantaneous chapter switches.
-  - **Background Prefetching**: Spawns background worker threads to automatically prefetch and cache adjacent chapters (previous and next chapters).
-- **Responsive WebView Bridge**:
-  - Single Activity (`MainActivity`) hosting a WebView runtime paired with Kotlin `@JavascriptInterface` (`AndroidBridge`).
-  - Custom back-button handling (`window.handleAndroidBack`) for web navigation history.
+  - `LruCache` (32 Chapters) for instant chapter switching.
+  - Background worker threads to prefetch adjacent chapters.
+- **Native Android WebView Guard**:
+  - `WebViewClient` URL override guard and `event.preventDefault()` prevent accidental form submissions or `ERR_FILE_NOT_FOUND` errors.
 
 ---
 
@@ -78,7 +94,7 @@ An offline, dual-pane parallel Bible study application built for Android. **My P
 | :--- | :--- |
 | **Language** | Kotlin 1.9+ & Modern ES6 JavaScript / HTML5 / CSS3 |
 | **UI Container** | Custom Android `WebView` with `Material3` DayNight theme |
-| **Database** | SQLite (`android.database.sqlite.SQLiteDatabase`) |
+| **Database Engine** | SQLite (`android.database.sqlite.SQLiteDatabase`) with `ATTACH DATABASE` |
 | **Decompression** | `java.util.zip.ZipInputStream` |
 | **Caching** | `android.util.LruCache` & Kotlin Coroutines / Background Threads |
 | **Min SDK / Target SDK** | Android 7.0 (API 24) / Android 14+ (API 37) |
@@ -92,14 +108,25 @@ An offline, dual-pane parallel Bible study application built for Android. **My P
 ParallelBible/
 ├── app/
 │   ├── build.gradle.kts
+│   ├── release.jks            # RSA 2048-bit Release Keystore
 │   └── src/
 │       └── main/
 │           ├── AndroidManifest.xml
 │           ├── assets/
-│           │   ├── bible.db.zip       # Compressed SQLite Bible database (~15 MB)
-│           │   └── template.html      # Frontend HTML, CSS themes, and JS application logic
+│           │   ├── bible.db.zip       # Core 6-version SQLite database (~11 MB)
+│           │   ├── kannada.db.zip     # Regional Kannada database
+│           │   ├── telugu.db.zip      # Regional Telugu database
+│           │   ├── malayalam.db.zip   # Regional Malayalam database
+│           │   ├── tamil.db.zip       # Regional Tamil database
+│           │   ├── hindi.db.zip       # Regional Hindi database
+│           │   ├── spanish.db.zip     # Regional Spanish database
+│           │   ├── thomson.db.zip     # Regional Thomson LXX database
+│           │   ├── template.html      # Main HTML layout, CSS themes, and JS logic
+│           │   ├── bible_config.js    # App version labels and fallback configurations
+│           │   └── bible_data.js      # Multilingual book dictionaries and aliases
 │           └── java/com/stpauls/parallelbible/
-│               └── MainActivity.kt    # SQLite engine, Zip unpacker, LRU cache & JS Bridge
+│               └── MainActivity.kt    # SQLite engine, ATTACH DATABASE joins, LRU cache & JS Bridge
+├── PRIVACY_POLICY.md
 ├── build.gradle.kts
 ├── settings.gradle.kts
 └── README.md
@@ -107,33 +134,30 @@ ParallelBible/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Building & Releasing
 
 ### Prerequisites
 
-- **Android Studio** (Ladybug / 2024.1 or newer recommended)
-- **JDK 11** or higher
+- **Android Studio** (2024.1+ / Ladybug or newer)
+- **JDK 17** or higher
 - **Android SDK**: Minimum API 24 (Android 7.0)
 
-### Building & Running
+### Building Release Artifacts
 
-1. **Clone the Repository**:
+1. **Build Signed Release APK**:
    ```bash
-   git clone https://github.com/stpaulssmg-git/parallel-bible-android.git
-   cd parallel-bible-android
+   ./gradlew assembleRelease
    ```
+   *Output*: `app/build/outputs/apk/release/app-release.apk`
 
-2. **Open in Android Studio**:
-   - Open Android Studio -> **Open** -> Select `ParallelBible`.
-   - Wait for the Gradle project sync to finish.
-
-3. **Build APK / Run**:
+2. **Build Signed Release Bundle (`.aab`) for Google Play**:
    ```bash
-   ./gradlew assembleDebug
+   ./gradlew :app:bundleRelease
    ```
+   *Output*: `app/build/outputs/bundle/release/app-release.aab`
 
 ---
 
 ## 📄 License
 
-Private repository maintained for Parallel Bible development.
+Private repository maintained for **Apostolic Parallel Bible** development.
