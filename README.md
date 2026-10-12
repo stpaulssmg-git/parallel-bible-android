@@ -30,6 +30,7 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
   - **HIN**: Hindi 2017 (`hindi.db.zip`)
   - **SPA**: Spanish Reina Valera 1909 (`spanish.db.zip`)
   - **LXX**: Thomson Septuagint English (`thomson.db.zip`)
+- **First Install Default State**: Regional languages are disabled by default on first launch. Tapping `OTH ▾` or `i` opens the About modal to configure regional translations.
 - **Active Memory Retention**: The 4th top bar button retains the last chosen regional language (e.g. `KAN ▾`) even when switching back to `ABe` or `T4T`.
 
 ---
@@ -121,11 +122,10 @@ ParallelBible/
 │           │   ├── hindi.db.zip       # Regional Hindi database
 │           │   ├── spanish.db.zip     # Regional Spanish database
 │           │   ├── thomson.db.zip     # Regional Thomson LXX database
-│           │   ├── template.html      # Main HTML layout, CSS themes, and JS logic
-│           │   ├── bible_config.js    # App version labels and fallback configurations
-│           │   └── bible_data.js      # Multilingual book dictionaries and aliases
+│           │   └── template.html      # Main HTML layout, CSS themes, and JS logic
 │           └── java/com/stpauls/parallelbible/
 │               └── MainActivity.kt    # SQLite engine, ATTACH DATABASE joins, LRU cache & JS Bridge
+├── LICENSE                    # CC BY-NC-SA 4.0 International License
 ├── PRIVACY_POLICY.md
 ├── build.gradle.kts
 ├── settings.gradle.kts
@@ -158,6 +158,22 @@ ParallelBible/
 
 ---
 
-## 📄 License
+## 📄 License & Terms
 
-Private repository maintained for **Apostolic Parallel Bible** development.
+Licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)**.
+
+Official License Details: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+### Summary of License Terms:
+- **Share**: Copy and redistribute the material in any medium or format.
+- **Adapt**: Remix, transform, and build upon the material.
+- **Attribution**: You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+- **NonCommercial**: You may **NOT** use the material for commercial purposes or monetization.
+- **ShareAlike**: If you remix, transform, or build upon the material, you must distribute your contributions under the exact same CC BY-NC-SA 4.0 license.
+
+### Content & Copyright Notice:
+- **Software Source Code & Engine**: Licensed under CC BY-NC-SA 4.0 (Non-Commercial).
+- **Bible Text Databases & Resources**:
+  - **NASB (New American Standard Bible)**: Copyright © The Lockman Foundation. All rights reserved. Used strictly for non-commercial study purposes.
+  - **ABP (Apostolic Bible Polyglot)**: Copyright © Charles Van der Pool. All rights reserved. Restricted to non-commercial personal study.
+  - **KJV & Public Domain Translations**: Public Domain.
