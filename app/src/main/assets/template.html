@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="crimson">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -784,14 +784,14 @@ mark.search-hl {
         </button>
     </form>
     <div class="utility-bar">
-        <button type="button" id="themeButton" onclick="cycleTheme()">C</button>
+        <button type="button" id="themeButton" onclick="cycleTheme()">D</button>
         <button type="button" id="aboutBtn" onclick="openAboutModal()" title="About Parallel Bible"><i>i</i></button>
     </div>
 </div>
 <script>
 const rootEl = document.documentElement;
-const themes = ['crimson', 'warm', 'teal', 'dark'];
-let currentTheme = 'crimson';
+const themes = ['dark', 'teal', 'warm', 'crimson'];
+let currentTheme = 'dark';
 let currentFontSize = window.innerWidth <= 600 ? 14 : 16;
 let activeLeft = 'kjv';
 let activeRight = 'abp';
@@ -1206,12 +1206,12 @@ function showChapterToast(label) {
 }
 
 function applyTheme(theme) {
-    if (!themes.includes(theme)) theme = 'crimson';
+    if (!themes.includes(theme)) theme = 'dark';
     currentTheme = theme;
     rootEl.setAttribute('data-theme', theme);
     const themeBtn = document.getElementById('themeButton');
     if (themeBtn) {
-        themeBtn.textContent = theme === 'crimson' ? 'C' : (theme === 'warm' ? 'W' : (theme === 'teal' ? 'T' : 'D'));
+        themeBtn.textContent = theme === 'dark' ? 'D' : (theme === 'teal' ? 'T' : (theme === 'warm' ? 'W' : 'C'));
     }
     localStorage.setItem('bibleTheme', theme);
 }
@@ -2230,7 +2230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const savedTheme = localStorage.getItem('bibleTheme');
     if (savedTheme) applyTheme(savedTheme);
-    else applyTheme('crimson');
+    else applyTheme('dark');
 
     const savedFontSize = parseInt(localStorage.getItem('bibleFontSize'), 10);
     if (!isNaN(savedFontSize)) applyFontSize(savedFontSize);
