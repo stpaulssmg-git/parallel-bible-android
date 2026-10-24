@@ -1,6 +1,6 @@
 # Apostolic Parallel Bible - Android
 
-An offline, dual-pane parallel Bible study application built for Android. **Apostolic Parallel Bible** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, book-level drill-down filtering, modular regional language support, smart passage navigation, customizable themes, and responsive gesture typography.
+An offline, dual-pane parallel Bible study application built for Android. **Apostolic Parallel Bible** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, book-level drill-down filtering, smart passage navigation, customizable themes, and responsive gesture typography.
 
 ---
 
@@ -12,26 +12,20 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
   - **KJV**: King James Version
   - **NAS**: New American Standard Bible (1995/2020)
   - **H/G**: Original Hebrew Masoretic & Greek Textus Receptus
+  - **LXX**: Charles Thomson Septuagint English
 - **Right Column Translations**:
   - **ABe**: Apostolic Bible Polyglot (English)
   - **ABg**: Apostolic Bible Polyglot (Greek)
   - **T4T**: Translation for Translators
-  - **OTH**: Regional & Other Languages (Configurable 4th Button)
-- **Persistent Preferences**: Selected versions, themes, font sizes, and regional language configurations are saved automatically.
+- **Persistent Preferences**: Selected versions, themes, font sizes, and last reading position are saved automatically.
 
 ---
 
-### 🌐 Modular Regional Databases (`ATTACH DATABASE`)
-- **Dynamic SQLite Attachment**: Regional translations are stored in separate compressed `.db.zip` asset packages and dynamically attached on demand using SQLite `ATTACH DATABASE`:
-  - **KAN**: Kannada IRV (`kannada.db.zip`)
-  - **TLG**: Telugu 2017 (`telugu.db.zip`)
-  - **MAL**: Malayalam VPL (`malayalam.db.zip`)
-  - **TAM**: Tamil 2017 (`tamil.db.zip`)
-  - **HIN**: Hindi 2017 (`hindi.db.zip`)
-  - **SPA**: Spanish Reina Valera 1909 (`spanish.db.zip`)
-  - **LXX**: Thomson Septuagint English (`thomson.db.zip`)
-- **First Install Default State**: Regional languages are disabled by default on first launch. Tapping `OTH ▾` or `i` opens the About modal to configure regional translations.
-- **Active Memory Retention**: The 4th top bar button retains the last chosen regional language (e.g. `KAN ▾`) even when switching back to `ABe` or `T4T`.
+### 📚 Accordion Book & Chapter Selector
+- **Old Testament (39) & New Testament (27) Tabs**: Books are neatly organized into OT and NT tabs for quick navigation.
+- **Clean English Book Names**: Displays 100% pure, full English book names (`Genesis`, `Exodus`, `Matthew`, `Revelation`).
+- **Inline Chapter Expansion**: Tapping any book name expands its chapter grid directly inline on the same page.
+- **Instant Chapter Jump**: Tapping any chapter pill closes the modal and navigates directly to that chapter in the main reader.
 
 ---
 
@@ -57,13 +51,10 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
 
 ---
 
-### 🧭 Custom Touch Pickers & Navigation
-- **Custom Book Picker Modal**:
-  - Displays dual-translation book names matching active left and right translations (e.g. `GEN Genesis / ಆದಿಕಾಂಡ` or `GEN Genesis`).
-- **Custom Chapter Grid Modal**:
-  - 5-column touch grid for instant chapter selection.
-- **Uniform Bottom Dock**:
-  - 32px height and 6px corner radius synchronized across Book Picker, Chapter Picker, Search Input, Search Submit, Theme Selector (`C`), and About Modal (`i`) buttons.
+### 🧭 Ergonomic Floating Bottom Dock Bar
+- **Permanent Floating Bar**:
+  - Sits fixed at `bottom: 36px` above the system navigation bar for comfortable 1-thumb access.
+  - Houses the Passage Selector (`GEN 1 ▾`), Search Bar (`Ref or word...`), Theme Selector (`T`), and About Page (`i`).
 
 ---
 
@@ -79,8 +70,10 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
 
 ### ⚡ Build Optimization & Performance
 
-- **34.7 MB Optimized Release Bundle**:
-  - Raw `.txt` source files are excluded from APK/AAB builds (`ignoreAssetsPattern = "*.txt"`), saving 20.5 MB of build size.
+- **22.6 MB Optimized Release Build**:
+  - Raw `.txt` source files are excluded from APK/AAB builds, ensuring a compact 22.6 MB Release APK.
+- **Individual Database Architecture**:
+  - Each translation is stored in its own individual `.db.zip` package (`eng-kjv2006_vpl.db.zip`, `nasb_eng.db.zip`, `hbo_grctr_vpl.db.zip`, `abp_eng.db.zip`, `abp_grk.db.zip`, `eng-t4t_vpl.db.zip`, `thomson_eng.db.zip`).
 - **Multi-Level In-Memory Caching**:
   - `LruCache` (32 Chapters) for instant chapter switching.
   - Background worker threads to prefetch adjacent chapters.
@@ -114,17 +107,16 @@ ParallelBible/
 │       └── main/
 │           ├── AndroidManifest.xml
 │           ├── assets/
-│           │   ├── bible.db.zip       # Core 6-version SQLite database (~11 MB)
-│           │   ├── kannada.db.zip     # Regional Kannada database
-│           │   ├── telugu.db.zip      # Regional Telugu database
-│           │   ├── malayalam.db.zip   # Regional Malayalam database
-│           │   ├── tamil.db.zip       # Regional Tamil database
-│           │   ├── hindi.db.zip       # Regional Hindi database
-│           │   ├── spanish.db.zip     # Regional Spanish database
-│           │   ├── thomson.db.zip     # Regional Thomson LXX database
-│           │   └── template.html      # Main HTML layout, CSS themes, and JS logic
+│           │   ├── abp_eng.db.zip          # Apostolic Bible Polyglot English
+│           │   ├── abp_grk.db.zip          # Apostolic Bible Polyglot Greek
+│           │   ├── eng-kjv2006_vpl.db.zip  # King James Version 2006
+│           │   ├── eng-t4t_vpl.db.zip      # Translation for Translators
+│           │   ├── hbo_grctr_vpl.db.zip    # Original Hebrew & Greek
+│           │   ├── nasb_eng.db.zip         # New American Standard
+│           │   ├── thomson_eng.db.zip      # Thomson Septuagint English
+│           │   └── template.html           # Main HTML layout, CSS themes, and JS logic
 │           └── java/com/stpauls/parallelbible/
-│               └── MainActivity.kt    # SQLite engine, ATTACH DATABASE joins, LRU cache & JS Bridge
+│               └── MainActivity.kt         # SQLite engine, ATTACH DATABASE joins, LRU cache & JS Bridge
 ├── LICENSE                    # CC BY-NC-SA 4.0 International License
 ├── PRIVACY_POLICY.md
 ├── build.gradle.kts
@@ -146,7 +138,7 @@ ParallelBible/
 
 1. **Build Signed Release APK**:
    ```bash
-   ./gradlew assembleRelease
+   ./gradlew :app:assembleRelease
    ```
    *Output*: `app/build/outputs/apk/release/app-release.apk`
 

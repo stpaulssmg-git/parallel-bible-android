@@ -1,794 +1,669 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Apostolic Parallel Bible</title>
-<style>
-:root { --verse-font-size: 16px; }
-html[data-theme="warm"] {
-    --bg-body: #f4ece1; --header-bg: #4a2511; --header-text: #fdfaf3; --header-border: #6b3a1e;
-    --row-odd-bg: #fffdf9; --row-even-bg: #f3e8d6; --row-hover-bg: #ead8be; --row-border: #dfcbb0;
-    --cell-divider: #d5be9f; --text-color: #2b1d0e; --verse-num-color: #9c3d18; --merged-text-color: #8a7356;
-    --bar-bg: rgba(74, 37, 17, 0.96); --btn-bg: #6e3b1f; --btn-hover-bg: #874927; --btn-text: #fdfaf3;
-    --btn-active-bg: #f3c677; --btn-active-text: #381a0a; --mark-bg: #f6d365; --mark-text: #2b1d0e;
-}
-html[data-theme="teal"] {
-    --bg-body: #eaf2f4; --header-bg: #0f4c5c; --header-text: #ffffff; --header-border: #1b697d;
-    --row-odd-bg: #ffffff; --row-even-bg: #e6f2f5; --row-hover-bg: #d3e8ed; --row-border: #cde0e5;
-    --cell-divider: #bfd6dc; --text-color: #1e293b; --verse-num-color: #0f766e; --merged-text-color: #64748b;
-    --bar-bg: rgba(15, 76, 92, 0.96); --btn-bg: #1b697d; --btn-hover-bg: #248199; --btn-text: #ffffff;
-    --btn-active-bg: #99f6e4; --btn-active-text: #0f4c5c; --mark-bg: #fde047; --mark-text: #0f4c5c;
-}
-html[data-theme="crimson"] {
-    --bg-body: #fbf6f5; --header-bg: #8c1d1a; --header-text: #ffffff; --header-border: #a82724;
-    --row-odd-bg: #ffffff; --row-even-bg: #f7ebe9; --row-hover-bg: #f0d6d3; --row-border: #ebd0cc;
-    --cell-divider: #e2beba; --text-color: #2a1413; --verse-num-color: #bd2b27; --merged-text-color: #8f6e6c;
-    --bar-bg: rgba(140, 29, 26, 0.96); --btn-bg: #a82724; --btn-hover-bg: #c4322f; --btn-text: #ffffff;
-    --btn-active-bg: #ffd166; --btn-active-text: #4a0c0a; --mark-bg: #fce181; --mark-text: #4a0c0a;
-}
-html[data-theme="dark"] {
-    --bg-body: #12161f; --header-bg: #0b111e; --header-text: #e2e8f0; --header-border: #1e293b;
-    --row-odd-bg: #161d2a; --row-even-bg: #20293a; --row-hover-bg: #2a364b; --row-border: #2d384d;
-    --cell-divider: #334155; --text-color: #e2e8f0; --verse-num-color: #38bdf8; --merged-text-color: #94a3b8;
-    --bar-bg: rgba(11, 17, 30, 0.96); --btn-bg: #1e293b; --btn-hover-bg: #334155; --btn-text: #e2e8f0;
-    --btn-active-bg: #38bdf8; --btn-active-text: #0b111e; --mark-bg: #facc15; --mark-text: #0b111e;
-}
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-button, select, a, input { touch-action: manipulation; }
-html, body {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: var(--bg-body); color: var(--text-color);
-    overflow-x: hidden;
-}
-.container {
-    position: relative; width: 100%; height: 100vh;
-    overflow-y: auto; overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-    background: var(--bg-body); padding-top: 40px; padding-bottom: 58px;
-}
-.parallel-content {
-    width: 100%;
-    will-change: transform, opacity;
-}
-@keyframes slideFromRight {
-    0% { transform: translateX(36px); opacity: 0.35; }
-    100% { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideFromLeft {
-    0% { transform: translateX(-36px); opacity: 0.35; }
-    100% { transform: translateX(0); opacity: 1; }
-}
-.parallel-content.swipe-next { animation: slideFromRight 0.14s ease-out; }
-.parallel-content.swipe-prev { animation: slideFromLeft 0.14s ease-out; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Apostolic Parallel Bible</title>
+    <style>
+        :root { --verse-font-size: 16px; }
+        html[data-theme="warm"] {
+            --bg-body: #f4ece1; --header-bg: #4a2511; --header-text: #fdfaf3; --header-border: #6b3a1e;
+            --row-odd-bg: #fffdf9; --row-even-bg: #f3e8d6; --row-hover-bg: #ead8be; --row-border: #dfcbb0;
+            --cell-divider: #d5be9f; --text-color: #2b1d0e; --verse-num-color: #9c3d18; --merged-text-color: #8a7356;
+            --bar-bg: rgba(74, 37, 17, 0.96); --btn-bg: #6e3b1f; --btn-hover-bg: #874927; --btn-text: #fdfaf3;
+            --btn-active-bg: #f3c677; --btn-active-text: #381a0a; --mark-bg: #f6d365; --mark-text: #2b1d0e;
+        }
+        html[data-theme="teal"] {
+            --bg-body: #eaf2f4; --header-bg: #0f4c5c; --header-text: #ffffff; --header-border: #1b697d;
+            --row-odd-bg: #ffffff; --row-even-bg: #e6f2f5; --row-hover-bg: #d3e8ed; --row-border: #cde0e5;
+            --cell-divider: #bfd6dc; --text-color: #1e293b; --verse-num-color: #0f766e; --merged-text-color: #64748b;
+            --bar-bg: rgba(15, 76, 92, 0.96); --btn-bg: #1b697d; --btn-hover-bg: #248199; --btn-text: #ffffff;
+            --btn-active-bg: #99f6e4; --btn-active-text: #0f4c5c; --mark-bg: #fde047; --mark-text: #0f4c5c;
+        }
+        html[data-theme="crimson"] {
+            --bg-body: #fbf6f5; --header-bg: #8c1d1a; --header-text: #ffffff; --header-border: #a82724;
+            --row-odd-bg: #ffffff; --row-even-bg: #f7ebe9; --row-hover-bg: #f0d6d3; --row-border: #ebd0cc;
+            --cell-divider: #e2beba; --text-color: #2a1413; --verse-num-color: #bd2b27; --merged-text-color: #8f6e6c;
+            --bar-bg: rgba(140, 29, 26, 0.96); --btn-bg: #a82724; --btn-hover-bg: #c4322f; --btn-text: #ffffff;
+            --btn-active-bg: #ffd166; --btn-active-text: #4a0c0a; --mark-bg: #fce181; --mark-text: #4a0c0a;
+        }
+        html[data-theme="dark"] {
+            --bg-body: #12161f; --header-bg: #0b111e; --header-text: #e2e8f0; --header-border: #1e293b;
+            --row-odd-bg: #161d2a; --row-even-bg: #20293a; --row-hover-bg: #2a364b; --row-border: #2d384d;
+            --cell-divider: #334155; --text-color: #e2e8f0; --verse-num-color: #38bdf8; --merged-text-color: #94a3b8;
+            --bar-bg: rgba(11, 17, 30, 0.96); --btn-bg: #1e293b; --btn-hover-bg: #334155; --btn-text: #e2e8f0;
+            --btn-active-bg: #38bdf8; --btn-active-text: #0b111e; --mark-bg: #facc15; --mark-text: #0b111e;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        button, select, a, input { touch-action: manipulation; }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-body); color: var(--text-color);
+            overflow-x: hidden;
+        }
+        .container {
+            position: relative; width: 100%; height: 100vh;
+            overflow-y: auto; overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            background: var(--bg-body); padding-top: 40px; padding-bottom: 58px;
+        }
+        .parallel-content {
+            width: 100%;
+            will-change: transform, opacity;
+        }
+        @keyframes slideFromRight {
+            0% { transform: translateX(36px); opacity: 0.35; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideFromLeft {
+            0% { transform: translateX(-36px); opacity: 0.35; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        .parallel-content.swipe-next { animation: slideFromRight 0.14s ease-out; }
+        .parallel-content.swipe-prev { animation: slideFromLeft 0.14s ease-out; }
 
-/* Floating Chapter Indicator Toast on Swipe */
-.chapter-toast {
-    position: fixed;
-    top: 52px;
-    left: 50%;
-    transform: translate(-50%, -10px);
-    z-index: 120;
-    background: var(--bar-bg);
-    color: var(--btn-text);
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.35);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.16s ease, transform 0.16s ease;
-}
-.chapter-toast.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-}
+        /* Floating Chapter Indicator Toast */
+        .chapter-toast {
+            position: fixed;
+            top: 52px;
+            left: 50%;
+            transform: translate(-50%, -10px);
+            z-index: 120;
+            background: var(--bar-bg);
+            color: var(--btn-text);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+        }
+        .chapter-toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
 
-/* Search Filter Banner & Pagination Controls */
-.search-banner, .search-pagination {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 8px; padding: 10px 14px;
-    background: var(--row-even-bg); border-bottom: 2px solid var(--header-border);
-    font-size: 13px;
-}
-.search-pagination {
-    border-top: 1px solid var(--row-border);
-    border-bottom: none;
-    justify-content: center;
-    gap: 12px;
-    padding: 14px;
-}
-.search-banner-info {
-    font-weight: 600; color: var(--text-color);
-}
-.search-banner-actions {
-    display: flex; align-items: center; gap: 6px;
-}
-.filter-btn {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 6px 11px; border-radius: 5px; font-size: 12px; font-weight: bold;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
-}
-.filter-btn.clear-btn {
-    background: var(--btn-active-bg); color: var(--btn-active-text);
-}
-.filter-btn:disabled {
-    opacity: 0.4; cursor: default;
-}
-.ref-badge {
-    display: inline-block; background: var(--btn-bg); color: var(--btn-text);
-    padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold;
-    margin-right: 6px; cursor: pointer; text-decoration: none;
-}
-.mt-rtl .ref-badge { margin-right: 0; margin-left: 6px; }
-mark.search-hl {
-    background: var(--mark-bg); color: var(--mark-text);
-    padding: 0 2px; border-radius: 3px; font-weight: 600;
-}
+        /* Search Banner */
+        .search-banner {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px; padding: 10px 14px;
+            background: var(--row-even-bg); border-bottom: 2px solid var(--header-border);
+            font-size: 13px;
+        }
+        .filter-btn {
+            border: none; background: var(--btn-bg); color: var(--btn-text);
+            padding: 6px 11px; border-radius: 5px; font-size: 12px; font-weight: bold;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .filter-btn.clear-btn {
+            background: var(--btn-active-bg); color: var(--btn-active-text);
+        }
+        .ref-badge {
+            display: inline-block; background: var(--btn-bg); color: var(--btn-text);
+            padding: 2px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold;
+            margin-right: 6px; cursor: pointer; text-decoration: none;
+        }
+        .mt-rtl .ref-badge { margin-right: 0; margin-left: 6px; }
+        mark.search-hl {
+            background: var(--mark-bg); color: var(--mark-text);
+            padding: 0 2px; border-radius: 3px; font-weight: 600;
+        }
 
-.version-row {
-    display: flex; flex-direction: row; width: 100%;
-    border-bottom: 1px solid var(--row-border); scroll-margin-top: 48px;
-    contain: layout style; box-sizing: border-box;
-}
-.version-row:nth-child(odd) { background-color: var(--row-odd-bg); }
-.version-row:nth-child(even) { background-color: var(--row-even-bg); }
-.version-row.verse-highlight {
-    outline: 2px solid var(--verse-num-color); outline-offset: -2px;
-    background-color: var(--row-hover-bg) !important;
-}
-.verse-cell {
-    width: 50%; flex: 0 0 50%; max-width: 50%; min-width: 0;
-    padding: 12px 14px; font-size: var(--verse-font-size);
-    line-height: 1.65; color: var(--text-color);
-    overflow-wrap: anywhere; word-break: break-word; hyphens: auto;
-    transition: font-size 0.05s ease-out; box-sizing: border-box;
-}
-.left-cell { border-right: 1px solid var(--cell-divider); }
-.mt-rtl {
-    direction: rtl; text-align: right;
-    font-family: 'SBL Hebrew', 'Ezra SIL', 'David', serif;
-    font-size: calc(var(--verse-font-size) * 1.15); line-height: 1.75;
-}
-.mt-rtl .verse-number { margin-right: 0; margin-left: 4px; }
-.verse-number { font-weight: bold; color: var(--verse-num-color); margin-right: 4px; font-size: 0.9em; }
-.verse-merged { color: var(--merged-text-color); font-style: italic; }
-.version-label {
-    position: fixed; top: 0; z-index: 100; width: 50%; height: 40px;
-    background: var(--header-bg); color: var(--header-text); padding: 0 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--header-border);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    will-change: transform; transition: transform 0.18s ease;
-    overflow: visible;
-}
-.version-label.ui-hidden { transform: translateY(-100%); }
-.left-label { left: 0; border-right: 1px solid var(--header-border); }
-.right-label { left: 50%; z-index: 110; overflow: visible; }
-.header-version-switch {
-    display: inline-flex; align-items: center; gap: 3px;
-    background: rgba(0, 0, 0, 0.2); padding: 3px; border-radius: 6px;
-    max-width: 100%; overflow: visible;
-}
-.header-version-switch::-webkit-scrollbar { display: none; }
-.header-version-switch button {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
-    cursor: pointer; line-height: 1.1; white-space: nowrap;
-    height: 26px; box-sizing: border-box; display: inline-flex;
-    align-items: center; justify-content: center;
-}
-.header-version-switch button.active { background: var(--btn-active-bg); color: var(--btn-active-text); }
+        .version-row {
+            display: flex; flex-direction: row; width: 100%;
+            border-bottom: 1px solid var(--row-border); scroll-margin-top: 48px;
+            contain: layout style; box-sizing: border-box;
+        }
+        .version-row:nth-child(odd) { background-color: var(--row-odd-bg); }
+        .version-row:nth-child(even) { background-color: var(--row-even-bg); }
+        .version-row.verse-highlight {
+            outline: 2px solid var(--verse-num-color); outline-offset: -2px;
+            background-color: var(--row-hover-bg) !important;
+        }
+        .verse-cell {
+            width: 50%; flex: 0 0 50%; max-width: 50%; min-width: 0;
+            padding: 12px 14px; font-size: var(--verse-font-size);
+            line-height: 1.65; color: var(--text-color);
+            overflow-wrap: anywhere; word-break: break-word; hyphens: auto;
+            transition: font-size 0.05s ease-out; box-sizing: border-box;
+        }
+        .left-cell { border-right: 1px solid var(--cell-divider); }
+        .mt-rtl {
+            direction: rtl; text-align: right;
+            font-family: 'SBL Hebrew', 'Ezra SIL', 'David', serif;
+            font-size: calc(var(--verse-font-size) * 1.15); line-height: 1.75;
+        }
+        .mt-rtl .verse-number { margin-right: 0; margin-left: 4px; }
+        .verse-number { font-weight: bold; color: var(--verse-num-color); margin-right: 4px; font-size: 0.9em; }
+        .verse-merged { color: var(--merged-text-color); font-style: italic; }
+        .version-label {
+            position: fixed; top: 0; z-index: 100; width: 50%; height: 40px;
+            background: var(--header-bg); color: var(--header-text); padding: 0 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--header-border);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            will-change: transform; transition: transform 0.18s ease;
+            overflow: visible;
+        }
+        .version-label.ui-hidden { transform: translateY(-100%); }
+        .left-label { left: 0; border-right: 1px solid var(--header-border); }
+        .right-label { left: 50%; z-index: 110; overflow: visible; }
+        .header-version-switch {
+            display: inline-flex; align-items: center; gap: 3px;
+            background: rgba(0, 0, 0, 0.2); padding: 3px; border-radius: 6px;
+            max-width: 100%; overflow: visible;
+        }
+        .header-version-switch button {
+            border: none; background: var(--btn-bg); color: var(--btn-text);
+            padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
+            cursor: pointer; line-height: 1.1; white-space: nowrap;
+            height: 26px; box-sizing: border-box; display: inline-flex;
+            align-items: center; justify-content: center;
+        }
+        .header-version-switch button.active { background: var(--btn-active-bg); color: var(--btn-active-text); }
 
-.more-version-wrapper {
-    position: relative; display: inline-flex; align-items: center; overflow: visible;
-}
-.more-version-btn {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 4px 7px; border-radius: 4px; font-size: 12px; font-weight: bold;
-    cursor: pointer; line-height: 1.1; white-space: nowrap;
-    display: inline-flex; align-items: center; justify-content: center; gap: 2px;
-    height: 26px; box-sizing: border-box;
-}
-.more-version-btn.active { background: var(--btn-active-bg); color: var(--btn-active-text); }
-.dropdown-arrow { font-size: 9px; opacity: 0.85; transition: transform 0.15s ease; pointer-events: none; }
-.more-version-wrapper.open .dropdown-arrow { transform: rotate(180deg); }
+        .bottom-dock {
+            position: fixed; bottom: 24px; left: 8px; right: 8px; z-index: 180;
+            display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none; will-change: transform; transition: transform 0.18s ease;
+            box-sizing: border-box;
+        }
+        @media (min-width: 601px) {
+            .bottom-dock {
+                left: 50%; transform: translateX(-50%); width: min(94%, 760px);
+            }
+        }
+        .bottom-dock.ui-hidden { transform: translateY(calc(100% + 16px)); }
+        @media (min-width: 601px) {
+            .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 16px)); }
+        }
 
-.more-version-dropdown {
-    position: absolute; top: calc(100% + 6px); right: 0; z-index: 250;
-    min-width: 140px; background: var(--header-bg); border: 1px solid var(--header-border);
-    border-radius: 6px; padding: 4px; box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-    display: none; flex-direction: column; gap: 2px;
-}
-.more-version-dropdown.show { display: flex !important; }
-.more-option {
-    border: none; background: transparent; color: var(--header-text);
-    padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
-    cursor: pointer; display: flex; align-items: center;
-    justify-content: space-between; width: 100%; box-sizing: border-box;
-}
-.more-option:hover { background: rgba(255, 255, 255, 0.15); }
-.more-option.selected { background: var(--btn-active-bg); color: var(--btn-active-text); }
-.more-opt-code { font-weight: bold; text-align: left; flex-shrink: 0; }
-.more-opt-name { font-size: 11px; opacity: 0.85; font-weight: normal; text-align: right; flex-grow: 1; margin-left: 10px; }
-.more-option.selected .more-opt-name { color: var(--btn-active-text); opacity: 0.9; }
+        .search-return-bar {
+            position: fixed; bottom: 58px; left: 50%; transform: translateX(-50%);
+            z-index: 110; background: var(--bar-bg); color: var(--btn-text);
+            border: 1px solid var(--header-border); border-radius: 20px;
+            padding: 6px 14px; font-size: 12.5px; font-weight: bold;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: none;
+            align-items: center; gap: 10px; cursor: pointer; white-space: nowrap;
+            will-change: transform, opacity; transition: transform 0.18s ease, opacity 0.18s ease;
+            pointer-events: auto;
+        }
+        .search-return-bar.show { display: flex !important; }
+        .search-return-bar.ui-hidden { transform: translate(-50%, calc(100% + 70px)); opacity: 0; pointer-events: none; }
+        .search-return-info strong { color: var(--btn-active-bg); }
+        .search-return-close {
+            border: none; background: transparent; color: var(--btn-text);
+            font-size: 18px; font-weight: bold; cursor: pointer; line-height: 1;
+            padding: 0 4px; border-radius: 4px; opacity: 0.85;
+        }
+        .search-return-close:hover { opacity: 1; color: var(--btn-active-bg); }
 
-.about-oth-wrapper {
-    grid-column: 1 / -1; margin-top: 4px;
-}
-.about-oth-header {
-    width: 100%; background: var(--row-even-bg); border: 1px solid var(--row-border);
-    border-radius: 6px; padding: 8px 12px; font-size: 12px; color: var(--text-color);
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; text-align: left; transition: background 0.15s ease;
-}
-.about-oth-header:hover { background: var(--row-hover-bg); }
-.about-oth-header strong { color: var(--btn-active-bg); margin-right: 6px; }
-.oth-accordion-arrow { font-size: 11px; transition: transform 0.2s ease; }
-.about-oth-wrapper.open .oth-accordion-arrow { transform: rotate(180deg); }
-.about-oth-body {
-    display: none; flex-direction: column; gap: 4px; margin-top: 6px;
-    padding: 8px 10px; background: var(--row-odd-bg); border: 1px solid var(--row-border);
-    border-radius: 6px;
-}
-.about-oth-wrapper.open .about-oth-body { display: flex; }
-.oth-checkbox-item {
-    display: flex; align-items: center; gap: 8px; padding: 5px 6px;
-    border-radius: 4px; font-size: 12px; cursor: pointer; user-select: none;
-}
-.oth-checkbox-item:hover { background: var(--row-hover-bg); }
-.oth-checkbox-item input[type="checkbox"] {
-    accent-color: var(--btn-bg); width: 15px; height: 15px; cursor: pointer;
-}
-.oth-chk-code { font-weight: bold; color: var(--btn-active-bg); min-width: 32px; }
-.oth-chk-name { color: var(--text-color); font-size: 12px; }
-.oth-empty-msg {
-    font-size: 11.5px; padding: 8px 10px; color: var(--header-text);
-    opacity: 0.85; text-align: center; cursor: pointer;
-}
-.oth-empty-msg:hover { color: var(--btn-active-bg); text-decoration: underline; }
-.bottom-dock {
-    position: fixed; bottom: 8px; left: 8px; right: 8px; z-index: 100;
-    display: flex; justify-content: space-between; align-items: center; gap: 6px;
-    pointer-events: none; will-change: transform; transition: transform 0.18s ease;
-}
-.bottom-dock.ui-hidden { transform: translateY(calc(100% + 14px)); }
-.search-return-bar {
-    position: fixed; bottom: 58px; left: 50%; transform: translateX(-50%);
-    z-index: 110; background: var(--bar-bg); color: var(--btn-text);
-    border: 1px solid var(--header-border); border-radius: 20px;
-    padding: 6px 14px; font-size: 12.5px; font-weight: bold;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: none;
-    align-items: center; gap: 10px; cursor: pointer; white-space: nowrap;
-    will-change: transform, opacity; transition: transform 0.18s ease, opacity 0.18s ease;
-    pointer-events: auto;
-}
-.search-return-bar.show { display: flex !important; }
-.search-return-bar.ui-hidden { transform: translate(-50%, calc(100% + 70px)); opacity: 0; pointer-events: none; }
-.search-return-info strong { color: var(--btn-active-bg); }
-.search-return-close {
-    border: none; background: transparent; color: var(--btn-text);
-    font-size: 18px; font-weight: bold; cursor: pointer; line-height: 1;
-    padding: 0 4px; border-radius: 4px; opacity: 0.85;
-}
-.search-return-close:hover { opacity: 1; color: var(--btn-active-bg); }
+        .search-banner-top-row {
+            display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px;
+        }
+        .search-banner-title {
+            font-size: 13.5px; font-weight: bold; color: var(--text-color);
+        }
+        .search-banner-close-btn {
+            border: none; background: transparent; color: var(--text-color);
+            font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1;
+            padding: 0 4px; opacity: 0.85; transition: opacity 0.15s ease, color 0.15s ease;
+        }
+        .search-banner-close-btn:hover { opacity: 1; color: var(--verse-num-color); }
 
-.search-banner-top-row {
-    display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px;
-}
-.search-banner-title {
-    font-size: 13.5px; font-weight: bold; color: var(--text-color);
-}
-.search-banner-close-btn {
-    border: none; background: transparent; color: var(--text-color);
-    font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1;
-    padding: 0 4px; opacity: 0.85; transition: opacity 0.15s ease, color 0.15s ease;
-}
-.search-banner-close-btn:hover { opacity: 1; color: var(--verse-num-color); }
+        .search-breakdown-container {
+            display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 2px;
+        }
+        .search-breakdown-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--row-odd-bg); border: 1px solid var(--row-border);
+            border-radius: 6px; padding: 4px 8px; font-size: 12px;
+            flex-wrap: wrap; gap: 4px; box-sizing: border-box;
+        }
+        .search-ver-code { font-weight: bold; color: var(--verse-num-color); min-width: 32px; }
+        .search-badges-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .search-count-link {
+            color: var(--verse-num-color); font-weight: bold; font-size: 12px;
+            cursor: pointer; text-decoration: underline; padding: 2px 4px;
+            border-radius: 3px; transition: color 0.15s ease, background 0.15s ease;
+        }
+        .search-count-link:hover { color: var(--btn-hover-bg); }
+        .search-count-link.active {
+            background: var(--btn-active-bg); color: var(--btn-active-text);
+            text-decoration: none;
+        }
+        .search-count-link.disabled {
+            opacity: 0.38; cursor: default; text-decoration: none; pointer-events: none; color: var(--merged-text-color);
+        }
+        .search-plus-btn {
+            color: var(--btn-active-bg); font-weight: bold; font-size: 11.5px;
+            cursor: pointer; padding: 1px 4px; border-radius: 3px; margin-left: -2px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .search-plus-btn:hover { background: var(--btn-hover-bg); color: var(--btn-text); }
+        .search-plus-btn.disabled {
+            opacity: 0.28; cursor: default; pointer-events: none; color: var(--merged-text-color);
+        }
 
-.search-breakdown-container {
-    display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 2px;
-}
-.search-breakdown-row {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--row-odd-bg); border: 1px solid var(--row-border);
-    border-radius: 6px; padding: 4px 8px; font-size: 12px;
-    flex-wrap: wrap; gap: 4px; box-sizing: border-box;
-}
-.search-ver-code { font-weight: bold; color: var(--verse-num-color); min-width: 32px; }
-.search-badges-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.search-count-link {
-    color: var(--verse-num-color); font-weight: bold; font-size: 12px;
-    cursor: pointer; text-decoration: underline; padding: 2px 4px;
-    border-radius: 3px; transition: color 0.15s ease, background 0.15s ease;
-}
-.search-count-link:hover { color: var(--btn-hover-bg); }
-.search-count-link.active {
-    background: var(--btn-active-bg); color: var(--btn-active-text);
-    text-decoration: none;
-}
-.search-count-link.disabled {
-    opacity: 0.38; cursor: default; text-decoration: none; pointer-events: none; color: var(--merged-text-color);
-}
-.search-plus-btn {
-    color: var(--btn-active-bg); font-weight: bold; font-size: 11.5px;
-    cursor: pointer; padding: 1px 4px; border-radius: 3px; margin-left: -2px;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-.search-plus-btn:hover { background: var(--btn-hover-bg); color: var(--btn-text); }
-.search-plus-btn.disabled {
-    opacity: 0.28; cursor: default; pointer-events: none; color: var(--merged-text-color);
-}
+        .book-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300; background: rgba(0,0,0,0.45);
+            display: none; align-items: center; justify-content: center; padding: 16px;
+        }
+        .book-modal-overlay.show { display: flex !important; }
+        .book-modal-card {
+            background: var(--bg-body); border: 1px solid var(--row-border);
+            border-radius: 12px; width: 100%; max-width: 380px; max-height: 80vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: var(--text-color);
+        }
+        .book-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: var(--row-even-bg);
+            border-bottom: 1px solid var(--row-border);
+            font-weight: bold; font-size: 14px; color: var(--text-color);
+        }
+        .book-modal-close {
+            border: none; background: transparent; color: var(--text-color);
+            font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1; padding: 0 4px;
+        }
+        .book-modal-close:hover { color: var(--verse-num-color); }
+        .book-modal-body {
+            padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+            background: var(--bg-body);
+        }
+        .book-modal-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 12px; border-radius: 7px; background: var(--row-odd-bg);
+            border: 1px solid var(--row-border); font-size: 13px; font-weight: bold;
+            color: var(--text-color); cursor: pointer; transition: background 0.15s ease;
+        }
+        .book-modal-item:hover { background: var(--row-hover-bg); }
+        .book-modal-count {
+            background: var(--btn-bg); color: var(--btn-text);
+            padding: 2px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold;
+        }
 
-.book-modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300; background: rgba(0,0,0,0.45);
-    display: none; align-items: center; justify-content: center; padding: 16px;
-}
-.book-modal-overlay.show { display: flex !important; }
-.book-modal-card {
-    background: var(--bg-body); border: 1px solid var(--row-border);
-    border-radius: 12px; width: 100%; max-width: 380px; max-height: 80vh;
-    display: flex; flex-direction: column; overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: var(--text-color);
-}
-.book-modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; background: var(--row-even-bg);
-    border-bottom: 1px solid var(--row-border);
-    font-weight: bold; font-size: 14px; color: var(--text-color);
-}
-.book-modal-close {
-    border: none; background: transparent; color: var(--text-color);
-    font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1; padding: 0 4px;
-}
-.book-modal-close:hover { color: var(--verse-num-color); }
-.book-modal-body {
-    padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-    background: var(--bg-body);
-}
-.book-modal-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 12px; border-radius: 7px; background: var(--row-odd-bg);
-    border: 1px solid var(--row-border); font-size: 13px; font-weight: bold;
-    color: var(--text-color); cursor: pointer; transition: background 0.15s ease;
-}
-.book-modal-item:hover { background: var(--row-hover-bg); }
-.book-modal-count {
-    background: var(--btn-bg); color: var(--btn-text);
-    padding: 2px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold;
-}
-.search-pagination-v2 {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    padding: 12px; background: var(--row-even-bg); border-top: 1px solid var(--row-border);
-}
-.search-page-info { font-weight: bold; font-size: 13px; color: var(--text-color); }
-.search-page-actions {
-    display: flex; align-items: center; justify-content: space-between;
-    width: 100%; gap: 6px;
-}
-.dock-picker-btn {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 0 10px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold;
-    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    box-sizing: border-box; transition: background 0.15s ease; flex-shrink: 0; white-space: nowrap;
-}
-.dock-picker-btn:hover { background: var(--btn-hover-bg); }
+        .dock-picker-btn {
+            border: none; background: var(--btn-bg); color: var(--btn-text);
+            padding: 0 10px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+            box-sizing: border-box; transition: background 0.15s ease; flex-shrink: 0; white-space: nowrap;
+        }
+        .dock-picker-btn:hover { background: var(--btn-hover-bg); }
 
-/* Unified Passage Picker Modal & Accordion */
+        .sub-bar-inner {
+            pointer-events: auto; display: flex; align-items: center; justify-content: space-between;
+            gap: 6px; width: 100%; background: var(--bar-bg); padding: 4px; border-radius: 9px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); box-sizing: border-box;
+        }
 
+        /* Responsive Passage Picker Modal */
+        .picker-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 310;
+            background: rgba(0,0,0,0.65);
+            display: none; opacity: 0; pointer-events: none;
+            align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;
+            transition: opacity 0.18s ease;
+        }
+        .picker-modal-overlay.show { display: flex !important; opacity: 1 !important; pointer-events: auto !important; }
 
+        .passage-modal-card {
+            background: var(--bg-body);
+            border: 1px solid var(--row-border);
+            border-radius: 14px;
+            width: 95%;
+            max-width: 600px;
+            height: 82vh;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
 
-/*****/
-/* Responsive Passage Picker Modal */
-.picker-modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 310;
-    background: rgba(0,0,0,0.65);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    box-sizing: border-box;
-}
-.picker-modal-overlay.show {
-    display: flex !important;
-}
+        .picker-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            background: var(--row-even-bg);
+            border-bottom: 1px solid var(--row-border);
+            flex-shrink: 0;
+        }
+        .passage-modal-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .picker-modal-close {
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+        }
 
-.passage-modal-card {
-    background: var(--bg-body);
-    border: 1px solid var(--row-border);
-    border-radius: 14px;
-    width: 95%;
-    max-width: 680px; /* Expands comfortably on 7" and 10" tablets */
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.45);
-    color: var(--text-color);
-    box-sizing: border-box;
-}
+        /* Testament Tabs */
+        .passage-tabs-row {
+            display: flex;
+            background: var(--row-even-bg);
+            padding: 8px 12px;
+            gap: 10px;
+            border-bottom: 1px solid var(--row-border);
+            flex-shrink: 0;
+        }
+        .passage-tab-btn {
+            flex: 1;
+            border: 1px solid var(--row-border);
+            background: var(--row-odd-bg);
+            color: var(--text-color);
+            padding: 9px 0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .passage-tab-btn.active {
+            background: var(--btn-active-bg) !important;
+            color: var(--btn-active-text) !important;
+            border-color: var(--btn-active-bg) !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
 
-.picker-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 18px;
-    background: var(--row-even-bg);
-    border-bottom: 1px solid var(--row-border);
-}
-.passage-modal-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--text-color);
-}
-.picker-modal-close {
-    border: none;
-    background: transparent;
-    color: var(--text-color);
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 1;
-    padding: 4px 8px;
-}
+        .passage-modal-body {
+            padding: 10px 12px;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--bg-body);
+            box-sizing: border-box;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
 
-.passage-modal-body {
-    padding: 12px 14px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--bg-body);
-    box-sizing: border-box;
-}
+        /* Accordion Book Card */
+        .passage-book-card {
+            background: var(--row-odd-bg);
+            border: 1px solid var(--row-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            width: 100%;
+            transition: border-color 0.15s ease;
+        }
+        .passage-book-card.expanded {
+            border-color: var(--verse-num-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
 
-.passage-testament-heading {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--verse-num-color);
-    padding: 8px 4px 4px 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+        .passage-book-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            min-height: 44px;
+            cursor: pointer;
+            user-select: none;
+            box-sizing: border-box;
+            background: var(--row-odd-bg);
+        }
+        .passage-book-header:hover {
+            background: var(--row-hover-bg);
+        }
+        .passage-book-card.expanded .passage-book-header {
+            background: var(--row-even-bg);
+            border-bottom: 1px solid var(--row-border);
+        }
 
-/* Accordion Book Card */
-.passage-book-card {
-    background: var(--row-odd-bg);
-    border: 1px solid var(--row-border);
-    border-radius: 8px;
-    overflow: hidden;
-    box-sizing: border-box;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-.passage-book-card.expanded {
-    border-color: var(--verse-num-color);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-}
+        .passage-book-code {
+            font-weight: bold;
+            color: var(--verse-num-color);
+            min-width: 48px;
+            font-size: 14.5px;
+            text-align: left;
+        }
+        .passage-book-name {
+            font-size: 13.5px;
+            color: var(--text-color);
+            font-weight: 500;
+            flex-grow: 1;
+            text-align: right;
+            margin-right: 12px;
+        }
+        .passage-arrow {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.75;
+            transition: transform 0.2s ease;
+        }
+        .passage-book-card.expanded .passage-arrow {
+            transform: rotate(180deg);
+            color: var(--verse-num-color);
+        }
 
-.passage-book-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    cursor: pointer;
-    user-select: none;
-    box-sizing: border-box;
-    background: var(--row-odd-bg);
-}
-.passage-book-card.expanded .passage-book-header {
-    background: var(--row-even-bg);
-    border-bottom: 1px solid var(--row-border);
-}
+        /* Responsive Chapter Grid */
+        .passage-chapter-grid {
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 14px;
+            background: var(--bg-body);
+            box-sizing: border-box;
+        }
+        .passage-book-card.expanded .passage-chapter-grid {
+            display: flex !important;
+        }
 
-.passage-book-code {
-    font-weight: bold;
-    color: var(--verse-num-color);
-    min-width: 46px;
-    font-size: 15px;
-}
-.passage-book-name {
-    font-size: 14px;
-    color: var(--text-color);
-    font-weight: 500;
-    flex-grow: 1;
-    text-align: left;
-    margin-left: 8px;
-}
-.passage-arrow {
-    font-size: 13px;
-    color: var(--text-color);
-    opacity: 0.7;
-    transition: transform 0.2s ease;
-}
-.passage-book-card.expanded .passage-arrow {
-    transform: rotate(180deg);
-    color: var(--verse-num-color);
-}
+        .passage-chap-pill {
+            width: calc(20% - 6.4px);
+            flex: 0 0 calc(20% - 6.4px);
+            min-height: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            border: 1px solid var(--row-border);
+            background: var(--row-even-bg);
+            color: var(--text-color);
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            outline: none;
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+        }
+        @media (min-width: 600px) {
+            .passage-chap-pill {
+                width: calc(16.666% - 6.7px);
+                flex: 0 0 calc(16.666% - 6.7px);
+            }
+        }
+        .passage-chap-pill:hover {
+            background: var(--row-hover-bg);
+            transform: scale(1.03);
+        }
+        .passage-chap-pill.active {
+            background: var(--btn-active-bg) !important;
+            color: var(--btn-active-text) !important;
+            border-color: var(--btn-active-bg) !important;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
 
-/* Responsive Chapter Grid */
-.passage-chapter-grid {
-    display: none;
-    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-    gap: 8px;
-    padding: 12px 14px;
-    background: var(--bg-body);
-    box-sizing: border-box;
-}
-.passage-book-card.expanded .passage-chapter-grid {
-    display: grid !important;
-}
+        .utility-bar {
+            pointer-events: auto; display: flex; align-items: center; gap: 4px;
+            background: var(--bar-bg); padding: 4px; border-radius: 7px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex-shrink: 0;
+        }
+        .utility-bar button {
+            border: none; background: var(--btn-bg); color: var(--btn-text);
+            padding: 0 10px; min-width: 36px; height: 32px; border-radius: 6px;
+            font-size: 14px; font-weight: bold; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            box-sizing: border-box; cursor: pointer;
+        }
+        #aboutBtn i {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-style: italic;
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .search-bar {
+            position: relative; pointer-events: auto; display: flex; align-items: center; gap: 4px;
+            background: var(--bar-bg); padding: 4px; border-radius: 7px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex: 1; max-width: 280px; min-width: 90px;
+        }
+        .search-input {
+            width: 100%; min-width: 0; border: none; outline: none;
+            background: var(--btn-bg); color: var(--btn-text);
+            padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: 600;
+            box-sizing: border-box;
+        }
+        .search-input::placeholder { color: var(--btn-text); opacity: 0.65; }
+        .search-clear-inline {
+            display: none; border: none; background: var(--btn-active-bg); color: var(--btn-active-text);
+            padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;
+            line-height: 1; box-sizing: border-box;
+        }
+        .search-clear-inline.show { display: inline-flex; align-items: center; justify-content: center; }
+        .search-button {
+            border: none; background: var(--btn-bg); color: var(--btn-text);
+            padding: 0 8px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+            box-sizing: border-box;
+        }
+        .search-button svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+        .search-results {
+            position: absolute; left: 0; right: 0; bottom: calc(100% + 6px);
+            display: none; max-height: 240px; overflow-y: auto;
+            background: var(--bar-bg); border-radius: 7px; padding: 4px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.35); min-width: 150px;
+        }
+        .search-results.show { display: block; }
+        .search-result {
+            width: 100%; border: none; background: transparent; color: var(--btn-text);
+            text-align: left; padding: 7px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;
+        }
+        .search-result.keyword-action {
+            border-top: 1px solid rgba(255,255,255,0.15);
+            font-weight: bold; color: var(--btn-active-bg);
+        }
+        .search-result small { opacity: 0.7; margin-left: 5px; }
+        .search-verse-item {
+            width: 100%; border: none; background: transparent; color: var(--btn-text);
+            text-align: left; padding: 6px 8px; border-radius: 4px; cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.08); box-sizing: border-box;
+            display: block; transition: background 0.12s ease;
+        }
+        .search-verse-item:hover { background: var(--btn-hover-bg); }
+        .search-verse-ref {
+            display: block; font-weight: bold; font-size: 11.5px; color: var(--btn-active-bg); margin-bottom: 2px;
+        }
+        .search-verse-snippet {
+            display: block; font-size: 12px; line-height: 1.35; opacity: 0.9;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .search-empty { color: var(--btn-text); opacity: 0.75; padding: 7px 8px; font-size: 12px; }
 
-.passage-chap-pill {
-    min-height: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    border: 1px solid var(--row-border);
-    background: var(--row-even-bg);
-    color: var(--text-color);
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-}
-.passage-chap-pill:active,
-.passage-chap-pill:hover {
-    background: var(--row-hover-bg);
-}
-.passage-chap-pill.active {
-    background: var(--btn-active-bg) !important;
-    color: var(--btn-active-text) !important;
-    border-color: var(--btn-active-bg) !important;
-    font-weight: bold;
-}
-/*****/
+        @media (max-width: 600px) {
+            .container { padding-top: 34px; padding-bottom: 48px; }
+            .version-label { height: 34px; padding: 0 2px; }
+            .header-version-switch button { padding: 3px 6px; font-size: 11px; }
+            .verse-cell { padding: 8px 6px; line-height: 1.55; }
+            .bottom-dock { bottom: 4px; left: 4px; right: 4px; gap: 4px; }
+            .search-bar, .utility-bar { padding: 3px; gap: 3px; }
+            .search-bar { max-width: none; }
+            .utility-bar button, .search-button, .search-input { padding: 0 6px; height: 30px; font-size: 12px; }
+            .chapter-toast { top: 44px; }
+            .search-banner { padding: 8px 10px; font-size: 12px; }
+            .about-dialog { max-width: 92%; }
+            .about-trans-grid { grid-template-columns: 1fr; }
+        }
 
-
-
-
-/* Testament Tabs */
-.passage-tabs-row {
-    display: flex; background: var(--row-even-bg); padding: 6px; gap: 6px;
-    border-bottom: 1px solid var(--row-border);
-}
-.passage-tab-btn {
-    flex: 1; border: 1px solid var(--row-border); background: var(--row-odd-bg);
-    color: var(--text-color); padding: 8px 0; border-radius: 7px;
-    font-size: 12.5px; font-weight: bold; cursor: pointer; text-align: center;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-.passage-tab-btn.active {
-    background: var(--btn-bg) !important; color: var(--btn-text) !important;
-    border-color: var(--btn-bg) !important; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.passage-modal-body {
-    padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-    background: var(--bg-body); box-sizing: border-box;
-}
-.passage-book-card {
-    background: var(--row-odd-bg); border: 1px solid var(--row-border);
-    border-radius: 9px; margin-bottom: 4px; overflow: hidden; box-sizing: border-box;
-    min-height: 42px; flex-shrink: 0;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-.passage-book-card.expanded {
-    border-color: var(--verse-num-color);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-}
-.passage-book-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 11px 14px; font-size: 13.5px; font-weight: bold;
-    color: var(--text-color); background: var(--row-even-bg);
-    cursor: pointer; user-select: none; box-sizing: border-box;
-    min-height: 42px; flex-shrink: 0;
-}
-.passage-book-header:hover { background: var(--row-hover-bg); }
-.passage-book-card.expanded .passage-book-header {
-    background: var(--row-hover-bg); border-bottom: 1px solid var(--row-border);
-}
-.passage-book-code { font-weight: bold; color: var(--verse-num-color); min-width: 42px; font-size: 14px; }
-.passage-book-name { font-size: 12.5px; color: var(--text-color); flex-grow: 1; text-align: right; margin-right: 10px; opacity: 0.95; }
-.passage-arrow { font-size: 12px; color: var(--text-color); opacity: 0.8; transition: transform 0.2s ease; }
-.passage-book-card.expanded .passage-arrow { transform: rotate(180deg); color: var(--verse-num-color); }
-
-.passage-chapter-grid {
-    display: none; grid-template-columns: repeat(5, 1fr); gap: 8px;
-    padding: 12px 14px; background: var(--bg-body); box-sizing: border-box;
-}
-@media (min-width: 600px) {
-    .passage-chapter-grid {
-        grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 14px 16px;
-    }
-}
-.passage-book-card.expanded .passage-chapter-grid { display: grid !important; }
-.passage-chap-pill {
-    width: 100%; min-height: 40px; height: 40px;
-    display: flex; align-items: center; justify-content: center; box-sizing: border-box;
-    border: 1px solid var(--row-border); background: var(--row-odd-bg);
-    color: var(--text-color); border-radius: 8px; font-size: 14px; font-weight: bold;
-    cursor: pointer; text-align: center; line-height: 1;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-}
-.passage-chap-pill:hover { background: var(--row-hover-bg); transform: scale(1.04); }
-.passage-chap-pill.active {
-    background: var(--btn-active-bg) !important; color: var(--btn-active-text) !important;
-    border-color: var(--btn-active-bg) !important; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
-    border-color: var(--btn-active-bg) !important; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.nav-bar, .utility-bar {
-    pointer-events: auto; display: flex; align-items: center; gap: 4px;
-    background: var(--bar-bg); padding: 4px; border-radius: 7px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex-shrink: 0;
-}
-.nav-bar select {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 6px 8px; border-radius: 4px; font-size: 13px; font-weight: bold;
-}
-.utility-bar button {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 0 10px; min-width: 36px; height: 32px; border-radius: 6px;
-    font-size: 14px; font-weight: bold; text-decoration: none;
-    display: inline-flex; align-items: center; justify-content: center;
-    box-sizing: border-box; cursor: pointer;
-}
-#aboutBtn i {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: bold;
-    font-size: 16px;
-    line-height: 1;
-}
-.search-bar {
-    position: relative; pointer-events: auto; display: flex; align-items: center; gap: 4px;
-    background: var(--bar-bg); padding: 4px; border-radius: 7px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex: 1; max-width: 280px; min-width: 90px;
-}
-.search-input {
-    width: 100%; min-width: 0; border: none; outline: none;
-    background: var(--btn-bg); color: var(--btn-text);
-    padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: 600;
-    box-sizing: border-box;
-}
-.search-input::placeholder { color: var(--btn-text); opacity: 0.65; }
-.search-clear-inline {
-    display: none; border: none; background: var(--btn-active-bg); color: var(--btn-active-text);
-    padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;
-    line-height: 1; box-sizing: border-box;
-}
-.search-clear-inline.show { display: inline-flex; align-items: center; justify-content: center; }
-.search-button {
-    border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 0 8px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-    box-sizing: border-box;
-}
-.search-button svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; }
-.search-results {
-    position: absolute; left: 0; right: 0; bottom: calc(100% + 6px);
-    display: none; max-height: 240px; overflow-y: auto;
-    background: var(--bar-bg); border-radius: 7px; padding: 4px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.35); min-width: 150px;
-}
-.search-results.show { display: block; }
-.search-result {
-    width: 100%; border: none; background: transparent; color: var(--btn-text);
-    text-align: left; padding: 7px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;
-}
-.search-result.keyword-action {
-    border-top: 1px solid rgba(255,255,255,0.15);
-    font-weight: bold; color: var(--btn-active-bg);
-}
-.search-result small { opacity: 0.7; margin-left: 5px; }
-.search-empty { color: var(--btn-text); opacity: 0.75; padding: 7px 8px; font-size: 12px; }
-@media (max-width: 600px) {
-    .container { padding-top: 34px; padding-bottom: 48px; }
-    .version-label { height: 34px; padding: 0 2px; }
-    .header-version-switch button { padding: 3px 6px; font-size: 11px; }
-    .verse-cell { padding: 8px 6px; line-height: 1.55; }
-    .bottom-dock { bottom: 4px; left: 4px; right: 4px; gap: 4px; }
-    .nav-bar, .search-bar, .utility-bar { padding: 3px; gap: 3px; }
-    .search-bar { max-width: none; }
-    .nav-bar select, .utility-bar button, .search-button, .search-input { padding: 0 6px; height: 30px; font-size: 12px; }
-    .chapter-toast { top: 44px; }
-    .search-banner { padding: 8px 10px; font-size: 12px; }
-    .about-dialog { max-width: 92%; }
-    .about-trans-grid { grid-template-columns: 1fr; }
-}
-
-/* Responsive Tablet Rules (7" and 10" Tablets in Portrait and Landscape) */
-@media (min-width: 601px) and (max-width: 1024px) {
-    :root { --verse-font-size: 15px; }
-    .verse-cell { padding: 12px 16px; line-height: 1.65; }
-    .bottom-dock { left: 50%; transform: translateX(-50%); width: min(94%, 720px); }
-    .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 14px)); }
-    .search-bar { max-width: 360px; }
-}
-@media (min-width: 1025px) {
-    :root { --verse-font-size: 16px; }
-    .verse-cell { padding: 14px 20px; line-height: 1.7; }
-    .bottom-dock { left: 50%; transform: translateX(-50%); width: min(94%, 760px); }
-    .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 14px)); }
-    .search-bar { max-width: 420px; }
-}
-
-/* About Modal Overlay */
-.about-modal {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 200; background: rgba(0, 0, 0, 0.65);
-    display: none; align-items: center; justify-content: center;
-    padding: 16px;
-}
-.about-modal.show { display: flex !important; }
-.about-dialog {
-    background: var(--bg-body); color: var(--text-color);
-    border: 1px solid var(--header-border); border-radius: 12px;
-    max-width: 440px; width: 100%; max-height: 85vh; overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    transform: scale(0.92); transition: transform 0.2s ease;
-}
-.about-modal.show .about-dialog { transform: scale(1); }
-.about-header {
-    background: var(--header-bg); color: var(--header-text);
-    padding: 14px 18px; display: flex; align-items: center;
-    justify-content: space-between; border-bottom: 1px solid var(--header-border);
-    border-radius: 11px 11px 0 0;
-}
-.about-title-group { display: flex; align-items: center; gap: 12px; }
-.about-app-icon-img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-.about-app-name { margin: 0; font-size: 18px; font-weight: bold; }
-.about-app-version { font-size: 12px; opacity: 0.85; }
-.about-close-btn {
-    border: none; background: transparent; color: var(--header-text);
-    font-size: 26px; font-weight: bold; cursor: pointer; line-height: 1;
-    padding: 0 4px; border-radius: 4px;
-}
-.about-close-btn:hover { background: rgba(255, 255, 255, 0.15); }
-.about-body { padding: 18px; font-size: 13.5px; line-height: 1.5; }
-.about-desc { margin: 0 0 16px 0; color: var(--text-color); opacity: 0.9; }
-.about-section-title {
-    margin: 16px 0 8px 0; font-size: 13px; font-weight: bold;
-    text-transform: uppercase; letter-spacing: 0.5px; color: var(--verse-num-color);
-}
-.about-trans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-.about-trans-card {
-    background: var(--row-even-bg); border: 1px solid var(--row-border);
-    padding: 6px 10px; border-radius: 6px; font-size: 12px;
-}
-.about-trans-card strong { display: block; color: var(--btn-active-bg); margin-bottom: 2px; }
-.about-features-list { margin: 0; padding-left: 20px; color: var(--text-color); font-size: 12.5px; }
-.about-features-list li { margin-bottom: 4px; }
-.about-copyrights-box {
-    background: var(--row-even-bg); border: 1px solid var(--row-border);
-    border-radius: 8px; padding: 10px 12px; font-size: 11.5px; line-height: 1.45;
-}
-.about-copyright-item { margin-bottom: 10px; }
-.about-copyright-item:last-child { margin-bottom: 0; }
-.about-copyright-item strong { color: var(--verse-num-color); display: block; font-weight: bold; margin-bottom: 2px; }
-.about-copyright-item p { margin: 0; opacity: 0.9; }
-.about-link { color: var(--btn-active-bg); text-decoration: underline; }
-.about-footer {
-    margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--row-border);
-    text-align: center; font-size: 12px; opacity: 0.8;
-}
-.about-copyright { margin-top: 4px; font-weight: 600; }
-</style>
+        /* About Modal Overlay */
+        .about-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 200; background: rgba(0, 0, 0, 0.65);
+            display: none; align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .about-modal.show { display: flex !important; }
+        .about-dialog {
+            background: var(--bg-body); color: var(--text-color);
+            border: 1px solid var(--header-border); border-radius: 12px;
+            max-width: 440px; width: 100%; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transform: scale(0.92); transition: transform 0.2s ease;
+        }
+        .about-modal.show .about-dialog { transform: scale(1); }
+        .about-header {
+            background: var(--header-bg); color: var(--header-text);
+            padding: 14px 18px; display: flex; align-items: center;
+            justify-content: space-between; border-bottom: 1px solid var(--header-border);
+            border-radius: 11px 11px 0 0;
+        }
+        .about-title-group { display: flex; align-items: center; gap: 12px; }
+        .about-app-icon-img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .about-app-name { margin: 0; font-size: 18px; font-weight: bold; }
+        .about-app-version { font-size: 12px; opacity: 0.85; }
+        .about-close-btn {
+            border: none; background: transparent; color: var(--header-text);
+            font-size: 26px; font-weight: bold; cursor: pointer; line-height: 1;
+            padding: 0 4px; border-radius: 4px;
+        }
+        .about-close-btn:hover { background: rgba(255, 255, 255, 0.15); }
+        .about-body { padding: 18px; font-size: 13.5px; line-height: 1.5; }
+        .about-desc { margin: 0 0 16px 0; color: var(--text-color); opacity: 0.9; }
+        .about-section-title {
+            margin: 16px 0 8px 0; font-size: 13px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 0.5px; color: var(--verse-num-color);
+        }
+        .about-trans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .about-trans-card {
+            background: var(--row-even-bg); border: 1px solid var(--row-border);
+            padding: 6px 10px; border-radius: 6px; font-size: 12px;
+        }
+        .about-trans-card strong { display: block; color: var(--btn-active-bg); margin-bottom: 2px; }
+        .about-features-list { margin: 0; padding-left: 20px; color: var(--text-color); font-size: 12.5px; }
+        .about-features-list li { margin-bottom: 4px; }
+        .about-copyrights-box {
+            background: var(--row-even-bg); border: 1px solid var(--row-border);
+            border-radius: 8px; padding: 10px 12px; font-size: 11.5px; line-height: 1.45;
+        }
+        .about-copyright-item { margin-bottom: 10px; }
+        .about-copyright-item:last-child { margin-bottom: 0; }
+        .about-copyright-item strong { color: var(--verse-num-color); display: block; font-weight: bold; margin-bottom: 2px; }
+        .about-copyright-item p { margin: 0; opacity: 0.9; }
+        .about-link { color: var(--btn-active-bg); text-decoration: underline; }
+        .about-footer {
+            margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--row-border);
+            text-align: center; font-size: 12px; opacity: 0.8;
+        }
+        .about-copyright { margin-top: 4px; font-weight: 600; }
+    </style>
 </head>
 <body>
 <div id="chapterToast" class="chapter-toast"></div>
 
 <!-- About Modal Dialog -->
-<div id="aboutModal" class="about-modal" style="display: none;" onclick="onAboutModalBackdropClick(event)">
+<div id="aboutModal" class="about-modal" onclick="onAboutModalBackdropClick(event)">
     <div class="about-dialog">
         <div class="about-header">
             <div class="about-title-group">
@@ -810,10 +685,10 @@ mark.search-hl {
                 <div class="about-trans-card"><strong>KJV</strong> King James Version</div>
                 <div class="about-trans-card"><strong>NAS</strong> New American Standard</div>
                 <div class="about-trans-card"><strong>H/G</strong> Hebrew &amp; Greek Original</div>
+                <div class="about-trans-card"><strong>LXX</strong> Thomson Septuagint</div>
                 <div class="about-trans-card"><strong>ABe</strong> Apostolic Bible (English)</div>
                 <div class="about-trans-card"><strong>ABg</strong> Apostolic Bible (Greek)</div>
                 <div class="about-trans-card"><strong>T4T</strong> Translation for Translators</div>
-                <div class="about-trans-card"><strong>LXX</strong> Thomson Septuagint</div>
             </div>
 
             <h3 class="about-section-title">Copyrights &amp; Permissions</h3>
@@ -839,6 +714,9 @@ mark.search-hl {
             <h3 class="about-section-title">Key Features</h3>
             <ul class="about-features-list">
                 <li>Side-by-side parallel verse comparison</li>
+                <li>7 study translations (KJV, NAS, H/G, LXX, ABe, ABg, T4T)</li>
+                <li>Accordion book &amp; chapter selector divided by OT &amp; NT</li>
+                <li>100% clean English book names with expandable chapter grid</li>
                 <li>Fast offline SQLite full-text search</li>
                 <li>Right-to-Left (RTL) Hebrew text rendering</li>
                 <li>Horizontal swipe gesture chapter navigation</li>
@@ -870,6 +748,7 @@ mark.search-hl {
             <button type="button" id="kjvButton" class="active" onclick="showLeftVersion('kjv')">KJV</button>
             <button type="button" id="nasButton" onclick="showLeftVersion('nas')">NAS</button>
             <button type="button" id="origButton" onclick="showLeftVersion('orig')">H/G</button>
+            <button type="button" id="lxxButton" onclick="showLeftVersion('lxx')">LXX</button>
         </div>
     </div>
     <div class="version-label right-label">
@@ -877,1306 +756,1343 @@ mark.search-hl {
             <button type="button" id="abpButton" class="active" onclick="showRightVersion('abp')">ABe</button>
             <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABg</button>
             <button type="button" id="t4tButton" onclick="showRightVersion('t4t')">T4T</button>
-            <button type="button" id="lxxButton" onclick="showRightVersion('lxx')">LXX</button>
         </div>
     </div>
 </div>
+
+<!-- Unified Passage Picker Modal -->
+<div id="passagePickerModal" class="picker-modal-overlay" onclick="onPickerBackdropClick(event, 'passagePickerModal')">
+    <div class="passage-modal-card">
+        <div class="picker-modal-header">
+            <span class="passage-modal-title">Select Book &amp; Chapter</span>
+            <button type="button" class="picker-modal-close" onclick="closePassagePickerModal(event)">&times;</button>
+        </div>
+        <div class="passage-tabs-row">
+            <button type="button" id="tabOT" class="passage-tab-btn active" onclick="switchTestamentTab('ot', event)">OT (39 Books)</button>
+            <button type="button" id="tabNT" class="passage-tab-btn" onclick="switchTestamentTab('nt', event)">NT (27 Books)</button>
+        </div>
+        <div id="passagePickerBody" class="passage-modal-body"></div>
+    </div>
+</div>
+
+<!-- Permanent Floating Bottom Dock Bar -->
+<div class="bottom-dock" id="bottomDock">
+    <div class="sub-bar-inner">
+        <!-- Passage Picker -->
+        <button type="button" id="passagePickerBtn" class="dock-picker-btn" onclick="openPassagePickerModal(event)" aria-label="Select Passage">
+            <span id="passagePickerLabel" style="pointer-events: none;">GEN 1</span> <span class="dropdown-arrow" style="pointer-events: none;">▾</span>
+        </button>
+
+        <!-- Search Bar -->
+        <form class="search-bar" onsubmit="return submitChapterSearch();">
+            <div class="search-results" id="searchResults"></div>
+            <input type="text" id="chapterSearch" class="search-input" placeholder="Ref or word..." autocomplete="off">
+            <button type="button" id="clearSearchInlineBtn" class="search-clear-inline" title="Clear Search" onclick="clearVerseSearch()">&times;</button>
+            <button type="submit" class="search-button" title="Search">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.2" y2="16.2"></line></svg>
+            </button>
+        </form>
+
+        <!-- Utilities (Theme & About) -->
+        <div class="utility-bar">
+            <button type="button" id="themeButton" onclick="cycleTheme(event)">D</button>
+            <button type="button" id="aboutBtn" onclick="openAboutModal(event)" title="About Parallel Bible"><i>i</i></button>
+        </div>
+    </div>
+</div>
+
 <div id="searchReturnBar" class="search-return-bar" onclick="restoreRetainedSearch(event)">
     <span class="search-return-info">
         🔍 Return to &ldquo;<strong id="searchReturnQuery"></strong>&rdquo; (<span id="searchReturnPage"></span>)
     </span>
     <button type="button" class="search-return-close" onclick="dismissRetainedSearch(event)" title="Dismiss Search">&times;</button>
 </div>
-<!-- Unified Passage Picker Modal -->
-<div id="passagePickerModal" class="picker-modal-overlay" style="display: none;" onclick="onPickerBackdropClick(event, 'passagePickerModal')">
-    <div class="passage-modal-card">
-        <div class="picker-modal-header">
-            <span class="passage-modal-title">Select Book &amp; Chapter</span>
-            <button type="button" class="picker-modal-close" onclick="closePassagePickerModal(event)">&times;</button>
-        </div>
-        <div id="passagePickerBody" class="passage-modal-body"></div>
-    </div>
-</div>
 
-<div class="bottom-dock" id="bottomDock">
-    <div class="nav-bar">
-        <button type="button" id="passagePickerBtn" class="dock-picker-btn" onclick="openPassagePickerModal(event)" aria-label="Select Passage">
-            <span id="passagePickerLabel">GEN 1</span> <span class="dropdown-arrow">▾</span>
-        </button>
-    </div>
-    <form class="search-bar" onsubmit="return submitChapterSearch();">
-        <div class="search-results" id="searchResults"></div>
-        <input type="text" id="chapterSearch" class="search-input" placeholder="Ref or word..." autocomplete="off">
-        <button type="button" id="clearSearchInlineBtn" class="search-clear-inline" title="Clear Search" onclick="clearVerseSearch()">&times;</button>
-        <button type="submit" class="search-button" title="Search">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.2" y2="16.2"></line></svg>
-        </button>
-    </form>
-    <div class="utility-bar">
-        <button type="button" id="themeButton" onclick="cycleTheme()">D</button>
-        <button type="button" id="aboutBtn" onclick="openAboutModal()" title="About Parallel Bible"><i>i</i></button>
-    </div>
-</div>
 <script>
-const rootEl = document.documentElement;
-const themes = ['dark', 'teal', 'warm', 'crimson'];
-let currentTheme = 'dark';
-let currentFontSize = window.innerWidth <= 600 ? 14 : 16;
-let activeLeft = 'kjv';
-let activeRight = 'abp';
+    const rootEl = document.documentElement;
+    const themes = ['dark', 'teal', 'warm', 'crimson'];
+    let currentTheme = 'dark';
+    let currentFontSize = window.innerWidth <= 600 ? 14 : 16;
+    let activeLeft = 'kjv';
+    let activeRight = 'abp';
 
-const versionLabels = {
-    kjv: 'KJV', nas: 'NAS', orig: 'H/G',
-    abp: 'ABe', abgr: 'ABg', t4t: 'T4T', lxx: 'LXX'
-};
+    const versionLabels = {
+        kjv: 'KJV', nas: 'NAS', orig: 'H/G',
+        abp: 'ABe', abgr: 'ABg', t4t: 'T4T', lxx: 'LXX'
+    };
 
-const missingFallbacks = {
-    kjv:  '[Not available in KJV]',
-    nas:  '[Not available in NAS]',
-    orig: '[Not available in H/G]',
-    abp:  '[Not available in ABe]',
-    abgr: '[Not available in ABg]',
-    t4t:  '[Included in previous verse]',
-    kan:  '[Not available in KAN]',
-    tlg:  '[Not available in TLG]',
-    mal:  '[Not available in MAL]',
-    tam:  '[Not available in TAM]',
-    hin:  '[Not available in HIN]',
-    spa:  '[Not available in SPA]',
-    lxx:  '[Not available in LXX]'
-};
+    const missingFallbacks = {
+        kjv:  '[Not available in KJV]',
+        nas:  '[Not available in NAS]',
+        orig: '[Not available in H/G]',
+        abp:  '[Not available in ABe]',
+        abgr: '[Not available in ABg]',
+        t4t:  '[Included in previous verse]',
+        kan:  '[Not available in KAN]',
+        tlg:  '[Not available in TLG]',
+        mal:  '[Not available in MAL]',
+        tam:  '[Not available in TAM]',
+        hin:  '[Not available in HIN]',
+        spa:  '[Not available in SPA]',
+        lxx:  '[Not available in LXX]'
+    };
 
-const bookFullNameMap = {
-    GEN: 'Genesis', EXO: 'Exodus', LEV: 'Leviticus', NUM: 'Numbers', DEU: 'Deuteronomy',
-    JOS: 'Joshua', JDG: 'Judges', RUT: 'Ruth', '1SA': '1 Samuel', '2SA': '2 Samuel',
-    '1KI': '1 Kings', '2KI': '2 Kings', '1CH': '1 Chronicles', '2CH': '2 Chronicles',
-    EZR: 'Ezra', NEH: 'Nehemiah', EST: 'Esther', JOB: 'Job', PSA: 'Psalms',
-    PRO: 'Proverbs', ECC: 'Ecclesiastes', SOL: 'Song of Solomon', ISA: 'Isaiah',
-    JER: 'Jeremiah', LAM: 'Lamentations', EZE: 'Ezekiel', DAN: 'Daniel',
-    HOS: 'Hosea', JOE: 'Joel', AMO: 'Amos', OBA: 'Obadiah', JON: 'Jonah',
-    MIC: 'Micah', NAH: 'Nahum', HAB: 'Habakkuk', ZEP: 'Zephaniah', HAG: 'Haggai',
-    ZEC: 'Zechariah', MAL: 'Malachi', MAT: 'Matthew', MAR: 'Mark', LUK: 'Luke',
-    JOH: 'John', ACT: 'Acts', ROM: 'Romans', '1CO': '1 Corinthians', '2CO': '2 Corinthians',
-    GAL: 'Galatians', EPH: 'Ephesians', PHI: 'Philippians', COL: 'Colossians',
-    '1TH': '1 Thessalonians', '2TH': '2 Thessalonians', '1TI': '1 Timothy', '2TI': '2 Timothy',
-    TIT: 'Titus', PHM: 'Philemon', HEB: 'Hebrews', JAM: 'James', '1PE': '1 Peter',
-    '2PE': '2 Peter', '1JO': '1 John', '2JO': '2 John', '3JO': '3 John', JUD: 'Jude', REV: 'Revelation'
-};
+    const bookFullNameMap = {
+        GEN: 'Genesis', EXO: 'Exodus', LEV: 'Leviticus', NUM: 'Numbers', DEU: 'Deuteronomy',
+        JOS: 'Joshua', JDG: 'Judges', RUT: 'Ruth', '1SA': '1 Samuel', '2SA': '2 Samuel',
+        '1KI': '1 Kings', '2KI': '2 Kings', '1CH': '1 Chronicles', '2CH': '2 Chronicles',
+        EZR: 'Ezra', NEH: 'Nehemiah', EST: 'Esther', JOB: 'Job', PSA: 'Psalms',
+        PRO: 'Proverbs', ECC: 'Ecclesiastes', SOL: 'Song of Solomon', ISA: 'Isaiah',
+        JER: 'Jeremiah', LAM: 'Lamentations', EZE: 'Ezekiel', DAN: 'Daniel',
+        HOS: 'Hosea', JOE: 'Joel', AMO: 'Amos', OBA: 'Obadiah', JON: 'Jonah',
+        MIC: 'Micah', NAH: 'Nahum', HAB: 'Habakkuk', ZEP: 'Zephaniah', HAG: 'Haggai',
+        ZEC: 'Zechariah', MAL: 'Malachi', MAT: 'Matthew', MAR: 'Mark', LUK: 'Luke',
+        JOH: 'John', ACT: 'Acts', ROM: 'Romans', '1CO': '1 Corinthians', '2CO': '2 Corinthians',
+        GAL: 'Galatians', EPH: 'Ephesians', PHI: 'Philippians', COL: 'Colossians',
+        '1TH': '1 Thessalonians', '2TH': '2 Thessalonians', '1TI': '1 Timothy', '2TI': '2 Timothy',
+        TIT: 'Titus', PHM: 'Philemon', HEB: 'Hebrews', JAM: 'James', '1PE': '1 Peter',
+        '2PE': '2 Peter', '1JO': '1 John', '2JO': '2 John', '3JO': '3 John', JUD: 'Jude', REV: 'Revelation'
+    };
 
-const origBookNames = {
-    GEN: 'בְּרֵאשִׁית', EXO: 'שְׁמוֹת', LEV: 'וַיִּקְרָא', NUM: 'בְּמִדְבַּר', DEU: 'דְּבָרִים',
-    JOS: 'יְהוֹשֻׁעַ', JDG: 'שֹׁפְטִים', RUT: 'רוּת', '1SA': 'שְׁמוּאֵל א', '2SA': 'שְׁמוּאֵל ב',
-    '1KI': 'מְלָכִים א', '2KI': 'מְלָכִים ב', '1CH': 'דִּבְרֵי הַיָּמִים א', '2CH': 'דִּבְרֵי הַיָּמִים ב',
-    EZR: 'עֶזְרָא', NEH: 'נְחֶמְיָה', EST: 'אֶסְתֵּר', JOB: 'אִיּוֹב', PSA: 'תְּהִלִּים',
-    PRO: 'מִשְׁלֵי', ECC: 'קֹהֶלֶת', SOL: 'שִׁיר הַשִּׁירִים', ISA: 'יְשַׁעְיָהוּ',
-    JER: 'יִרְמְיָהוּ', LAM: 'אֵיכָה', EZE: 'יְחֶזְקֵאל', DAN: 'דָּנִיֵּאל',
-    HOS: 'הוֹשֵׁעַ', JOE: 'יוֹאֵל', AMO: 'עָמוֹס', OBA: 'עֹבַדְיָה', JON: 'יוֹנָה',
-    MIC: 'מִיכָה', NAH: 'נַחוּם', HAB: 'חֲבַקּוּק', ZEP: 'צְפַנְיָה', HAG: 'חַגַּי',
-    ZEC: 'זְכַרְיָה', MAL: 'מַלְאָכִי', MAT: 'Κατὰ Μαθθαῖον', MAR: 'Κατὰ Μᾶρκον', LUK: 'Κατὰ Λουκᾶν',
-    JOH: 'Κατὰ Ἰωάννην', ACT: 'Πράξεις Ἀποστόλων', ROM: 'Πρὸς Ῥωμαίους', '1CO': 'Πρὸς Κορινθίους Α΄', '2CO': 'Πρὸς Κορινθίους Β΄',
-    GAL: 'Πρὸς Γαλάτας', EPH: 'Πρὸς Ἐφεσίους', PHI: 'Πρὸς Φιλιππησίους', COL: 'Πρὸς Κολοσσαεῖς',
-    '1TH': 'Πρὸς Θεσσαλονικεῖς Α΄', '2TH': 'Πρὸς Θεσσαλονικεῖς Β΄', '1TI': 'Πρὸς Τιμόθεον Α΄', '2TI': 'Πρὸς Τιμόθεον Β΄',
-    TIT: 'Πρὸς Τίτον', PHM: 'Πρὸς Φιλήμονα', HEB: 'Πρὸς Ἑβραίους', JAM: 'Ἰακώβου', '1PE': 'Πέτρου Α΄',
-    '2PE': 'Πέτρου Β΄', '1JO': 'Ἰωάννου Α΄', '2JO': 'Ἰωάννου Β΄', '3JO': 'Ἰωάννου Γ΄', JUD: 'Ἰούδα', REV: 'Ἀποκάλυψις Ἰωάννου'
-};
-
-function getBookNameForVer(code, verKey) {
-    if (['kjv', 'nas', 'abp', 't4t', 'lxx'].includes(verKey)) {
+    function getEnglishBookName(code) {
         return bookFullNameMap[code] || code;
     }
-    if (verKey === 'orig') {
-        return (typeof origBookNames !== 'undefined' && origBookNames[code]) ? origBookNames[code] : (bookFullNameMap[code] || code);
-    }
-    if (typeof regionalBookNames !== 'undefined' && regionalBookNames[verKey] && regionalBookNames[verKey][code]) {
-        return regionalBookNames[verKey][code];
-    }
-    return bookFullNameMap[code] || code;
-}
 
-function getDualBookName(code) {
-    const leftName = getBookNameForVer(code, activeLeft);
-    const rightName = getBookNameForVer(code, activeRight);
+    const availableBooks = {{AVAILABLE_BOOKS_JSON}};
+    const availableChapters = {{AVAILABLE_CHAPTERS_JSON}};
+    const initialChapterData = {{INITIAL_CHAPTER_DATA_JSON}};
 
-    if (leftName === rightName) {
-        return leftName;
-    }
-    return leftName + ' / ' + rightName;
-}
+    let currentBook = initialChapterData.book;
+    let currentChapter = initialChapterData.chapter;
+    let currentVerses = initialChapterData.verses || [];
+    let prevTarget = null;
+    let nextTarget = null;
+    let navHistory = [];
+    let toastTimer = null;
 
-const availableBooks = {{AVAILABLE_BOOKS_JSON}};
-const availableChapters = {{AVAILABLE_CHAPTERS_JSON}};
-const initialChapterData = {{INITIAL_CHAPTER_DATA_JSON}};
+    let currentPickerTab = 'ot';
+    let expandedBookCode = null;
+    let pickerOpeningFlag = false;
 
-let currentBook = initialChapterData.book;
-let currentChapter = initialChapterData.chapter;
-let currentVerses = initialChapterData.verses || [];
-let prevTarget = null;
-let nextTarget = null;
-let navHistory = [];
-let toastTimer = null;
+    // Active text-search state
+    let searchState = {
+        active: false,
+        query: '',
+        page: 1,
+        total: 0,
+        totalPages: 1,
+        pageSize: 12,
+        testament: 'all',
+        verFilter: 'both',
+        bookFilter: 'all',
+        counts: {
+            leftOt: 0, leftNt: 0, leftAll: 0,
+            rightOt: 0, rightNt: 0, rightAll: 0,
+            totalOt: 0, totalNt: 0, totalAll: 0
+        },
+        results: []
+    };
 
-// Active text-search state
-let searchState = {
-    active: false,
-    query: '',
-    page: 1,
-    total: 0,
-    totalPages: 1,
-    pageSize: 12,
-    testament: 'all',
-    verFilter: 'both',
-    bookFilter: 'all',
-    counts: {
-        leftOt: 0, leftNt: 0, leftAll: 0,
-        rightOt: 0, rightNt: 0, rightAll: 0,
-        totalOt: 0, totalNt: 0, totalAll: 0
-    },
-    results: []
-};
-
-function escHtml(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-}
-
-function escapeRegExp(str) {
-    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function highlightQueryHtml(text, query) {
-    const safeText = escHtml(text);
-    if (!query) return safeText;
-    const safeQuery = escHtml(query.trim());
-    if (!safeQuery) return safeText;
-    try {
-        const regex = new RegExp('(' + escapeRegExp(safeQuery) + ')', 'gi');
-        return safeText.replace(regex, '<mark class="search-hl">$1</mark>');
-    } catch (e) {
-        return safeText;
-    }
-}
-
-function showChapterToast(label) {
-    const toast = document.getElementById('chapterToast');
-    if (!toast) return;
-    toast.textContent = label;
-    toast.classList.add('show');
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-    }, 850);
-}
-
-function applyTheme(theme) {
-    if (!themes.includes(theme)) theme = 'dark';
-    currentTheme = theme;
-    rootEl.setAttribute('data-theme', theme);
-    const themeBtn = document.getElementById('themeButton');
-    if (themeBtn) {
-        themeBtn.textContent = theme === 'dark' ? 'D' : (theme === 'teal' ? 'T' : (theme === 'warm' ? 'W' : 'C'));
-    }
-    localStorage.setItem('bibleTheme', theme);
-}
-
-function cycleTheme() {
-    applyTheme(themes[(themes.indexOf(currentTheme) + 1) % themes.length]);
-}
-
-function applyFontSize(sizePx) {
-    currentFontSize = Math.min(28, Math.max(12, sizePx));
-    rootEl.style.setProperty('--verse-font-size', currentFontSize + 'px');
-    localStorage.setItem('bibleFontSize', currentFontSize);
-}
-
-function changeFontSize(delta) {
-    applyFontSize(currentFontSize + delta);
-}
-
-function buildCellInner(row, ver) {
-    const numLabel = (ver === 't4t' && row.t4tL) ? row.t4tL : row.v;
-    const text = row[ver];
-    if (text !== undefined && text !== null) {
-        return '<span class="verse-number">' + escHtml(numLabel) + '</span> ' + escHtml(text);
-    }
-    return '<span class="verse-number">' + escHtml(numLabel) + '</span> <span class="verse-merged">' + missingFallbacks[ver] + '</span>';
-}
-
-function buildSearchCellInner(row, ver, query) {
-    const numLabel = (ver === 't4t' && row.t4tL) ? row.t4tL : row.v;
-    const refLabel = row.book + ' ' + row.chapter + ':' + numLabel;
-    const badgeHtml = '<span class="ref-badge" onclick="openSearchResult(\'' + escHtml(row.book) + '\',' + row.chapter + ',' + row.v + ')">' + escHtml(refLabel) + '</span>';
-    const text = row[ver];
-    if (text !== undefined && text !== null) {
-        return badgeHtml + highlightQueryHtml(text, query);
-    }
-    return badgeHtml + '<span class="verse-merged">' + missingFallbacks[ver] + '</span>';
-}
-
-function isHebrewText(str) {
-    return typeof str === 'string' && /[\u0590-\u05FF]/.test(str);
-}
-
-function updateInlineClearButton() {
-    const btn = document.getElementById('clearSearchInlineBtn');
-    const input = document.getElementById('chapterSearch');
-    if (!btn) return;
-    const hasVal = input && input.value.trim().length > 0;
-    btn.classList.toggle('show', searchState.active || hasVal);
-}
-
-function renderVersesDom() {
-    updateInlineClearButton();
-    if (searchState.active) {
-        renderSearchVersesDom();
-        return;
-    }
-    let html = '';
-    const isOrig = (activeLeft === 'orig');
-    for (let i = 0; i < currentVerses.length; i++) {
-        const row = currentVerses[i];
-        const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
-        html += '<div class="version-row" id="v' + row.v + '">'
-              + '<div class="verse-cell left-cell' + leftRtl + '">' + buildCellInner(row, activeLeft) + '</div>'
-              + '<div class="verse-cell right-cell">' + buildCellInner(row, activeRight) + '</div>'
-              + '</div>';
-    }
-    document.getElementById('parallelContent').innerHTML = html;
-}
-
-function renderSearchVersesDom() {
-    const q = searchState.query;
-    const total = searchState.total;
-    const page = searchState.page;
-    const totalPages = searchState.totalPages;
-    const rows = searchState.results || [];
-    const counts = searchState.counts || {};
-    const curTestament = searchState.testament || 'all';
-    const curVerFilter = searchState.verFilter || 'both';
-    const curBookFilter = searchState.bookFilter || 'all';
-
-    const leftCode = (versionLabels[activeLeft] || activeLeft.toUpperCase());
-    const rightCode = (versionLabels[activeRight] || activeRight.toUpperCase());
-
-    function isBadgeActive(t, vf) {
-        return curTestament === t && curVerFilter === vf && curBookFilter === 'all';
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 
-    function renderBadge(count, testament, verFilter, labelPrefix) {
-        const isActive = isBadgeActive(testament, verFilter);
-        if (!count || count <= 0) {
-            return '<span class="search-count-link disabled">[' + labelPrefix + '-0]</span>';
+    function escapeRegExp(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function highlightQueryHtml(text, query) {
+        const safeText = escHtml(text);
+        if (!query) return safeText;
+        const safeQuery = escHtml(query.trim());
+        if (!safeQuery) return safeText;
+        try {
+            const regex = new RegExp('(' + escapeRegExp(safeQuery) + ')', 'gi');
+            return safeText.replace(regex, '<mark class="search-hl">$1</mark>');
+        } catch (e) {
+            return safeText;
         }
-        return '<span class="search-count-link' + (isActive ? ' active' : '') + '" onclick="applySearchFilter(\'' + testament + '\', \'' + verFilter + '\')">[' + labelPrefix + '-' + count + ']</span>';
     }
 
-    function renderPlusBtn(count, testament, verFilter) {
-        if (!count || count <= 0) {
-            return '<span class="search-plus-btn disabled">[ + ]</span>';
+    function showChapterToast(label) {
+        const toast = document.getElementById('chapterToast');
+        if (!toast) return;
+        toast.textContent = label;
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 850);
+    }
+
+    function applyTheme(theme) {
+        if (!themes.includes(theme)) theme = 'dark';
+        currentTheme = theme;
+        rootEl.setAttribute('data-theme', theme);
+        const themeBtn = document.getElementById('themeButton');
+        if (themeBtn) {
+            themeBtn.textContent = theme === 'dark' ? 'D' : (theme === 'teal' ? 'T' : (theme === 'warm' ? 'W' : 'C'));
         }
-        return '<span class="search-plus-btn" onclick="openBookFilterModal(\'' + testament + '\', \'' + verFilter + '\', event)" title="Select ' + (testament === 'ot' ? 'Old Testament' : 'New Testament') + ' book">[ + ]</span>';
+        localStorage.setItem('bibleTheme', theme);
     }
 
-    const bookSuffix = (curBookFilter !== 'all') ? (' in ' + curBookFilter) : '';
-    const pageInfoText = total > 0 ? ('(Pg ' + page + ' of ' + totalPages + ' &mdash; ' + total + ' verses)') : '(0 matches)';
+    function cycleTheme(e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        applyTheme(themes[(themes.indexOf(currentTheme) + 1) % themes.length]);
+    }
 
-    let html = '<div class="search-banner">'
-        + '<div class="search-banner-top-row">'
-        + '<div class="search-banner-title">Search: &ldquo;<strong>' + escHtml(q) + '</strong>&rdquo;' + escHtml(bookSuffix) + ' <span style="font-weight:normal;opacity:0.85;font-size:12px;margin-left:6px;">' + pageInfoText + '</span></div>'
-        + '<button type="button" class="search-banner-close-btn" onclick="clearVerseSearch()" title="Clear Search">&times;</button>'
-        + '</div>'
-        + '<div class="search-breakdown-container">'
+    function applyFontSize(sizePx) {
+        currentFontSize = Math.min(28, Math.max(12, sizePx));
+        rootEl.style.setProperty('--verse-font-size', currentFontSize + 'px');
+        localStorage.setItem('bibleFontSize', currentFontSize);
+    }
 
-        // Row 1: Left Version Links
-        + '<div class="search-breakdown-row">'
-        + '<span class="search-ver-code">' + escHtml(leftCode) + ':</span>'
-        + '<div class="search-badges-group">'
-        + renderBadge(counts.leftOt, 'ot', 'left', 'O')
-        + renderPlusBtn(counts.leftOt, 'ot', 'left')
-        + renderBadge(counts.leftNt, 'nt', 'left', 'N')
-        + renderPlusBtn(counts.leftNt, 'nt', 'left')
-        + renderBadge(counts.leftAll, 'all', 'left', 'T')
-        + '</div>'
-        + '</div>'
+    function buildCellInner(row, ver) {
+        const numLabel = (ver === 't4t' && row.t4tL) ? row.t4tL : row.v;
+        const text = row[ver];
+        if (text !== undefined && text !== null) {
+            return '<span class="verse-number">' + escHtml(numLabel) + '</span> ' + escHtml(text);
+        }
+        return '<span class="verse-number">' + escHtml(numLabel) + '</span> <span class="verse-merged">' + missingFallbacks[ver] + '</span>';
+    }
 
-        // Row 2: Right Version Links
-        + '<div class="search-breakdown-row">'
-        + '<span class="search-ver-code">' + escHtml(rightCode) + ':</span>'
-        + '<div class="search-badges-group">'
-        + renderBadge(counts.rightOt, 'ot', 'right', 'O')
-        + renderPlusBtn(counts.rightOt, 'ot', 'right')
-        + renderBadge(counts.rightNt, 'nt', 'right', 'N')
-        + renderPlusBtn(counts.rightNt, 'nt', 'right')
-        + renderBadge(counts.rightAll, 'all', 'right', 'T')
-        + '</div>'
-        + '</div>'
+    function buildSearchCellInner(row, ver, query) {
+        const numLabel = (ver === 't4t' && row.t4tL) ? row.t4tL : row.v;
+        const refLabel = row.book + ' ' + row.chapter + ':' + numLabel;
+        const badgeHtml = '<span class="ref-badge" onclick="openSearchResult(\'' + escHtml(row.book) + '\',' + row.chapter + ',' + row.v + ')">' + escHtml(refLabel) + '</span>';
+        const text = row[ver];
+        if (text !== undefined && text !== null) {
+            return badgeHtml + highlightQueryHtml(text, query);
+        }
+        return badgeHtml + '<span class="verse-merged">' + missingFallbacks[ver] + '</span>';
+    }
 
-        + '</div>' // end search-breakdown-container
-        + '</div>'; // end search-banner
+    function isHebrewText(str) {
+        return typeof str === 'string' && /[\u0590-\u05FF]/.test(str);
+    }
 
-    if (rows.length === 0) {
-        html += '<div style="padding: 28px 16px; text-align: center; font-size: 15px;">'
-              + 'No matching verses found for <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong>' + escHtml(bookSuffix) + ' in versions <strong>' + escHtml(leftCode) + '</strong> and <strong>' + escHtml(rightCode) + '</strong>.'
-              + '<div style="margin-top:14px;"><button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">Return to ' + escHtml(currentBook + ' ' + currentChapter) + '</button></div>'
-              + '</div>';
-    } else {
-        html += '<div id="searchResultsList">';
+    function updateInlineClearButton() {
+        const btn = document.getElementById('clearSearchInlineBtn');
+        const input = document.getElementById('chapterSearch');
+        if (!btn) return;
+        const hasVal = input && input.value.trim().length > 0;
+        btn.classList.toggle('show', searchState.active || hasVal);
+    }
+
+    function renderVersesDom() {
+        updateInlineClearButton();
+        if (searchState.active) {
+            renderSearchVersesDom();
+            return;
+        }
+        let html = '';
         const isOrig = (activeLeft === 'orig');
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
+        for (let i = 0; i < currentVerses.length; i++) {
+            const row = currentVerses[i];
             const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
-            html += '<div class="version-row">'
-                  + '<div class="verse-cell left-cell' + leftRtl + '">' + buildSearchCellInner(row, activeLeft, q) + '</div>'
-                  + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
+            html += '<div class="version-row" id="v' + row.v + '">'
+                  + '<div class="verse-cell left-cell' + leftRtl + '">' + buildCellInner(row, activeLeft) + '</div>'
+                  + '<div class="verse-cell right-cell">' + buildCellInner(row, activeRight) + '</div>'
                   + '</div>';
         }
-        html += '</div>';
+        document.getElementById('parallelContent').innerHTML = html;
     }
 
-    document.getElementById('parallelContent').innerHTML = html;
-}
+    function renderSearchVersesDom() {
+        const q = searchState.query;
+        const total = searchState.total;
+        const page = searchState.page;
+        const totalPages = searchState.totalPages;
+        const rows = searchState.results || [];
+        const counts = searchState.counts || {};
+        const curTestament = searchState.testament || 'all';
+        const curVerFilter = searchState.verFilter || 'both';
+        const curBookFilter = searchState.bookFilter || 'all';
 
-function openBookFilterModal(testament, verFilter, e) {
-    if (e) e.stopPropagation();
-    if (!window.AndroidBridge || !window.AndroidBridge.getBookCounts) return;
+        const leftCode = (versionLabels[activeLeft] || activeLeft.toUpperCase());
+        const rightCode = (versionLabels[activeRight] || activeRight.toUpperCase());
 
-    const query = searchState.query;
-    if (!query) return;
+        function isBadgeActive(t, vf) {
+            return curTestament === t && curVerFilter === vf && curBookFilter === 'all';
+        }
 
-    const verCode = verFilter === 'left' ? activeLeft : activeRight;
-    const verLabel = versionLabels[verCode] || verCode.toUpperCase();
-    const testLabel = testament === 'ot' ? 'Old Testament' : (testament === 'nt' ? 'New Testament' : 'All Testaments');
-
-    const titleEl = document.getElementById('bookModalTitle');
-    if (titleEl) {
-        titleEl.textContent = verLabel + ' ' + testLabel + ' Books';
-    }
-
-    const rawJson = window.AndroidBridge.getBookCounts(query, activeLeft, activeRight, testament, verFilter);
-    const booksList = JSON.parse(rawJson || '[]');
-
-    const bodyEl = document.getElementById('bookModalBody');
-    if (!bodyEl) return;
-    bodyEl.innerHTML = '';
-
-    if (booksList.length === 0) {
-        bodyEl.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;opacity:0.8;">No matching books found.</div>';
-    } else {
-        booksList.forEach(item => {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'book-modal-item';
-            rowDiv.onclick = () => {
-                closeBookFilterModal();
-                applyBookFilter(item.book, testament, verFilter);
-            };
-
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = item.book;
-
-            const countSpan = document.createElement('span');
-            countSpan.className = 'book-modal-count';
-            countSpan.textContent = item.count + ' matches';
-
-            rowDiv.appendChild(nameSpan);
-            rowDiv.appendChild(countSpan);
-            bodyEl.appendChild(rowDiv);
-        });
-    }
-
-    const modal = document.getElementById('bookFilterModal');
-    if (modal) modal.classList.add('show');
-}
-
-function closeBookFilterModal() {
-    const modal = document.getElementById('bookFilterModal');
-    if (modal) modal.classList.remove('show');
-}
-
-function onBookModalBackdropClick(e) {
-    if (e.target.id === 'bookFilterModal') {
-        closeBookFilterModal();
-    }
-}
-
-function applyBookFilter(bookCode, testament, verFilter) {
-    runKeywordSearch(searchState.query, 1, testament, verFilter, null, bookCode);
-}
-
-let retainedSearch = null; // { query: string, page: number }
-
-function showSearchReturnBar() {
-    if (!retainedSearch) return;
-    const bar = document.getElementById('searchReturnBar');
-    const queryEl = document.getElementById('searchReturnQuery');
-    const pageEl = document.getElementById('searchReturnPage');
-    if (!bar) return;
-    if (queryEl) queryEl.textContent = retainedSearch.query;
-    if (pageEl) pageEl.textContent = 'Pg ' + retainedSearch.page;
-    bar.classList.add('show');
-}
-
-function hideSearchReturnBar() {
-    const bar = document.getElementById('searchReturnBar');
-    if (bar) bar.classList.remove('show');
-}
-
-function dismissRetainedSearch(e) {
-    if (e) e.stopPropagation();
-    retainedSearch = null;
-    hideSearchReturnBar();
-    navHistory = navHistory.filter(item => !item.isSearchSnapshot);
-}
-
-function restoreRetainedSearch(e) {
-    if (e) e.stopPropagation();
-    if (!retainedSearch) return;
-    const q = retainedSearch.query;
-    const p = retainedSearch.page;
-    retainedSearch = null;
-    hideSearchReturnBar();
-    runKeywordSearch(q, p);
-}
-
-const searchPageCache = new Map();
-
-function prefetchSearchPage(query, page, testament, verFilter, bookFilter = 'all') {
-    if (!query || page < 1 || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
-    const cacheKey = `${query.trim()}:${page}:${testament}:${verFilter}:${bookFilter}:${activeLeft}:${activeRight}`;
-    if (searchPageCache.has(cacheKey)) return;
-    setTimeout(() => {
-        try {
-            const rawJson = window.AndroidBridge.searchVerses(query.trim(), activeLeft, activeRight, page, testament, verFilter, bookFilter);
-            if (rawJson) {
-                searchPageCache.set(cacheKey, JSON.parse(rawJson));
+        function renderBadge(count, testament, verFilter, labelPrefix) {
+            const isActive = isBadgeActive(testament, verFilter);
+            if (!count || count <= 0) {
+                return '<span class="search-count-link disabled">[' + labelPrefix + '-0]</span>';
             }
-        } catch (_) {}
-    }, 60);
-}
+            return '<span class="search-count-link' + (isActive ? ' active' : '') + '" onclick="applySearchFilter(\'' + testament + '\', \'' + verFilter + '\')">[' + labelPrefix + '-' + count + ']</span>';
+        }
 
-function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both', swipeDir = null, bookFilter = 'all') {
-    hideSearchReturnBar();
-    const trimmed = query.trim();
-    if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
+        function renderPlusBtn(count, testament, verFilter) {
+            if (!count || count <= 0) {
+                return '<span class="search-plus-btn disabled">[ + ]</span>';
+            }
+            return '<span class="search-plus-btn" onclick="openBookFilterModal(\'' + testament + '\', \'' + verFilter + '\', event)" title="Select ' + (testament === 'ot' ? 'Old Testament' : 'New Testament') + ' book">[ + ]</span>';
+        }
 
-    const resultsPopup = document.getElementById('searchResults');
-    const input = document.getElementById('chapterSearch');
-    if (resultsPopup) resultsPopup.classList.remove('show');
-    if (input) {
-        input.value = trimmed;
-        input.blur();
+        const bookSuffix = (curBookFilter !== 'all') ? (' in ' + curBookFilter) : '';
+        const pageInfoText = total > 0 ? ('(Pg ' + page + ' of ' + totalPages + ' &mdash; ' + total + ' verses)') : '(0 matches)';
+
+        let html = '<div class="search-banner">'
+            + '<div class="search-banner-top-row">'
+            + '<div class="search-banner-title">Search: &ldquo;<strong>' + escHtml(q) + '</strong>&rdquo;' + escHtml(bookSuffix) + ' <span style="font-weight:normal;opacity:0.85;font-size:12px;margin-left:6px;">' + pageInfoText + '</span></div>'
+            + '<button type="button" class="search-banner-close-btn" onclick="clearVerseSearch()" title="Clear Search">&times;</button>'
+            + '</div>'
+            + '<div class="search-breakdown-container">'
+            + '<div class="search-breakdown-row">'
+            + '<span class="search-ver-code">' + escHtml(leftCode) + ':</span>'
+            + '<div class="search-badges-group">'
+            + renderBadge(counts.leftOt, 'ot', 'left', 'O')
+            + renderPlusBtn(counts.leftOt, 'ot', 'left')
+            + renderBadge(counts.leftNt, 'nt', 'left', 'N')
+            + renderPlusBtn(counts.leftNt, 'nt', 'left')
+            + renderBadge(counts.leftAll, 'all', 'left', 'T')
+            + '</div>'
+            + '</div>'
+            + '<div class="search-breakdown-row">'
+            + '<span class="search-ver-code">' + escHtml(rightCode) + ':</span>'
+            + '<div class="search-badges-group">'
+            + renderBadge(counts.rightOt, 'ot', 'right', 'O')
+            + renderPlusBtn(counts.rightOt, 'ot', 'right')
+            + renderBadge(counts.rightNt, 'nt', 'right', 'N')
+            + renderPlusBtn(counts.rightNt, 'nt', 'right')
+            + renderBadge(counts.rightAll, 'all', 'right', 'T')
+            + '</div>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+
+        if (rows.length === 0) {
+            html += '<div style="padding: 28px 16px; text-align: center; font-size: 15px;">'
+                  + 'No matching verses found for <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong>' + escHtml(bookSuffix) + ' in versions <strong>' + escHtml(leftCode) + '</strong> and <strong>' + escHtml(rightCode) + '</strong>.'
+                  + '<div style="margin-top:14px;"><button type="button" class="filter-btn clear-btn" onclick="clearVerseSearch()">Return to ' + escHtml(currentBook + ' ' + currentChapter) + '</button></div>'
+                  + '</div>';
+        } else {
+            html += '<div id="searchResultsList">';
+            const isOrig = (activeLeft === 'orig');
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
+                html += '<div class="version-row">'
+                      + '<div class="verse-cell left-cell' + leftRtl + '">' + buildSearchCellInner(row, activeLeft, q) + '</div>'
+                      + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
+                      + '</div>';
+            }
+            html += '</div>';
+        }
+
+        document.getElementById('parallelContent').innerHTML = html;
     }
 
-    const cacheKey = `${trimmed}:${page}:${testament}:${verFilter}:${bookFilter}:${activeLeft}:${activeRight}`;
-    let data = searchPageCache.get(cacheKey);
+    function openBookFilterModal(testament, verFilter, e) {
+        if (e) e.stopPropagation();
+        if (!window.AndroidBridge || !window.AndroidBridge.getBookCounts) return;
 
-    if (!data) {
-        const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter, bookFilter);
-        data = JSON.parse(rawJson);
-        searchPageCache.set(cacheKey, data);
+        const modal = document.getElementById('bookFilterModal');
+        const titleEl = document.getElementById('bookModalTitle');
+        const bodyEl = document.getElementById('bookModalBody');
+        if (!modal || !bodyEl) return;
+
+        const testLabel = testament === 'ot' ? 'Old Testament' : (testament === 'nt' ? 'New Testament' : 'All Books');
+        const verCode = verFilter === 'left' ? (versionLabels[activeLeft] || activeLeft.toUpperCase()) : (versionLabels[activeRight] || activeRight.toUpperCase());
+        if (titleEl) {
+            titleEl.textContent = 'Select Book (' + verCode + ' ' + testLabel + ')';
+        }
+
+        bodyEl.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;opacity:0.8;">Loading matching books...</div>';
+        modal.classList.add('show');
+
+        setTimeout(() => {
+            try {
+                const rawJson = window.AndroidBridge.getBookCounts(searchState.query, activeLeft, activeRight, testament, verFilter);
+                const bookCounts = JSON.parse(rawJson);
+
+                bodyEl.innerHTML = '';
+                if (!bookCounts || bookCounts.length === 0) {
+                    bodyEl.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;opacity:0.8;">No matching books found.</div>';
+                    return;
+                }
+
+                const resetItem = document.createElement('div');
+                resetItem.className = 'book-modal-item' + (searchState.bookFilter === 'all' ? ' active' : '');
+                resetItem.innerHTML = '<span>All ' + testLabel + ' Books</span>';
+                resetItem.onclick = () => {
+                    closeBookFilterModal();
+                    runKeywordSearch(searchState.query, 1, testament, verFilter, null, 'all');
+                };
+                bodyEl.appendChild(resetItem);
+
+                bookCounts.forEach(item => {
+                    const bookCode = item.book;
+                    const count = item.count;
+                    const fullName = getEnglishBookName(bookCode);
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'book-modal-item' + (searchState.bookFilter === bookCode ? ' active' : '');
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = bookCode + ' (' + fullName + ')';
+
+                    const countBadge = document.createElement('span');
+                    countBadge.className = 'book-modal-count';
+                    countBadge.textContent = count;
+
+                    itemDiv.appendChild(nameSpan);
+                    itemDiv.appendChild(countBadge);
+
+                    itemDiv.onclick = () => {
+                        closeBookFilterModal();
+                        runKeywordSearch(searchState.query, 1, testament, verFilter, null, bookCode);
+                    };
+
+                    bodyEl.appendChild(itemDiv);
+                });
+            } catch (err) {
+                console.error("openBookFilterModal error:", err);
+                bodyEl.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;color:red;">Error loading books.</div>';
+            }
+        }, 40);
     }
 
-    searchState.active = true;
-    searchState.query = data.query || trimmed;
-    searchState.page = data.page || page;
-    searchState.total = data.total || 0;
-    searchState.totalPages = data.totalPages || 1;
-    searchState.pageSize = data.pageSize || 12;
-    searchState.testament = testament;
-    searchState.verFilter = verFilter;
-    searchState.bookFilter = bookFilter;
-    searchState.counts = data.counts || {
-        leftOt: 0, leftNt: 0, leftAll: 0,
-        rightOt: 0, rightNt: 0, rightAll: 0,
-        totalOt: 0, totalNt: 0, totalAll: 0
-    };
-    searchState.results = data.results || [];
-
-    renderVersesDom();
-
-    const resultsList = document.getElementById('searchResultsList');
-    if (resultsList && (swipeDir === 'next' || swipeDir === 'prev')) {
-        resultsList.classList.remove('swipe-next', 'swipe-prev');
-        void resultsList.offsetWidth;
-        resultsList.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
-        showChapterToast('Page ' + searchState.page + ' of ' + searchState.totalPages);
+    function closeBookFilterModal() {
+        const modal = document.getElementById('bookFilterModal');
+        if (modal) modal.classList.remove('show');
     }
 
-    const container = document.getElementById('scrollContainer');
-    if (container) container.scrollTop = 0;
-
-    if (page < searchState.totalPages) {
-        prefetchSearchPage(trimmed, page + 1, testament, verFilter, bookFilter);
+    function onBookModalBackdropClick(e) {
+        if (e.target.id === 'bookFilterModal') {
+            closeBookFilterModal();
+        }
     }
-    if (page > 1) {
-        prefetchSearchPage(trimmed, page - 1, testament, verFilter, bookFilter);
+
+    let retainedSearch = null;
+
+    function showSearchReturnBar() {
+        if (!retainedSearch) return;
+        const bar = document.getElementById('searchReturnBar');
+        const queryEl = document.getElementById('searchReturnQuery');
+        const pageEl = document.getElementById('searchReturnPage');
+        if (!bar) return;
+        if (queryEl) queryEl.textContent = retainedSearch.query;
+        if (pageEl) pageEl.textContent = 'Pg ' + retainedSearch.page;
+        bar.classList.add('show');
     }
-}
 
-function applySearchFilter(testament, verFilter) {
-    runKeywordSearch(searchState.query, 1, testament, verFilter, null, 'all');
-}
-
-function changeSearchPage(delta) {
-    if (!searchState.active) return;
-    const targetPage = searchState.page + delta;
-    if (targetPage < 1 || targetPage > searchState.totalPages) return;
-    const swipeDir = delta > 0 ? 'next' : 'prev';
-    runKeywordSearch(searchState.query, targetPage, searchState.testament, searchState.verFilter, swipeDir, searchState.bookFilter);
-}
-
-function clearVerseSearch() {
-    dismissRetainedSearch();
-    const input = document.getElementById('chapterSearch');
-    const resultsPopup = document.getElementById('searchResults');
-    if (input) input.value = '';
-    if (resultsPopup) resultsPopup.classList.remove('show');
-
-    if (searchState.active) {
-        searchState.active = false;
-        searchState.query = '';
-        searchState.results = [];
-        renderVersesDom();
-    } else {
-        updateInlineClearButton();
+    function hideSearchReturnBar() {
+        const bar = document.getElementById('searchReturnBar');
+        if (bar) bar.classList.remove('show');
     }
-}
 
-function openSearchResult(book, chapter, verse) {
-    if (searchState.active) {
-        retainedSearch = {
-            query: searchState.query,
-            page: searchState.page
+    function dismissRetainedSearch(e) {
+        if (e) e.stopPropagation();
+        retainedSearch = null;
+        hideSearchReturnBar();
+        navHistory = navHistory.filter(item => !item.isSearchSnapshot);
+    }
+
+    function restoreRetainedSearch(e) {
+        if (e) e.stopPropagation();
+        if (!retainedSearch) return;
+        const q = retainedSearch.query;
+        const p = retainedSearch.page;
+        retainedSearch = null;
+        hideSearchReturnBar();
+        runKeywordSearch(q, p);
+    }
+
+    const searchPageCache = new Map();
+
+    function prefetchSearchPage(query, page, testament, verFilter, bookFilter = 'all') {
+        if (!query || page < 1 || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
+        const cacheKey = `${query.trim()}:${page}:${testament}:${verFilter}:${bookFilter}:${activeLeft}:${activeRight}`;
+        if (searchPageCache.has(cacheKey)) return;
+        setTimeout(() => {
+            try {
+                const rawJson = window.AndroidBridge.searchVerses(query.trim(), activeLeft, activeRight, page, testament, verFilter, bookFilter);
+                if (rawJson) {
+                    searchPageCache.set(cacheKey, JSON.parse(rawJson));
+                }
+            } catch (_) {}
+        }, 60);
+    }
+
+    function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both', swipeDir = null, bookFilter = 'all') {
+        hideSearchReturnBar();
+        const trimmed = query.trim();
+        if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
+
+        const resultsPopup = document.getElementById('searchResults');
+        const input = document.getElementById('chapterSearch');
+        if (resultsPopup) resultsPopup.classList.remove('show');
+        if (input) {
+            input.value = trimmed;
+            input.blur();
+        }
+
+        const cacheKey = `${trimmed}:${page}:${testament}:${verFilter}:${bookFilter}:${activeLeft}:${activeRight}`;
+        let data = searchPageCache.get(cacheKey);
+
+        if (!data) {
+            const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter, bookFilter);
+            data = JSON.parse(rawJson);
+            searchPageCache.set(cacheKey, data);
+        }
+
+        searchState.active = true;
+        searchState.query = data.query || trimmed;
+        searchState.page = data.page || page;
+        searchState.total = data.total || 0;
+        searchState.totalPages = data.totalPages || 1;
+        searchState.pageSize = data.pageSize || 12;
+        searchState.testament = testament;
+        searchState.verFilter = verFilter;
+        searchState.bookFilter = bookFilter;
+        searchState.counts = data.counts || {
+            leftOt: 0, leftNt: 0, leftAll: 0,
+            rightOt: 0, rightNt: 0, rightAll: 0,
+            totalOt: 0, totalNt: 0, totalAll: 0
         };
-        navHistory.push({
-            isSearchSnapshot: true,
-            query: searchState.query,
-            page: searchState.page
-        });
-        showSearchReturnBar();
-    }
+        searchState.results = data.results || [];
 
-    searchState.active = false;
-    const input = document.getElementById('chapterSearch');
-    if (input) input.value = '';
-    updateInlineClearButton();
-
-    const chapNum = Number(chapter) || 1;
-    if (book === currentBook && chapNum === currentChapter) {
         renderVersesDom();
-        requestAnimationFrame(() => scrollToVerse(verse));
-    } else {
-        navigateToPassage(book, chapNum, verse, false);
-    }
-}
 
-function showLeftVersion(version, skipRender = false) {
-    if (!['kjv', 'nas', 'orig'].includes(version)) version = 'kjv';
-    activeLeft = version;
-    document.getElementById('kjvButton').classList.toggle('active', version === 'kjv');
-    const nasBtn = document.getElementById('nasButton');
-    if (nasBtn) nasBtn.classList.toggle('active', version === 'nas');
-    document.getElementById('origButton').classList.toggle('active', version === 'orig');
-    localStorage.setItem('selectedFirstVersion', version);
-    if (!skipRender) {
-        if (searchState.active) {
-            runKeywordSearch(searchState.query, 1);
-        } else if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
-            const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter, activeLeft, activeRight);
-            renderChapterData(JSON.parse(rawJson), null);
-        } else {
-            renderVersesDom();
+        const resultsList = document.getElementById('searchResultsList');
+        if (resultsList && (swipeDir === 'next' || swipeDir === 'prev')) {
+            resultsList.classList.remove('swipe-next', 'swipe-prev');
+            void resultsList.offsetWidth;
+            resultsList.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
+            showChapterToast('Page ' + searchState.page + ' of ' + searchState.totalPages);
+        }
+
+        const container = document.getElementById('scrollContainer');
+        if (container) container.scrollTop = 0;
+
+        if (page < searchState.totalPages) {
+            prefetchSearchPage(trimmed, page + 1, testament, verFilter, bookFilter);
+        }
+        if (page > 1) {
+            prefetchSearchPage(trimmed, page - 1, testament, verFilter, bookFilter);
         }
     }
-}
 
-function showRightVersion(version, skipRender = false) {
-    const validRightVersions = ['abp', 'abgr', 't4t', 'lxx'];
-    if (!validRightVersions.includes(version)) version = 'abp';
+    function applySearchFilter(testament, verFilter) {
+        runKeywordSearch(searchState.query, 1, testament, verFilter, null, 'all');
+    }
 
-    activeRight = version;
+    function changeSearchPage(delta) {
+        if (!searchState.active) return;
+        const targetPage = searchState.page + delta;
+        if (targetPage < 1 || targetPage > searchState.totalPages) return;
+        const swipeDir = delta > 0 ? 'next' : 'prev';
+        runKeywordSearch(searchState.query, targetPage, searchState.testament, searchState.verFilter, swipeDir, searchState.bookFilter);
+    }
 
-    const abpBtn = document.getElementById('abpButton');
-    const abgrBtn = document.getElementById('abgrButton');
-    const t4tBtn = document.getElementById('t4tButton');
-    const lxxBtn = document.getElementById('lxxButton');
+    function clearVerseSearch() {
+        dismissRetainedSearch();
+        const input = document.getElementById('chapterSearch');
+        const resultsPopup = document.getElementById('searchResults');
+        if (input) input.value = '';
+        if (resultsPopup) resultsPopup.classList.remove('show');
 
-    if (abpBtn) abpBtn.classList.toggle('active', version === 'abp');
-    if (abgrBtn) abgrBtn.classList.toggle('active', version === 'abgr');
-    if (t4tBtn) t4tBtn.classList.toggle('active', version === 't4t');
-    if (lxxBtn) lxxBtn.classList.toggle('active', version === 'lxx');
-
-    localStorage.setItem('selectedSecondVersion', version);
-    if (!skipRender) {
         if (searchState.active) {
-            runKeywordSearch(searchState.query, 1);
-        } else if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
-            const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter, activeLeft, activeRight);
-            renderChapterData(JSON.parse(rawJson), null);
-        } else {
+            searchState.active = false;
+            searchState.query = '';
+            searchState.results = [];
             renderVersesDom();
+        } else {
+            updateInlineClearButton();
         }
     }
-}
 
-function renderChapterData(data, targetVerse = null, swipeDir = null) {
-    searchState.active = false;
-    currentBook = data.book;
-    currentChapter = Number(data.chapter);
-    currentVerses = data.verses || [];
+    function openSearchResult(book, chapter, verse) {
+        if (searchState.active) {
+            retainedSearch = {
+                query: searchState.query,
+                page: searchState.page
+            };
+            navHistory.push({
+                isSearchSnapshot: true,
+                query: searchState.query,
+                page: searchState.page
+            });
+            showSearchReturnBar();
+        }
 
-    const contentEl = document.getElementById('parallelContent');
-    contentEl.classList.remove('swipe-next', 'swipe-prev');
-    renderVersesDom();
+        searchState.active = false;
+        const input = document.getElementById('chapterSearch');
+        if (input) input.value = '';
+        updateInlineClearButton();
 
-    if (swipeDir === 'next' || swipeDir === 'prev') {
-        void contentEl.offsetWidth;
-        contentEl.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
-        showChapterToast(currentBook + ' ' + currentChapter);
+        const chapNum = Number(chapter) || 1;
+        if (book === currentBook && chapNum === currentChapter) {
+            renderVersesDom();
+            requestAnimationFrame(() => scrollToVerse(verse));
+        } else {
+            navigateToPassage(book, chapNum, verse, false);
+        }
     }
 
-    const passageLabel = document.getElementById('passagePickerLabel');
-    if (passageLabel) passageLabel.textContent = currentBook + ' ' + currentChapter;
+    function showLeftVersion(version, skipRender = false) {
+        const validLeftVersions = ['kjv', 'nas', 'orig', 'lxx'];
+        if (!validLeftVersions.includes(version)) version = 'kjv';
 
-    prevTarget = (data.prevBook && data.prevChapter)
-        ? { book: data.prevBook, chapter: data.prevChapter }
-        : null;
+        activeLeft = version;
 
-    nextTarget = (data.nextBook && data.nextChapter)
-        ? { book: data.nextBook, chapter: data.nextChapter }
-        : null;
+        const kjvBtn = document.getElementById('kjvButton');
+        const nasBtn = document.getElementById('nasButton');
+        const origBtn = document.getElementById('origButton');
+        const lxxBtn = document.getElementById('lxxButton');
 
-    const container = document.getElementById('scrollContainer');
-    if (targetVerse) {
-        requestAnimationFrame(() => scrollToVerse(targetVerse));
-    } else if (container) {
-        container.scrollTop = 0;
+        if (kjvBtn) kjvBtn.classList.toggle('active', version === 'kjv');
+        if (nasBtn) nasBtn.classList.toggle('active', version === 'nas');
+        if (origBtn) origBtn.classList.toggle('active', version === 'orig');
+        if (lxxBtn) lxxBtn.classList.toggle('active', version === 'lxx');
+
+        localStorage.setItem('selectedFirstVersion', version);
+        if (!skipRender) {
+            if (searchState.active) {
+                runKeywordSearch(searchState.query, 1);
+            } else if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+                const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter, activeLeft, activeRight);
+                renderChapterData(JSON.parse(rawJson), null);
+            } else {
+                renderVersesDom();
+            }
+        }
     }
 
-    localStorage.setItem('lastBook', currentBook);
-    localStorage.setItem('lastChapter', currentChapter);
-}
+    function showRightVersion(version, skipRender = false) {
+        const validRightVersions = ['abp', 'abgr', 't4t'];
+        if (!validRightVersions.includes(version)) version = 'abp';
 
-function onBookSelectChange(newBook) { navigateToPassage(newBook, 1, null); }
-function onChapterSelectChange(newChap) { navigateToPassage(currentBook, parseInt(newChap, 10) || 1, null); }
+        activeRight = version;
 
-function scrollToVerse(verseNum) {
-    if (!verseNum) return false;
-    const targetRow = document.getElementById('v' + verseNum);
-    if (!targetRow) return false;
-    document.querySelectorAll('.version-row.verse-highlight').forEach(r => r.classList.remove('verse-highlight'));
-    targetRow.classList.add('verse-highlight');
-    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return true;
-}
+        const abpBtn = document.getElementById('abpButton');
+        const abgrBtn = document.getElementById('abgrButton');
+        const t4tBtn = document.getElementById('t4tButton');
 
-function navigateToPassage(book, chapter, verse = null, pushHistory = true, swipeDir = null) {
-    const results = document.getElementById('searchResults');
-    const input = document.getElementById('chapterSearch');
-    if (results) results.classList.remove('show');
-    if (input) input.blur();
+        if (abpBtn) abpBtn.classList.toggle('active', version === 'abp');
+        if (abgrBtn) abgrBtn.classList.toggle('active', version === 'abgr');
+        if (t4tBtn) t4tBtn.classList.toggle('active', version === 't4t');
 
-    const wasSearchActive = searchState.active;
-    searchState.active = false;
-
-    const chapNum = Number(chapter) || 1;
-    if (book === currentBook && chapNum === currentChapter) {
-        if (wasSearchActive) renderVersesDom();
-        if (verse !== null) scrollToVerse(verse);
-        return;
+        localStorage.setItem('selectedSecondVersion', version);
+        if (!skipRender) {
+            if (searchState.active) {
+                runKeywordSearch(searchState.query, 1);
+            } else if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+                const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter, activeLeft, activeRight);
+                renderChapterData(JSON.parse(rawJson), null);
+            } else {
+                renderVersesDom();
+            }
+        }
     }
 
-    if (pushHistory) {
-        navHistory.push({ book: currentBook, chapter: currentChapter });
-        if (navHistory.length > 30) navHistory.shift();
+    function renderChapterData(data, targetVerse = null, swipeDir = null) {
+        searchState.active = false;
+        currentBook = data.book;
+        currentChapter = Number(data.chapter);
+        currentVerses = data.verses || [];
+
+        const contentEl = document.getElementById('parallelContent');
+        contentEl.classList.remove('swipe-next', 'swipe-prev');
+        renderVersesDom();
+
+        if (swipeDir === 'next' || swipeDir === 'prev') {
+            void contentEl.offsetWidth;
+            contentEl.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
+            showChapterToast(currentBook + ' ' + currentChapter);
+        }
+
+        const passageLabel = document.getElementById('passagePickerLabel');
+        if (passageLabel) passageLabel.textContent = currentBook + ' ' + currentChapter;
+
+        prevTarget = (data.prevBook && data.prevChapter)
+            ? { book: data.prevBook, chapter: data.prevChapter }
+            : null;
+
+        nextTarget = (data.nextBook && data.nextChapter)
+            ? { book: data.nextBook, chapter: data.nextChapter }
+            : null;
+
+        const container = document.getElementById('scrollContainer');
+        if (targetVerse) {
+            requestAnimationFrame(() => scrollToVerse(targetVerse));
+        } else if (container) {
+            container.scrollTop = 0;
+        }
+
+        localStorage.setItem('lastBook', currentBook);
+        localStorage.setItem('lastChapter', currentChapter);
     }
 
-    if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
-        const rawJson = window.AndroidBridge.getChapterData(book, chapNum, activeLeft, activeRight);
-        renderChapterData(JSON.parse(rawJson), verse, swipeDir);
+    function scrollToVerse(verseNum) {
+        if (!verseNum) return false;
+        const targetRow = document.getElementById('v' + verseNum);
+        if (!targetRow) return false;
+        document.querySelectorAll('.version-row.verse-highlight').forEach(r => r.classList.remove('verse-highlight'));
+        targetRow.classList.add('verse-highlight');
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return true;
     }
-}
 
-let pickerOpeningFlag = false;
+    function navigateToPassage(book, chapter, verse = null, pushHistory = true, swipeDir = null) {
+        const results = document.getElementById('searchResults');
+        const input = document.getElementById('chapterSearch');
+        if (results) results.classList.remove('show');
+        if (input) input.blur();
 
-let expandedBookCode = null;
+        const wasSearchActive = searchState.active;
+        searchState.active = false;
 
-function openPassagePickerModal(e) {
-    if (e && e.stopPropagation) e.stopPropagation();
+        const chapNum = Number(chapter) || 1;
+        if (book === currentBook && chapNum === currentChapter) {
+            if (wasSearchActive) renderVersesDom();
+            if (verse !== null) scrollToVerse(verse);
+            return;
+        }
 
-    const modal = document.getElementById('passagePickerModal');
-    if (!modal) return;
+        if (pushHistory) {
+            navHistory.push({ book: currentBook, chapter: currentChapter });
+            if (navHistory.length > 30) navHistory.shift();
+        }
 
-    modal.style.setProperty('display', 'flex', 'important');
-    modal.classList.add('show');
+        if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+            const rawJson = window.AndroidBridge.getChapterData(book, chapNum, activeLeft, activeRight);
+            renderChapterData(JSON.parse(rawJson), verse, swipeDir);
+        }
+    }
 
-    try {
+    /* Testament Tab Switching & Accordion Rendering */
+    function switchTestamentTab(testament, e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        currentPickerTab = testament;
+
+        const tabOT = document.getElementById('tabOT');
+        const tabNT = document.getElementById('tabNT');
+        if (tabOT) tabOT.classList.toggle('active', testament === 'ot');
+        if (tabNT) tabNT.classList.toggle('active', testament === 'nt');
+
+        renderPassagePickerList();
+    }
+
+    function renderPassagePickerList() {
         const bodyEl = document.getElementById('passagePickerBody');
         if (!bodyEl) return;
         bodyEl.innerHTML = '';
 
-        expandedBookCode = currentBook;
-
-        // Ensure availableBooks has all 66 books from your DB or fallback
         const otBooks = availableBooks.slice(0, 39);
         const ntBooks = availableBooks.slice(39);
+        const books = currentPickerTab === 'ot' ? otBooks : ntBooks;
 
-        function renderBookSection(headingTitle, bookList) {
-            if (!bookList || bookList.length === 0) return;
+        books.forEach(code => {
+            const isExpanded = (code === expandedBookCode);
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'passage-book-card' + (isExpanded ? ' expanded' : '');
+            cardDiv.id = 'pcard_' + code;
 
-            const headingDiv = document.createElement('div');
-            headingDiv.className = 'passage-testament-heading';
-            headingDiv.textContent = headingTitle;
-            bodyEl.appendChild(headingDiv);
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'passage-book-header';
+            headerDiv.onclick = (evt) => {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                toggleBookAccordion(code);
+            };
 
-            bookList.forEach(code => {
-                const isExpanded = (code === expandedBookCode);
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'passage-book-card' + (isExpanded ? ' expanded' : '');
-                cardDiv.id = 'pcard_' + code;
+            const codeSpan = document.createElement('span');
+            codeSpan.className = 'passage-book-code';
+            codeSpan.textContent = code;
 
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'passage-book-header';
-                headerDiv.onclick = (evt) => {
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'passage-book-name';
+            nameSpan.textContent = getEnglishBookName(code);
+
+            const arrowSpan = document.createElement('span');
+            arrowSpan.className = 'passage-arrow';
+            arrowSpan.textContent = '▾';
+
+            headerDiv.appendChild(codeSpan);
+            headerDiv.appendChild(nameSpan);
+            headerDiv.appendChild(arrowSpan);
+
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'passage-chapter-grid';
+            gridDiv.id = 'pgrid_' + code;
+
+            const chaps = (availableChapters && availableChapters[code]) ? availableChapters[code] : [1];
+            chaps.forEach(chapNum => {
+                const pill = document.createElement('button');
+                pill.type = 'button';
+                pill.className = 'passage-chap-pill' + (code === currentBook && chapNum === currentChapter ? ' active' : '');
+                pill.textContent = chapNum;
+                pill.onclick = (evt) => {
                     if (evt && evt.stopPropagation) evt.stopPropagation();
-                    toggleBookAccordion(code);
+                    closePassagePickerModal(evt);
+                    navigateToPassage(code, chapNum);
                 };
-
-                const codeSpan = document.createElement('span');
-                codeSpan.className = 'passage-book-code';
-                codeSpan.textContent = code;
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'passage-book-name';
-                nameSpan.textContent = (typeof getDualBookName === 'function') ? getDualBookName(code) : code;
-
-                const arrowSpan = document.createElement('span');
-                arrowSpan.className = 'passage-arrow';
-                arrowSpan.textContent = '▾';
-
-                headerDiv.appendChild(codeSpan);
-                headerDiv.appendChild(nameSpan);
-                headerDiv.appendChild(arrowSpan);
-
-                const gridDiv = document.createElement('div');
-                gridDiv.className = 'passage-chapter-grid';
-                gridDiv.id = 'pgrid_' + code;
-
-                const chaps = (availableChapters && availableChapters[code]) ? availableChapters[code] : [1];
-                chaps.forEach(chapNum => {
-                    const pill = document.createElement('button');
-                    pill.type = 'button';
-                    pill.className = 'passage-chap-pill' + (code === currentBook && chapNum === currentChapter ? ' active' : '');
-                    pill.textContent = chapNum;
-                    pill.onclick = (evt) => {
-                        if (evt && evt.stopPropagation) evt.stopPropagation();
-                        closePassagePickerModal(evt);
-                        navigateToPassage(code, chapNum);
-                    };
-                    gridDiv.appendChild(pill);
-                });
-
-                cardDiv.appendChild(headerDiv);
-                cardDiv.appendChild(gridDiv);
-                bodyEl.appendChild(cardDiv);
+                gridDiv.appendChild(pill);
             });
-        }
 
-        renderBookSection('Old Testament', otBooks);
-        renderBookSection('New Testament', ntBooks);
+            cardDiv.appendChild(headerDiv);
+            cardDiv.appendChild(gridDiv);
+            bodyEl.appendChild(cardDiv);
+        });
+    }
 
-        // Auto-scroll to currently selected book
+    function openPassagePickerModal(e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        pickerOpeningFlag = true;
+        setTimeout(() => { pickerOpeningFlag = false; }, 350);
+
+        const modal = document.getElementById('passagePickerModal');
+        if (!modal) return;
+
+        modal.classList.add('show');
+        modal.style.setProperty('display', 'flex', 'important');
+
+        const otBooks = availableBooks.slice(0, 39);
+        const isCurrentOt = otBooks.includes(currentBook);
+        currentPickerTab = isCurrentOt ? 'ot' : 'nt';
+        expandedBookCode = currentBook;
+
+        const tabOT = document.getElementById('tabOT');
+        const tabNT = document.getElementById('tabNT');
+        if (tabOT) tabOT.classList.toggle('active', currentPickerTab === 'ot');
+        if (tabNT) tabNT.classList.toggle('active', currentPickerTab === 'nt');
+
+        renderPassagePickerList();
+
         setTimeout(() => {
             const activeCard = document.getElementById('pcard_' + currentBook);
-            if (activeCard) activeCard.scrollIntoView({ block: 'center' });
-        }, 80);
-
-    } catch (err) {
-        console.error("openPassagePickerModal error:", err);
-    }
-}
-
-function toggleBookAccordion(code) {
-    if (expandedBookCode && expandedBookCode !== code) {
-        const prevCard = document.getElementById('pcard_' + expandedBookCode);
-        if (prevCard) prevCard.classList.remove('expanded');
+            if (activeCard) activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 90);
     }
 
-    if (expandedBookCode === code) {
-        expandedBookCode = null;
-        const currentCard = document.getElementById('pcard_' + code);
-        if (currentCard) currentCard.classList.remove('expanded');
-    } else {
-        expandedBookCode = code;
-        const newCard = document.getElementById('pcard_' + code);
-        if (newCard) {
-            newCard.classList.add('expanded');
-            setTimeout(() => {
-                newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 60);
+    function toggleBookAccordion(code) {
+        if (expandedBookCode && expandedBookCode !== code) {
+            const prevCard = document.getElementById('pcard_' + expandedBookCode);
+            if (prevCard) prevCard.classList.remove('expanded');
+        }
+
+        if (expandedBookCode === code) {
+            expandedBookCode = null;
+            const currentCard = document.getElementById('pcard_' + code);
+            if (currentCard) currentCard.classList.remove('expanded');
+        } else {
+            expandedBookCode = code;
+            const newCard = document.getElementById('pcard_' + code);
+            if (newCard) {
+                newCard.classList.add('expanded');
+                setTimeout(() => {
+                    newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 60);
+            }
         }
     }
-}
 
-function closePassagePickerModal(e) {
-    if (pickerOpeningFlag) return;
-    if (e && e.stopPropagation) e.stopPropagation();
-    const modal = document.getElementById('passagePickerModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.style.setProperty('display', 'none', 'important');
-    }
-}
-
-function onPickerBackdropClick(e, modalId) {
-    if (pickerOpeningFlag) return;
-    if (e.target.id === modalId) {
-        if (modalId === 'passagePickerModal') closePassagePickerModal(e);
-    }
-}
-
-function openAboutModal(e) {
-    if (e) e.stopPropagation();
-    const modal = document.getElementById('aboutModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
-    }
-}
-
-function closeAboutModal(e) {
-    if (e) e.stopPropagation();
-    const modal = document.getElementById('aboutModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-    }
-}
-
-function onAboutModalBackdropClick(e) {
-    if (e.target.id === 'aboutModal') {
-        closeAboutModal();
-    }
-}
-
-window.handleAndroidBack = function() {
-    const passagePicker = document.getElementById('passagePickerModal');
-    if (passagePicker && passagePicker.classList.contains('show')) {
-        closePassagePickerModal();
-        return true;
-    }
-    const bookModal = document.getElementById('bookFilterModal');
-    if (bookModal && bookModal.classList.contains('show')) {
-        closeBookFilterModal();
-        return true;
-    }
-    const dropdown = document.getElementById('moreVersionDropdown');
-    if (dropdown && dropdown.classList.contains('show')) {
-        closeAllMoreDropdowns();
-        return true;
-    }
-    const aboutModal = document.getElementById('aboutModal');
-    if (aboutModal && aboutModal.classList.contains('show')) {
-        closeAboutModal();
-        return true;
-    }
-    if (searchState.active) {
-        clearVerseSearch();
-        return true;
-    }
-    if (navHistory.length > 0) {
-        const prev = navHistory.pop();
-        if (prev.isSearchSnapshot) {
-            restoreRetainedSearch();
-            return true;
+    function closePassagePickerModal(e) {
+        if (pickerOpeningFlag) return;
+        if (e && e.stopPropagation) e.stopPropagation();
+        const modal = document.getElementById('passagePickerModal');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.setProperty('display', 'none', 'important');
         }
-        navigateToPassage(prev.book, prev.chapter, null, false, 'prev');
-        return true;
     }
-    return false;
-};
 
-/* Horizontal Swipe Gesture Handler (Left -> Next Chapter, Right -> Previous Chapter) */
-function initSwipeNavigation() {
-    const container = document.getElementById('scrollContainer');
-    if (!container) return;
-
-    let startX = 0;
-    let startY = 0;
-    let startTime = 0;
-
-    container.addEventListener('touchstart', (e) => {
-        if (e.touches.length !== 1) return;
-        if (e.target.closest('.bottom-dock, .version-label, .search-banner, .search-pagination')) {
-            startTime = 0;
-            return;
+    function onPickerBackdropClick(e, modalId) {
+        if (pickerOpeningFlag) return;
+        if (e && e.target && e.target.id === modalId) {
+            if (modalId === 'passagePickerModal') closePassagePickerModal(e);
         }
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        startTime = Date.now();
-    }, { passive: true });
+    }
 
-    container.addEventListener('touchend', (e) => {
-        if (!startTime || e.changedTouches.length !== 1) return;
-        const dx = e.changedTouches[0].clientX - startX;
-        const dy = e.changedTouches[0].clientY - startY;
-        const elapsed = Date.now() - startTime;
-        startTime = 0;
+    function openAboutModal(e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        pickerOpeningFlag = true;
+        setTimeout(() => { pickerOpeningFlag = false; }, 250);
 
-        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.8 && elapsed < 650) {
-            if (searchState.active) {
-                if (dx < 0 && searchState.page < searchState.totalPages) changeSearchPage(1);
-                else if (dx > 0 && searchState.page > 1) changeSearchPage(-1);
+        const modal = document.getElementById('aboutModal');
+        if (modal) {
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.classList.add('show');
+        }
+    }
+
+    function closeAboutModal(e) {
+        if (e) e.stopPropagation();
+        const modal = document.getElementById('aboutModal');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        }
+    }
+
+    function onAboutModalBackdropClick(e) {
+        if (e.target.id === 'aboutModal') {
+            closeAboutModal();
+        }
+    }
+
+    /* Horizontal Swipe Gesture Handler */
+    function initSwipeNavigation() {
+        const container = document.getElementById('scrollContainer') || document.body;
+        if (!container) return;
+
+        let startX = 0;
+        let startY = 0;
+        let startTime = 0;
+        let isSwiping = false;
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            if (e.target.closest('.bottom-dock, .version-label, .search-banner, .picker-modal-overlay, .about-modal')) {
+                isSwiping = false;
                 return;
             }
-            if (dx < 0 && nextTarget) {
-                navigateToPassage(nextTarget.book, nextTarget.chapter, null, true, 'next');
-            } else if (dx > 0 && prevTarget) {
-                navigateToPassage(prevTarget.book, prevTarget.chapter, null, true, 'prev');
-            }
-        }
-    }, { passive: true });
-}
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            startTime = Date.now();
+            isSwiping = true;
+        }, { passive: true });
 
-/* Ultra-Smooth Multi-Touch Pinch-to-Zoom Gesture for Dynamic Font Resizing */
-function initPinchToZoom() {
-    const container = document.getElementById('scrollContainer');
-    if (!container) return;
+        container.addEventListener('touchend', (e) => {
+            if (!isSwiping || !startTime || e.changedTouches.length !== 1) return;
+            isSwiping = false;
 
-    let initialPinchDist = 0;
-    let initialPinchFontSize = 16;
-    let isPinching = false;
-    let rAFPending = false;
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+            const elapsed = Date.now() - startTime;
+            startTime = 0;
 
-    function getTouchDist(e) {
-        const t1 = e.touches[0];
-        const t2 = e.touches[1];
-        const dx = t2.clientX - t1.clientX;
-        const dy = t2.clientY - t1.clientY;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    container.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-            isPinching = true;
-            initialPinchDist = getTouchDist(e);
-            initialPinchFontSize = currentFontSize;
-        }
-    }, { passive: true });
-
-    container.addEventListener('touchmove', (e) => {
-        if (isPinching && e.touches.length === 2) {
-            if (e.cancelable) e.preventDefault();
-            const currentDist = getTouchDist(e);
-            if (initialPinchDist > 0) {
-                const scale = currentDist / initialPinchDist;
-                const floatSize = Math.min(32, Math.max(12, initialPinchFontSize * scale));
-
-                if (!rAFPending) {
-                    rAFPending = true;
-                    requestAnimationFrame(() => {
-                        rAFPending = false;
-                        currentFontSize = floatSize;
-                        rootEl.style.setProperty('--verse-font-size', floatSize.toFixed(1) + 'px');
-                    });
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2 && elapsed < 800) {
+                if (searchState.active) {
+                    if (dx < 0 && searchState.page < searchState.totalPages) changeSearchPage(1);
+                    else if (dx > 0 && searchState.page > 1) changeSearchPage(-1);
+                    return;
+                }
+                if (dx < 0) {
+                    if (nextTarget) {
+                        navigateToPassage(nextTarget.book, nextTarget.chapter, null, true, 'next');
+                    } else if (currentBook && currentChapter) {
+                        const chaps = availableChapters[currentBook] || [];
+                        if (currentChapter < chaps.length) {
+                            navigateToPassage(currentBook, currentChapter + 1, null, true, 'next');
+                        } else {
+                            const bookIdx = availableBooks.indexOf(currentBook);
+                            if (bookIdx !== -1 && bookIdx < availableBooks.length - 1) {
+                                navigateToPassage(availableBooks[bookIdx + 1], 1, null, true, 'next');
+                            }
+                        }
+                    }
+                } else if (dx > 0) {
+                    if (prevTarget) {
+                        navigateToPassage(prevTarget.book, prevTarget.chapter, null, true, 'prev');
+                    } else if (currentBook && currentChapter) {
+                        if (currentChapter > 1) {
+                            navigateToPassage(currentBook, currentChapter - 1, null, true, 'prev');
+                        } else {
+                            const bookIdx = availableBooks.indexOf(currentBook);
+                            if (bookIdx > 0) {
+                                const prevBookCode = availableBooks[bookIdx - 1];
+                                const prevChaps = availableChapters[prevBookCode] || [1];
+                                navigateToPassage(prevBookCode, prevChaps[prevChaps.length - 1], null, true, 'prev');
+                            }
+                        }
+                    }
                 }
             }
-        }
-    }, { passive: false });
-
-    container.addEventListener('touchend', (e) => {
-        if (isPinching && e.touches.length < 2) {
-            isPinching = false;
-            initialPinchDist = 0;
-            const finalSize = Math.round(currentFontSize);
-            applyFontSize(finalSize);
-            showChapterToast('Font size: ' + finalSize + 'px');
-        }
-    }, { passive: true });
-}
-
-const bookAliases = {
-    GEN: ['GENESIS', 'GEN'],
-    EXO: ['EXODUS', 'EXOD', 'EXO'],
-    LEV: ['LEVITICUS', 'LEV'],
-    NUM: ['NUMBERS', 'NUM'],
-    DEU: ['DEUTERONOMY', 'DEUT', 'DEU'],
-    JOS: ['JOSHUA', 'JOSH', 'JOS'],
-    JDG: ['JUDGES', 'JUDG', 'JDG'],
-    RUT: ['RUTH', 'RUT'],
-    '1SA': ['1SAMUEL', '1SAM', '1SA', 'ISAMUEL', 'ISAM'],
-    '2SA': ['2SAMUEL', '2SAM', '2SA', 'IISAMUEL', 'IISAM'],
-    '1KI': ['1KINGS', '1KGS', '1KI', 'IKINGS', 'IKGS'],
-    '2KI': ['2KINGS', '2KGS', '2KI', 'IIKINGS', 'IIKGS'],
-    '1CH': ['1CHRONICLES', '1CHRON', '1CHR', '1CH', 'ICHRONICLES'],
-    '2CH': ['2CHRONICLES', '2CHRON', '2CHR', '2CH', 'IICHRONICLES'],
-    EZR: ['EZRA', 'EZR'],
-    NEH: ['NEHEMIAH', 'NEH'],
-    EST: ['ESTHER', 'ESTH', 'EST'],
-    JOB: ['JOB'],
-    PSA: ['PSALMS', 'PSALM', 'PSA', 'PS'],
-    PRO: ['PROVERBS', 'PROV', 'PRO'],
-    ECC: ['ECCLESIASTES', 'ECCL', 'ECC'],
-    SOL: ['SONGOFSOLOMON', 'SONGOFSONGS', 'SONG', 'CANTICLES', 'CANT', 'SOL', 'SNG'],
-    ISA: ['ISAIAH', 'ISA'],
-    JER: ['JEREMIAH', 'JER'],
-    LAM: ['LAMENTATIONS', 'LAM'],
-    EZE: ['EZEKIEL', 'EZEK', 'EZE', 'EZK'],
-    DAN: ['DANIEL', 'DAN'],
-    HOS: ['HOSEA', 'HOS'],
-    JOE: ['JOEL', 'JOE', 'JOL'],
-    AMO: ['AMOS', 'AMO'],
-    OBA: ['OBADIAH', 'OBAD', 'OBA'],
-    JON: ['JONAH', 'JON'],
-    MIC: ['MICAH', 'MIC'],
-    NAH: ['NAHUM', 'NAH', 'NAM'],
-    HAB: ['HABAKKUK', 'HAB'],
-    ZEP: ['ZEPHANIAH', 'ZEPH', 'ZEP'],
-    HAG: ['HAGGAI', 'HAG'],
-    ZEC: ['ZECHARIAH', 'ZECH', 'ZEC'],
-    MAL: ['MALACHI', 'MAL'],
-    MAT: ['MATTHEW', 'MATT', 'MAT'],
-    MAR: ['MARK', 'MRK', 'MAR'],
-    LUK: ['LUKE', 'LUK'],
-    JOH: ['JOHN', 'JHN', 'JOH', 'JN'],
-    ACT: ['ACTS', 'ACT'],
-    ROM: ['ROMANS', 'ROM'],
-    '1CO': ['1CORINTHIANS', '1COR', '1CO', 'ICORINTHIANS', 'ICOR'],
-    '2CO': ['2CORINTHIANS', '2COR', '2CO', 'IICORINTHIANS', 'IICOR'],
-    GAL: ['GALATIANS', 'GAL'],
-    EPH: ['EPHESIANS', 'EPH'],
-    PHI: ['PHILIPPIANS', 'PHIL', 'PHI', 'PHP'],
-    COL: ['COLOSSIANS', 'COL'],
-    '1TH': ['1THESSALONIANS', '1THESS', '1TH', 'ITHESSALONIANS'],
-    '2TH': ['2THESSALONIANS', '2THESS', '2TH', 'IITHESSALONIANS'],
-    '1TI': ['1TIMOTHY', '1TIM', '1TI', 'ITIMOTHY'],
-    '2TI': ['2TIMOTHY', '2TIM', '2TI', 'IITIMOTHY'],
-    TIT: ['TITUS', 'TIT'],
-    PHM: ['PHILEMON', 'PHLM', 'PHM'],
-    HEB: ['HEBREWS', 'HEB'],
-    JAM: ['JAMES', 'JAM', 'JAS'],
-    '1PE': ['1PETER', '1PET', '1PE', 'IPETER'],
-    '2PE': ['2PETER', '2PET', '2PE', 'IIPETER'],
-    '1JO': ['1JOHN', '1JHN', '1JO', '1JN', 'IJOHN'],
-    '2JO': ['2JOHN', '2JHN', '2JO', '2JN', 'IIJOHN'],
-    '3JO': ['3JOHN', '3JHN', '3JO', '3JN', 'IIIJOHN'],
-    JUD: ['JUDE', 'JUD', 'JDE'],
-    REV: ['REVELATION', 'REVELATIONS', 'REV']
-};
-
-function normalizeSearch(v) {
-    return v.trim().replace(/\s+/g, ' ').toUpperCase();
-}
-
-function cleanBookKey(q) {
-    return q.replace(/[\s.]+/g, '').toUpperCase();
-}
-
-function isExactBookMatch(bookCode, rawQuery) {
-    const key = cleanBookKey(rawQuery);
-    if (bookCode.toUpperCase() === key) return true;
-    const aliases = bookAliases[bookCode] || [];
-    return aliases.includes(key);
-}
-
-function findBookMatches(q) {
-    const key = cleanBookKey(q);
-    if (!key) return [];
-    return availableBooks.filter(b => {
-        if (b.toUpperCase().startsWith(key)) return true;
-        const aliases = bookAliases[b] || [];
-        return aliases.some(alias => alias.startsWith(key));
-    });
-}
-
-function parseSearchQuery(query) {
-    const match = query.match(/^([1-4]?\s*[A-Z.]+(?:\s+[A-Z.]+)*?)\s*(\d+)(?:[:.\s]+(\d+))?$/i);
-    if (match) {
-        return {
-            bookQuery: match[1].trim(),
-            chapter: parseInt(match[2], 10),
-            verse: match[3] ? parseInt(match[3], 10) : null
-        };
+        }, { passive: true });
     }
-    return { bookQuery: query, chapter: null, verse: null };
-}
 
-function submitChapterSearch() {
-    const input = document.getElementById('chapterSearch');
-    const results = document.getElementById('searchResults');
-    const rawValue = input ? input.value.trim() : '';
-    const query = normalizeSearch(rawValue);
-    if (!query) {
-        if (results) results.classList.remove('show');
+    /* Multi-Touch Pinch-to-Zoom Font Resizing */
+    function initPinchToZoom() {
+        const container = document.getElementById('scrollContainer');
+        if (!container) return;
+
+        let initialPinchDist = 0;
+        let initialPinchFontSize = 16;
+        let isPinching = false;
+        let rAFPending = false;
+
+        function getTouchDist(e) {
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+            const dx = t2.clientX - t1.clientX;
+            const dy = t2.clientY - t1.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                isPinching = true;
+                initialPinchDist = getTouchDist(e);
+                initialPinchFontSize = currentFontSize;
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (isPinching && e.touches.length === 2) {
+                if (e.cancelable) e.preventDefault();
+                const currentDist = getTouchDist(e);
+                if (initialPinchDist > 0) {
+                    const scale = currentDist / initialPinchDist;
+                    const floatSize = Math.min(32, Math.max(12, initialPinchFontSize * scale));
+
+                    if (!rAFPending) {
+                        rAFPending = true;
+                        requestAnimationFrame(() => {
+                            rAFPending = false;
+                            currentFontSize = floatSize;
+                            rootEl.style.setProperty('--verse-font-size', floatSize.toFixed(1) + 'px');
+                        });
+                    }
+                }
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', (e) => {
+            if (isPinching && e.touches.length < 2) {
+                isPinching = false;
+                initialPinchDist = 0;
+                const finalSize = Math.round(currentFontSize);
+                applyFontSize(finalSize);
+                showChapterToast('Font size: ' + finalSize + 'px');
+            }
+        }, { passive: true });
+    }
+
+    const bookAliases = {
+        GEN: ['GENESIS', 'GEN'],
+        EXO: ['EXODUS', 'EXOD', 'EXO'],
+        LEV: ['LEVITICUS', 'LEV'],
+        NUM: ['NUMBERS', 'NUM'],
+        DEU: ['DEUTERONOMY', 'DEUT', 'DEU'],
+        JOS: ['JOSHUA', 'JOSH', 'JOS'],
+        JDG: ['JUDGES', 'JUDG', 'JDG'],
+        RUT: ['RUTH', 'RUT'],
+        '1SA': ['1SAMUEL', '1SAM', '1SA', 'ISAMUEL', 'ISAM'],
+        '2SA': ['2SAMUEL', '2SAM', '2SA', 'IISAMUEL', 'IISAM'],
+        '1KI': ['1KINGS', '1KGS', '1KI', 'IKINGS', 'IKGS'],
+        '2KI': ['2KINGS', '2KGS', '2KI', 'IIKINGS', 'IIKGS'],
+        '1CH': ['1CHRONICLES', '1CHRON', '1CHR', '1CH', 'ICHRONICLES'],
+        '2CH': ['2CHRONICLES', '2CHRON', '2CHR', '2CH', 'IICHRONICLES'],
+        EZR: ['EZRA', 'EZR'],
+        NEH: ['NEHEMIAH', 'NEH'],
+        EST: ['ESTHER', 'ESTH', 'EST'],
+        JOB: ['JOB'],
+        PSA: ['PSALMS', 'PSALM', 'PSA', 'PS'],
+        PRO: ['PROVERBS', 'PROV', 'PRO'],
+        ECC: ['ECCLESIASTES', 'ECCL', 'ECC'],
+        SOL: ['SONGOFSOLOMON', 'SONGOFSONGS', 'SONG', 'CANTICLES', 'CANT', 'SOL', 'SNG'],
+        ISA: ['ISAIAH', 'ISA'],
+        JER: ['JEREMIAH', 'JER'],
+        LAM: ['LAMENTATIONS', 'LAM'],
+        EZE: ['EZEKIEL', 'EZEK', 'EZE', 'EZK'],
+        DAN: ['DANIEL', 'DAN'],
+        HOS: ['HOSEA', 'HOS'],
+        JOE: ['JOEL', 'JOE', 'JOL'],
+        AMO: ['AMOS', 'AMO'],
+        OBA: ['OBADIAH', 'OBAD', 'OBA'],
+        JON: ['JONAH', 'JON'],
+        MIC: ['MICAH', 'MIC'],
+        NAH: ['NAHUM', 'NAH', 'NAM'],
+        HAB: ['HABAKKUK', 'HAB'],
+        ZEP: ['ZEPHANIAH', 'ZEPH', 'ZEP'],
+        HAG: ['HAGGAI', 'HAG'],
+        ZEC: ['ZECHARIAH', 'ZECH', 'ZEC'],
+        MAL: ['MALACHI', 'MAL'],
+        MAT: ['MATTHEW', 'MATT', 'MAT'],
+        MAR: ['MARK', 'MRK', 'MAR'],
+        LUK: ['LUKE', 'LUK'],
+        JOH: ['JOHN', 'JHN', 'JOH', 'JN'],
+        ACT: ['ACTS', 'ACT'],
+        ROM: ['ROMANS', 'ROM'],
+        '1CO': ['1CORINTHIANS', '1COR', '1CO', 'ICORINTHIANS', 'ICOR'],
+        '2CO': ['2CORINTHIANS', '2COR', '2CO', 'IICORINTHIANS', 'IICOR'],
+        GAL: ['GALATIANS', 'GAL'],
+        EPH: ['EPHESIANS', 'EPH'],
+        PHI: ['PHILIPPIANS', 'PHIL', 'PHI', 'PHP'],
+        COL: ['COLOSSIANS', 'COL'],
+        '1TH': ['1THESSALONIANS', '1THESS', '1TH', 'ITHESSALONIANS'],
+        '2TH': ['2THESSALONIANS', '2THESS', '2TH', 'IITHESSALONIANS'],
+        '1TI': ['1TIMOTHY', '1TIM', '1TI', 'ITIMOTHY'],
+        '2TI': ['2TIMOTHY', '2TIM', '2TI', 'IITIMOTHY'],
+        TIT: ['TITUS', 'TIT'],
+        PHM: ['PHILEMON', 'PHLM', 'PHM'],
+        HEB: ['HEBREWS', 'HEB'],
+        JAM: ['JAMES', 'JAM', 'JAS'],
+        '1PE': ['1PETER', '1PET', '1PE', 'IPETER'],
+        '2PE': ['2PETER', '2PET', '2PE', 'IIPETER'],
+        '1JO': ['1JOHN', '1JHN', '1JO', '1JN', 'IJOHN'],
+        '2JO': ['2JOHN', '2JHN', '2JO', '2JN', 'IIJOHN'],
+        '3JO': ['3JOHN', '3JHN', '3JO', '3JN', 'IIIJOHN'],
+        JUD: ['JUDE', 'JUD', 'JDE'],
+        REV: ['REVELATION', 'REVELATIONS', 'REV']
+    };
+
+    function normalizeSearch(v) {
+        return v.trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function cleanBookKey(q) {
+        return q.replace(/[\s.]+/g, '').toUpperCase();
+    }
+
+    function isExactBookMatch(bookCode, rawQuery) {
+        const key = cleanBookKey(rawQuery);
+        if (bookCode.toUpperCase() === key) return true;
+        const aliases = bookAliases[bookCode] || [];
+        return aliases.includes(key);
+    }
+
+    function findBookMatches(q) {
+        const key = cleanBookKey(q);
+        if (!key) return [];
+        return availableBooks.filter(b => {
+            if (b.toUpperCase().startsWith(key)) return true;
+            const aliases = bookAliases[b] || [];
+            return aliases.some(alias => alias.startsWith(key));
+        });
+    }
+
+    function parseSearchQuery(query) {
+        const match = query.match(/^([1-4]?\s*[A-Z.]+(?:\s+[A-Z.]+)*?)\s*(\d+)(?:[:.\s]+(\d+))?$/i);
+        if (match) {
+            return {
+                bookQuery: match[1].trim(),
+                chapter: parseInt(match[2], 10),
+                verse: match[3] ? parseInt(match[3], 10) : null
+            };
+        }
+        return { bookQuery: query, chapter: null, verse: null };
+    }
+
+    function submitChapterSearch() {
+        const input = document.getElementById('chapterSearch');
+        const results = document.getElementById('searchResults');
+        const rawValue = input ? input.value.trim() : '';
+        const query = normalizeSearch(rawValue);
+        if (!query) {
+            if (results) results.classList.remove('show');
+            return false;
+        }
+
+        const { bookQuery, chapter, verse } = parseSearchQuery(query);
+        const matches = findBookMatches(bookQuery);
+
+        if (chapter !== null) {
+            const exactBook = matches.find(b => isExactBookMatch(b, bookQuery));
+            if (exactBook && availableChapters[exactBook]) {
+                const chaps = availableChapters[exactBook];
+                if (chaps.includes(chapter)) {
+                    navigateToPassage(exactBook, chapter, verse);
+                    return false;
+                }
+            }
+            if (matches.length === 1) {
+                const book = matches[0];
+                const chaps = availableChapters[book] || [];
+                if (chaps.includes(chapter)) {
+                    navigateToPassage(book, chapter, verse);
+                    return false;
+                }
+            }
+            if (matches.length > 0) {
+                renderSearchResults(matches, chapter, verse, rawValue);
+                return false;
+            }
+        } else {
+            const exactBookOnly = matches.find(b => isExactBookMatch(b, bookQuery));
+            if (exactBookOnly && matches.length === 1) {
+                navigateToPassage(exactBookOnly, 1, null);
+                return false;
+            }
+        }
+
+        runKeywordSearch(rawValue, 1);
         return false;
     }
 
-    const { bookQuery, chapter, verse } = parseSearchQuery(query);
-    const matches = findBookMatches(bookQuery);
+    function renderSearchResults(matches, requestedChapter = null, requestedVerse = null, rawText = '') {
+        const results = document.getElementById('searchResults');
+        if (!results) return;
+        results.innerHTML = '';
 
-    if (chapter !== null) {
-        const exactBook = matches.find(b => isExactBookMatch(b, bookQuery));
-        if (exactBook && availableChapters[exactBook]) {
-            const chaps = availableChapters[exactBook];
-            if (chaps.includes(chapter)) {
-                navigateToPassage(exactBook, chapter, verse);
-                return false;
+        matches.forEach(book => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'search-result';
+            const chapters = availableChapters[book] || [];
+            const hasRequestedChapter = requestedChapter !== null && chapters.includes(requestedChapter);
+            const chapter = hasRequestedChapter ? requestedChapter : (chapters[0] || 1);
+            button.textContent = book + (bookFullNameMap[book] ? (' (' + bookFullNameMap[book] + ')') : '');
+
+            const info = document.createElement('small');
+            if (requestedChapter !== null) {
+                info.textContent = hasRequestedChapter ? 'Ch ' + requestedChapter + (requestedVerse !== null ? ':' + requestedVerse : '') : 'Chapter not found';
+            } else {
+                info.textContent = chapters.length ? chapters.length + ' ch' : '';
+            }
+            button.appendChild(info);
+            button.addEventListener('click', () => {
+                if (requestedChapter !== null && !hasRequestedChapter) return;
+                navigateToPassage(book, chapter, requestedVerse);
+            });
+            results.appendChild(button);
+        });
+
+        const trimmedRaw = (rawText || '').trim();
+
+        if (trimmedRaw.length >= 2 && window.AndroidBridge && window.AndroidBridge.quickSearchVerses) {
+            try {
+                const rawJson = window.AndroidBridge.quickSearchVerses(trimmedRaw, activeLeft, activeRight, 5);
+                const quickResults = JSON.parse(rawJson);
+                if (quickResults && quickResults.length > 0) {
+                    const divider = document.createElement('div');
+                    divider.className = 'search-empty';
+                    divider.style.padding = '4px 8px 2px 8px';
+                    divider.style.fontWeight = 'bold';
+                    divider.style.color = 'var(--btn-active-bg)';
+                    divider.textContent = 'Matching Verses:';
+                    results.appendChild(divider);
+
+                    quickResults.forEach(item => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'search-verse-item';
+
+                        const refSpan = document.createElement('span');
+                        refSpan.className = 'search-verse-ref';
+                        refSpan.textContent = item.book + ' ' + item.chapter + ':' + item.v;
+
+                        const snipSpan = document.createElement('span');
+                        snipSpan.className = 'search-verse-snippet';
+                        const sampleText = item.leftText || item.rightText || '';
+                        snipSpan.textContent = sampleText;
+
+                        btn.appendChild(refSpan);
+                        btn.appendChild(snipSpan);
+
+                        btn.addEventListener('click', () => {
+                            results.classList.remove('show');
+                            navigateToPassage(item.book, item.chapter, item.v);
+                        });
+                        results.appendChild(btn);
+                    });
+                }
+            } catch (err) {
+                console.error("quickSearchVerses error:", err);
             }
         }
-        if (matches.length === 1) {
-            const book = matches[0];
-            const chaps = availableChapters[book] || [];
-            if (chaps.includes(chapter)) {
-                navigateToPassage(book, chapter, verse);
-                return false;
-            }
+
+        if (trimmedRaw.length >= 2) {
+            const kwBtn = document.createElement('button');
+            kwBtn.type = 'button';
+            kwBtn.className = 'search-result keyword-action';
+            const pairLabel = (versionLabels[activeLeft] || activeLeft.toUpperCase()) + ' + ' + (versionLabels[activeRight] || activeRight.toUpperCase());
+            kwBtn.innerHTML = 'Search all verses for &ldquo;' + escHtml(trimmedRaw) + '&rdquo; <small>(' + escHtml(pairLabel) + ')</small>';
+            kwBtn.addEventListener('click', () => {
+                runKeywordSearch(trimmedRaw, 1);
+            });
+            results.appendChild(kwBtn);
         }
-        if (matches.length > 0) {
-            renderSearchResults(matches, chapter, verse, rawValue);
-            return false;
+
+        if (!results.children.length) {
+            results.innerHTML = '<div class="search-empty">Press search to find verses.</div>';
         }
-    } else {
-        // Exact book name without chapter (e.g. "GEN" or "JOHN") jumps to Ch 1
-        const exactBookOnly = matches.find(b => isExactBookMatch(b, bookQuery));
-        if (exactBookOnly && matches.length === 1) {
-            navigateToPassage(exactBookOnly, 1, null);
-            return false;
-        }
+        results.classList.add('show');
     }
 
-    // Otherwise, run full-text verse search across active left & right versions
-    runKeywordSearch(rawValue, 1);
-    return false;
-}
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedLeft = localStorage.getItem('selectedFirstVersion');
+        if (savedLeft) showLeftVersion(savedLeft, true);
 
-function renderSearchResults(matches, requestedChapter = null, requestedVerse = null, rawText = '') {
-    const results = document.getElementById('searchResults');
-    if (!results) return;
-    results.innerHTML = '';
+        const savedRight = localStorage.getItem('selectedSecondVersion');
+        showRightVersion(savedRight || 'abp', true);
 
-    matches.forEach(book => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'search-result';
-        const chapters = availableChapters[book] || [];
-        const hasRequestedChapter = requestedChapter !== null && chapters.includes(requestedChapter);
-        const chapter = hasRequestedChapter ? requestedChapter : (chapters[0] || 1);
-        button.textContent = book;
-        const info = document.createElement('small');
-        if (requestedChapter !== null) {
-            info.textContent = hasRequestedChapter ? 'Ch ' + requestedChapter + (requestedVerse !== null ? ':' + requestedVerse : '') : 'Chapter not found';
+        const savedTheme = localStorage.getItem('bibleTheme');
+        if (savedTheme) applyTheme(savedTheme);
+        else applyTheme('dark');
+
+        const savedFontSize = parseInt(localStorage.getItem('bibleFontSize'), 10);
+        if (!isNaN(savedFontSize)) applyFontSize(savedFontSize);
+        else applyFontSize(currentFontSize);
+
+        const targetBook = localStorage.getItem('lastBook') || initialChapterData.book;
+        const targetChap = parseInt(localStorage.getItem('lastChapter'), 10) || initialChapterData.chapter;
+
+        if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+            const rawJson = window.AndroidBridge.getChapterData(targetBook, targetChap, activeLeft, activeRight);
+            renderChapterData(JSON.parse(rawJson), null);
         } else {
-            info.textContent = chapters.length ? chapters.length + ' ch' : '';
+            renderChapterData(initialChapterData, null);
         }
-        button.appendChild(info);
-        button.addEventListener('click', () => {
-            if (requestedChapter !== null && !hasRequestedChapter) return;
-            navigateToPassage(book, chapter, requestedVerse);
-        });
-        results.appendChild(button);
+
+        initSwipeNavigation();
+        initPinchToZoom();
+
+        const themeBtn = document.getElementById('themeButton');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', (e) => {
+                if (e && e.stopPropagation) e.stopPropagation();
+                cycleTheme(e);
+            });
+        }
+
+        const aboutBtn = document.getElementById('aboutBtn');
+        if (aboutBtn) {
+            aboutBtn.addEventListener('click', (e) => {
+                if (e && e.stopPropagation) e.stopPropagation();
+                openAboutModal(e);
+            });
+        }
+
+        const input = document.getElementById('chapterSearch');
+        const results = document.getElementById('searchResults');
+        if (input && results) {
+            input.addEventListener('input', () => {
+                updateInlineClearButton();
+                const rawVal = input.value.trim();
+                const query = normalizeSearch(rawVal);
+                if (!query) { results.classList.remove('show'); return; }
+                const { bookQuery, chapter, verse } = parseSearchQuery(query);
+                const bookMatches = chapter !== null ? findBookMatches(bookQuery) : findBookMatches(query);
+                renderSearchResults(bookMatches, chapter, verse, rawVal);
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-bar') && results) results.classList.remove('show');
+            });
+        }
+
+        const container = document.getElementById('scrollContainer');
+        const bottomDock = document.getElementById('bottomDock');
+        const topHeaders = document.querySelectorAll('.version-label');
+        if (container && bottomDock) {
+            let lastScrollTop = container.scrollTop;
+            container.addEventListener('scroll', () => {
+                if (document.activeElement === input) return;
+                const currentScroll = container.scrollTop;
+                const delta = currentScroll - lastScrollTop;
+                if (delta > 12 && currentScroll > 60) {
+                    bottomDock.classList.add('ui-hidden');
+                    topHeaders.forEach(h => h.classList.add('ui-hidden'));
+                    const returnBar = document.getElementById('searchReturnBar');
+                    if (returnBar) returnBar.classList.add('ui-hidden');
+                } else if (delta < -10 || currentScroll <= 30) {
+                    bottomDock.classList.remove('ui-hidden');
+                    topHeaders.forEach(h => h.classList.remove('ui-hidden'));
+                    const returnBar = document.getElementById('searchReturnBar');
+                    if (returnBar) returnBar.classList.remove('ui-hidden');
+                }
+                lastScrollTop = currentScroll;
+            }, { passive: true });
+        }
     });
-
-    const trimmedRaw = (rawText || '').trim();
-    if (trimmedRaw.length >= 2) {
-        const kwBtn = document.createElement('button');
-        kwBtn.type = 'button';
-        kwBtn.className = 'search-result keyword-action';
-        const pairLabel = (versionLabels[activeLeft] || activeLeft.toUpperCase()) + ' + ' + (versionLabels[activeRight] || activeRight.toUpperCase());
-        kwBtn.innerHTML = 'Search verses for &ldquo;' + escHtml(trimmedRaw) + '&rdquo; <small>(' + escHtml(pairLabel) + ')</small>';
-        kwBtn.addEventListener('click', () => {
-            runKeywordSearch(trimmedRaw, 1);
-        });
-        results.appendChild(kwBtn);
-    }
-
-    if (!results.children.length) {
-        results.innerHTML = '<div class="search-empty">Press search to find verses.</div>';
-    }
-    results.classList.add('show');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const savedLeft = localStorage.getItem('selectedFirstVersion');
-    if (savedLeft) showLeftVersion(savedLeft, true);
-
-    const savedRight = localStorage.getItem('selectedSecondVersion');
-    showRightVersion(savedRight || 'abp', true);
-
-    const savedTheme = localStorage.getItem('bibleTheme');
-    if (savedTheme) applyTheme(savedTheme);
-    else applyTheme('dark');
-
-    const savedFontSize = parseInt(localStorage.getItem('bibleFontSize'), 10);
-    if (!isNaN(savedFontSize)) applyFontSize(savedFontSize);
-    else applyFontSize(currentFontSize);
-
-    const savedBook = localStorage.getItem('lastBook');
-    const savedChap = parseInt(localStorage.getItem('lastChapter'), 10);
-    if (savedBook && !isNaN(savedChap) && (savedBook !== initialChapterData.book || savedChap !== initialChapterData.chapter) && window.AndroidBridge) {
-        const rawJson = window.AndroidBridge.getChapterData(savedBook, savedChap);
-        renderChapterData(JSON.parse(rawJson), null);
-    } else if (window.AndroidBridge) {
-        const rawJson = window.AndroidBridge.getChapterData(initialChapterData.book, initialChapterData.chapter);
-        renderChapterData(JSON.parse(rawJson), null);
-    } else {
-        renderChapterData(initialChapterData, null);
-    }
-
-    initSwipeNavigation();
-    initPinchToZoom();
-
-    const passageBtn = document.getElementById('passagePickerBtn');
-    if (passageBtn) {
-        passageBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openPassagePickerModal(e);
-        });
-    }
-
-    const input = document.getElementById('chapterSearch');
-    const results = document.getElementById('searchResults');
-    if (input && results) {
-        input.addEventListener('input', () => {
-            updateInlineClearButton();
-            const rawVal = input.value.trim();
-            const query = normalizeSearch(rawVal);
-            if (!query) { results.classList.remove('show'); return; }
-            const { bookQuery, chapter, verse } = parseSearchQuery(query);
-            const bookMatches = chapter !== null ? findBookMatches(bookQuery) : findBookMatches(query);
-            renderSearchResults(bookMatches, chapter, verse, rawVal);
-        });
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-bar') && results) results.classList.remove('show');
-            if (!e.target.closest('.more-version-wrapper')) closeAllMoreDropdowns();
-        });
-    }
-
-    const container = document.getElementById('scrollContainer');
-    const bottomDock = document.getElementById('bottomDock');
-    const topHeaders = document.querySelectorAll('.version-label');
-    if (container && bottomDock) {
-        let lastScrollTop = container.scrollTop;
-        container.addEventListener('scroll', () => {
-            closeAllMoreDropdowns();
-            if (document.activeElement === input) return;
-            const currentScroll = container.scrollTop;
-            const delta = currentScroll - lastScrollTop;
-            if (delta > 12 && currentScroll > 60) {
-                bottomDock.classList.add('ui-hidden');
-                topHeaders.forEach(h => h.classList.add('ui-hidden'));
-                const returnBar = document.getElementById('searchReturnBar');
-                if (returnBar) returnBar.classList.add('ui-hidden');
-            } else if (delta < -10 || currentScroll <= 30) {
-                bottomDock.classList.remove('ui-hidden');
-                topHeaders.forEach(h => h.classList.remove('ui-hidden'));
-                const returnBar = document.getElementById('searchReturnBar');
-                if (returnBar) returnBar.classList.remove('ui-hidden');
-            }
-            lastScrollTop = currentScroll;
-        }, { passive: true });
-    }
-});
 </script>
 </body>
 </html>

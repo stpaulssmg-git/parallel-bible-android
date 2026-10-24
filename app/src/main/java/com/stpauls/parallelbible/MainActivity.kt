@@ -55,6 +55,8 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WebView.setWebContentsDebuggingEnabled(true)
+
         webView = WebView(this)
         setContentView(webView)
 
@@ -120,6 +122,12 @@ class MainActivity : Activity() {
         ): String {
             ensureMasterDatabaseReady()
             return executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter, bookFilter).toString()
+        }
+
+        @JavascriptInterface
+        fun quickSearchVerses(query: String, leftVer: String, rightVer: String, limit: Int = 5): String {
+            ensureMasterDatabaseReady()
+            return executeQuickVerseSearch(query, leftVer, rightVer, limit).toString()
         }
 
         @JavascriptInterface
@@ -328,6 +336,54 @@ class MainActivity : Activity() {
             }
         }
         return resultArray
+    }
+
+    private fun executeQuickVerseSearch(
+        rawQuery: String,
+        leftVer: String,
+        rightVer: String,
+        limit: Int = 5
+    ): JSONArray {
+        val db = sqliteDb ?: return JSONArray()
+        val trimmed = rawQuery.trim()
+        if (trimmed.length < 2) return JSONArray()
+
+        val leftInfo = versionDbsMap[leftVer] ?: versionDbsMap["kjv"]!!
+        val rightInfo = versionDbsMap[rightVer] ?: versionDbsMap["abp"]!!
+
+        ensureVersionDbAttached(db, leftInfo)
+        ensureVersionDbAttached(db, rightInfo)
+
+        val leftExpr = "${leftInfo.schemaAlias}.verses.verse_text"
+        val rightExpr = "${rightInfo.schemaAlias}.verses.verse_text"
+
+        val escapedLike = trimmed.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        val likeArg = "%$escapedLike%"
+
+        val sql = "SELECT v.book, v.chapter, v.verse_num, left_tbl.verse_text, right_tbl.verse_text " +
+                " FROM books b JOIN ${leftInfo.schemaAlias}.verses v ON b.book = v.book " +
+                " LEFT JOIN ${leftInfo.schemaAlias}.verses left_tbl ON v.book = left_tbl.book AND v.chapter = left_tbl.chapter AND v.verse_num = left_tbl.verse_num " +
+                " LEFT JOIN ${rightInfo.schemaAlias}.verses right_tbl ON v.book = right_tbl.book AND v.chapter = right_tbl.chapter AND v.verse_num = right_tbl.verse_num " +
+                " WHERE ($leftExpr LIKE ? ESCAPE '\\' OR $rightExpr LIKE ? ESCAPE '\\') " +
+                " ORDER BY b.book_order ASC, v.chapter ASC, v.verse_num ASC LIMIT ?"
+
+        val resultsArray = JSONArray()
+        try {
+            db.rawQuery(sql, arrayOf(likeArg, likeArg, limit.toString())).use { c ->
+                while (c.moveToNext()) {
+                    val obj = JSONObject()
+                    obj.put("book", c.getString(0))
+                    obj.put("chapter", c.getInt(1))
+                    obj.put("v", c.getInt(2))
+                    obj.put("leftText", if (!c.isNull(3)) c.getString(3) else "")
+                    obj.put("rightText", if (!c.isNull(4)) c.getString(4) else "")
+                    resultsArray.put(obj)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return resultsArray
     }
 
     private fun executeVerseSearch(
