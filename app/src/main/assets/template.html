@@ -746,21 +746,21 @@ mark.search-hl {
     </span>
     <button type="button" class="search-return-close" onclick="dismissRetainedSearch(event)" title="Dismiss Search">&times;</button>
 </div>
-<div id="bookPickerModal" class="picker-modal-overlay" onclick="onPickerBackdropClick(event, 'bookPickerModal')">
+<div id="bookPickerModal" class="picker-modal-overlay" style="display: none;" onclick="onPickerBackdropClick(event, 'bookPickerModal')">
     <div class="picker-modal-card">
         <div class="picker-modal-header">
             <span>Select Book</span>
-            <button type="button" class="picker-modal-close" onclick="closeBookPickerModal()">&times;</button>
+            <button type="button" class="picker-modal-close" onclick="closeBookPickerModal(event)">&times;</button>
         </div>
         <div id="bookPickerBody" class="picker-modal-body"></div>
     </div>
 </div>
 
-<div id="chapterPickerModal" class="picker-modal-overlay" onclick="onPickerBackdropClick(event, 'chapterPickerModal')">
+<div id="chapterPickerModal" class="picker-modal-overlay" style="display: none;" onclick="onPickerBackdropClick(event, 'chapterPickerModal')">
     <div class="picker-modal-card">
         <div class="picker-modal-header">
             <span id="chapterPickerModalTitle">Select Chapter</span>
-            <button type="button" class="picker-modal-close" onclick="closeChapterPickerModal()">&times;</button>
+            <button type="button" class="picker-modal-close" onclick="closeChapterPickerModal(event)">&times;</button>
         </div>
         <div id="chapterPickerBody" class="picker-modal-grid-body"></div>
     </div>
@@ -768,10 +768,10 @@ mark.search-hl {
 
 <div class="bottom-dock" id="bottomDock">
     <div class="nav-bar">
-        <button type="button" id="bookPickerBtn" class="dock-picker-btn" onclick="openBookPickerModal()" aria-label="Select Book">
+        <button type="button" id="bookPickerBtn" class="dock-picker-btn" onclick="openBookPickerModal(event)" aria-label="Select Book">
             <span id="bookPickerLabel">GEN</span> <span class="dropdown-arrow">▾</span>
         </button>
-        <button type="button" id="chapterPickerBtn" class="dock-picker-btn" onclick="openChapterPickerModal()" aria-label="Select Chapter">
+        <button type="button" id="chapterPickerBtn" class="dock-picker-btn" onclick="openChapterPickerModal(event)" aria-label="Select Chapter">
             <span id="chapterPickerLabel">1</span> <span class="dropdown-arrow">▾</span>
         </button>
     </div>
@@ -1756,7 +1756,8 @@ function navigateToPassage(book, chapter, verse = null, pushHistory = true, swip
     }
 }
 
-function openBookPickerModal() {
+function openBookPickerModal(e) {
+    if (e) e.stopPropagation();
     const bodyEl = document.getElementById('bookPickerBody');
     if (!bodyEl) return;
     bodyEl.innerHTML = '';
@@ -1764,8 +1765,9 @@ function openBookPickerModal() {
     availableBooks.forEach(code => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'picker-book-item' + (code === currentBook ? ' active' : '');
-        itemDiv.onclick = () => {
-            closeBookPickerModal();
+        itemDiv.onclick = (evt) => {
+            if (evt) evt.stopPropagation();
+            closeBookPickerModal(evt);
             navigateToPassage(code, 1);
         };
 
@@ -1785,6 +1787,7 @@ function openBookPickerModal() {
 
     const modal = document.getElementById('bookPickerModal');
     if (modal) {
+        modal.style.display = 'flex';
         modal.classList.add('show');
         setTimeout(() => {
             const activeItem = bodyEl.querySelector('.picker-book-item.active');
@@ -1793,12 +1796,17 @@ function openBookPickerModal() {
     }
 }
 
-function closeBookPickerModal() {
+function closeBookPickerModal(e) {
+    if (e) e.stopPropagation();
     const modal = document.getElementById('bookPickerModal');
-    if (modal) modal.classList.remove('show');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+    }
 }
 
-function openChapterPickerModal() {
+function openChapterPickerModal(e) {
+    if (e) e.stopPropagation();
     const titleEl = document.getElementById('chapterPickerModalTitle');
     const bookFullName = getDualBookName(currentBook);
     if (titleEl) {
@@ -1815,8 +1823,9 @@ function openChapterPickerModal() {
         btn.type = 'button';
         btn.className = 'picker-chapter-btn' + (chapNum === currentChapter ? ' active' : '');
         btn.textContent = chapNum;
-        btn.onclick = () => {
-            closeChapterPickerModal();
+        btn.onclick = (evt) => {
+            if (evt) evt.stopPropagation();
+            closeChapterPickerModal(evt);
             navigateToPassage(currentBook, chapNum);
         };
         bodyEl.appendChild(btn);
@@ -1824,6 +1833,7 @@ function openChapterPickerModal() {
 
     const modal = document.getElementById('chapterPickerModal');
     if (modal) {
+        modal.style.display = 'flex';
         modal.classList.add('show');
         setTimeout(() => {
             const activeBtn = bodyEl.querySelector('.picker-chapter-btn.active');
@@ -1832,15 +1842,19 @@ function openChapterPickerModal() {
     }
 }
 
-function closeChapterPickerModal() {
+function closeChapterPickerModal(e) {
+    if (e) e.stopPropagation();
     const modal = document.getElementById('chapterPickerModal');
-    if (modal) modal.classList.remove('show');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+    }
 }
 
 function onPickerBackdropClick(e, modalId) {
     if (e.target.id === modalId) {
-        if (modalId === 'bookPickerModal') closeBookPickerModal();
-        if (modalId === 'chapterPickerModal') closeChapterPickerModal();
+        if (modalId === 'bookPickerModal') closeBookPickerModal(e);
+        if (modalId === 'chapterPickerModal') closeChapterPickerModal(e);
     }
 }
 
