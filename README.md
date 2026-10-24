@@ -35,15 +35,14 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
 
 ---
 
-### 🔍 Real-Time Word & Passage Search Engine
-- **Dynamic Word & Verse Snippet Previews**:
-  - As you type words (e.g. `testament`, `love`), real-time matching verse previews appear instantly in the search dropdown with verse references and text snippets.
-- **Smart Book & Chapter Passage Jump**:
-  - Typing book names or references (e.g. `MAT 2`, `JOH 3:16`, `1SA`) instantly shows matching book and chapter jump buttons.
-- **Side-by-Side Parallel Verse Search**:
-  - Full-text SQLite keyword search queries across both active left and right translations simultaneously.
-- **1-Tap Verse Jump**:
-  - Tapping any search preview or full search result opens the full chapter context and highlights the matching verse.
+### 🔍 Smart Full-Text Search & Drill-Down Engine
+- **Per-Version & Testament Breakdown Links**:
+  - Displays match counts per translation: `KJV: [O-250] [ + ]  [N-30] [ + ]  [T-280]`.
+  - Clickable count badges filter results instantly by **Old Testament (`O`)**, **New Testament (`N`)**, or **Total (`T`)**.
+  - Grayed-out non-clickable links for zero matches (`[O-0]`).
+- **Book-Level Drill-Down (`[ + ]`)**:
+  - Tapping **`[ + ]`** opens a popup modal listing only the specific books containing search matches along with their verse counts.
+  - Tapping a book filters search results directly to that book.
 - **Search Retention & Return Bar**:
   - Tapping a verse reference opens the full chapter context without losing search results.
   - A floating return bar (`🔍 Return to "query" (Pg 1)`) + Android Back button integration allows 1-tap return to active search results.
