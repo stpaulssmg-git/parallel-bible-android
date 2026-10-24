@@ -17,18 +17,18 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 import kotlin.concurrent.thread
 
-data class RegionalDbInfo(
+data class VersionDbInfo(
     val versionKey: String,
     val schemaAlias: String,
     val dbFileName: String,
-    val assetZipName: String,
-    val columnName: String
+    val assetZipName: String
 )
 
 class MainActivity : Activity() {
 
     private lateinit var webView: WebView
-    private val dbFileName = "bible.db"
+    private val masterDbFileName = "eng-kjv2006_vpl.db"
+    private val masterAssetZipName = "eng-kjv2006_vpl.db.zip"
     private val initLock = Any()
 
     @Volatile
@@ -36,14 +36,14 @@ class MainActivity : Activity() {
     private var cachedBooks: List<String> = emptyList()
     private var cachedBookChapters: Map<String, List<Int>> = emptyMap()
 
-    private val regionalDbsMap = mapOf(
-        "kan" to RegionalDbInfo("kan", "kan_db", "kannada.db", "kannada.db.zip", "kan_text"),
-        "tlg" to RegionalDbInfo("tlg", "tlg_db", "telugu.db", "telugu.db.zip", "tlg_text"),
-        "mal" to RegionalDbInfo("mal", "mal_db", "malayalam.db", "malayalam.db.zip", "mal_text"),
-        "tam" to RegionalDbInfo("tam", "tam_db", "tamil.db", "tamil.db.zip", "tam_text"),
-        "hin" to RegionalDbInfo("hin", "hin_db", "hindi.db", "hindi.db.zip", "hin_text"),
-        "spa" to RegionalDbInfo("spa", "spa_db", "spanish.db", "spanish.db.zip", "spa_text"),
-        "lxx" to RegionalDbInfo("lxx", "lxx_db", "thomson.db", "thomson.db.zip", "lxx_text")
+    private val versionDbsMap = mapOf(
+        "kjv"  to VersionDbInfo("kjv",  "kjv_db",  "eng-kjv2006_vpl.db", "eng-kjv2006_vpl.db.zip"),
+        "nas"  to VersionDbInfo("nas",  "nas_db",  "nasb_eng.db",         "nasb_eng.db.zip"),
+        "orig" to VersionDbInfo("orig", "orig_db", "hbo_grctr_vpl.db",   "hbo_grctr_vpl.db.zip"),
+        "abp"  to VersionDbInfo("abp",  "abp_db",  "abp_eng.db",          "abp_eng.db.zip"),
+        "abgr" to VersionDbInfo("abgr", "abgr_db", "abp_grk.db",          "abp_grk.db.zip"),
+        "t4t"  to VersionDbInfo("t4t",  "t4t_db",  "eng-t4t_vpl.db",      "eng-t4t_vpl.db.zip"),
+        "lxx"  to VersionDbInfo("lxx",  "lxx_db",  "thomson_eng.db",      "thomson_eng.db.zip")
     )
 
     private val activeAttachedSchemas = mutableSetOf<String>()
@@ -75,7 +75,7 @@ class MainActivity : Activity() {
 
         thread {
             try {
-                ensureDatabaseReady()
+                ensureMasterDatabaseReady()
                 val initialHtml = buildInitialPageHtml()
                 runOnUiThread {
                     webView.loadDataWithBaseURL(
@@ -90,7 +90,7 @@ class MainActivity : Activity() {
                 val errorReport = """
                     <html><body style="font-family:sans-serif;padding:20px;">
                     <h2>Database Error</h2>
-                    <p>Make sure <code>bible.db.zip</code> or <code>bible.db</code> is placed inside <code>app/src/main/assets/</code>.</p>
+                    <p>Make sure <code>eng-kjv2006_vpl.db.zip</code> is placed inside <code>app/src/main/assets/</code>.</p>
                     <pre style="white-space:pre-wrap;font-size:12px;">${esc(e.stackTraceToString())}</pre>
                     </body></html>
                 """.trimIndent()
@@ -103,9 +103,9 @@ class MainActivity : Activity() {
 
     inner class BibleBridge {
         @JavascriptInterface
-        fun getChapterData(book: String, chapter: Int): String {
-            ensureDatabaseReady()
-            return getOrBuildChapterJson(book, chapter, prefetchAdjacent = true)
+        fun getChapterData(book: String, chapter: Int, leftVer: String = "kjv", rightVer: String = "abp"): String {
+            ensureMasterDatabaseReady()
+            return getOrBuildChapterJson(book, chapter, leftVer, rightVer, prefetchAdjacent = true)
         }
 
         @JavascriptInterface
@@ -118,7 +118,7 @@ class MainActivity : Activity() {
             verFilter: String = "both",
             bookFilter: String = "all"
         ): String {
-            ensureDatabaseReady()
+            ensureMasterDatabaseReady()
             return executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter, bookFilter).toString()
         }
 
@@ -130,44 +130,40 @@ class MainActivity : Activity() {
             testamentFilter: String = "all",
             verFilter: String = "both"
         ): String {
-            ensureDatabaseReady()
+            ensureMasterDatabaseReady()
             return executeBookCountsQuery(query, leftVer, rightVer, testamentFilter, verFilter).toString()
         }
 
         @JavascriptInterface
         fun syncAttachedDatabases(enabledCodesJson: String) {
-            ensureDatabaseReady()
+            ensureMasterDatabaseReady()
             try {
                 val array = JSONArray(enabledCodesJson)
                 val enabledCodes = mutableSetOf<String>()
                 for (i in 0 until array.length()) {
                     enabledCodes.add(array.getString(i))
                 }
-                updateAttachedDatabases(enabledCodes)
+                syncVersionDatabases(enabledCodes)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    private fun updateAttachedDatabases(enabledCodes: Set<String>) {
+    private fun syncVersionDatabases(enabledCodes: Set<String>) {
         val db = sqliteDb ?: return
         synchronized(initLock) {
-            for ((code, info) in regionalDbsMap) {
+            for ((code, info) in versionDbsMap) {
                 if (enabledCodes.contains(code)) {
-                    if (!activeAttachedSchemas.contains(info.schemaAlias)) {
-                        attachRegionalDb(db, info)
-                    }
-                } else {
-                    if (activeAttachedSchemas.contains(info.schemaAlias)) {
-                        detachRegionalDb(db, info)
-                    }
+                    ensureVersionDbAttached(db, info)
                 }
             }
         }
     }
 
-    private fun attachRegionalDb(db: SQLiteDatabase, info: RegionalDbInfo) {
+    private fun ensureVersionDbAttached(db: SQLiteDatabase, info: VersionDbInfo) {
+        if (activeAttachedSchemas.contains(info.schemaAlias)) return
+
         val targetFile = getDatabasePath(info.dbFileName)
         targetFile.parentFile?.mkdirs()
 
@@ -183,7 +179,8 @@ class MainActivity : Activity() {
                         }
                     }
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.printStackTrace()
                 return
             }
         }
@@ -197,17 +194,6 @@ class MainActivity : Activity() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }
-    }
-
-    private fun detachRegionalDb(db: SQLiteDatabase, info: RegionalDbInfo) {
-        try {
-            val sql = "DETACH DATABASE ${info.schemaAlias}"
-            db.execSQL(sql)
-            activeAttachedSchemas.remove(info.schemaAlias)
-            chapterJsonCache.evictAll()
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
@@ -230,23 +216,12 @@ class MainActivity : Activity() {
         sqliteDb = null
     }
 
-    private fun resolveAssetDbPath(): String {
-        for (candidate in listOf("bible.db.zip", "assets/bible.db.zip", dbFileName, "assets/$dbFileName")) {
-            try {
-                assets.open(candidate).close()
-                return candidate
-            } catch (_: Exception) {
-            }
-        }
-        throw IllegalStateException("Neither bible.db.zip nor bible.db found in app/src/main/assets/")
-    }
-
-    private fun ensureDatabaseReady() {
+    private fun ensureMasterDatabaseReady() {
         if (sqliteDb != null) return
         synchronized(initLock) {
             if (sqliteDb != null) return
 
-            val dbFile: File = getDatabasePath(dbFileName)
+            val dbFile: File = getDatabasePath(masterDbFileName)
             dbFile.parentFile?.mkdirs()
 
             val prefs = getSharedPreferences("bible_db_prefs", MODE_PRIVATE)
@@ -255,24 +230,13 @@ class MainActivity : Activity() {
             val savedUpdateTime = prefs.getLong("apk_update_time", -1L)
 
             if (!dbFile.exists() || dbFile.length() == 0L || pkgUpdateTime != savedUpdateTime) {
-                val assetPath = resolveAssetDbPath()
-                if (assetPath.endsWith(".zip")) {
-                    assets.open(assetPath).use { rawInput ->
-                        ZipInputStream(rawInput).use { zipInput ->
-                            val entry = zipInput.nextEntry
-                            if (entry != null) {
-                                FileOutputStream(dbFile).use { output ->
-                                    zipInput.copyTo(output, 65536)
-                                }
-                            } else {
-                                throw IllegalStateException("Empty zip file in assets: $assetPath")
+                assets.open(masterAssetZipName).use { rawInput ->
+                    ZipInputStream(rawInput).use { zipInput ->
+                        val entry = zipInput.nextEntry
+                        if (entry != null) {
+                            FileOutputStream(dbFile).use { output ->
+                                zipInput.copyTo(output, 65536)
                             }
-                        }
-                    }
-                } else {
-                    assets.open(assetPath).use { input ->
-                        FileOutputStream(dbFile).use { output ->
-                            input.copyTo(output, 65536)
                         }
                     }
                 }
@@ -304,6 +268,10 @@ class MainActivity : Activity() {
             cachedBooks = books
             cachedBookChapters = bookChapters
             sqliteDb = db
+
+            // Attach default versions (KJV & ABe)
+            versionDbsMap["kjv"]?.let { ensureVersionDbAttached(db, it) }
+            versionDbsMap["abp"]?.let { ensureVersionDbAttached(db, it) }
         }
     }
 
@@ -318,25 +286,14 @@ class MainActivity : Activity() {
         val trimmed = rawQuery.trim()
         if (trimmed.isEmpty()) return JSONArray()
 
-        fun getColExpression(verKey: String): String? {
-            return when (verKey) {
-                "kjv"  -> "v.kjv_text"
-                "nas"  -> "v.nasb_text"
-                "orig" -> "v.orig_text"
-                "abp"  -> "v.aben_text"
-                "abgr" -> "v.abgr_text"
-                "t4t"  -> "v.t4t_text"
-                else -> {
-                    val info = regionalDbsMap[verKey]
-                    if (info != null && activeAttachedSchemas.contains(info.schemaAlias)) {
-                        "${info.schemaAlias}_tbl.${info.columnName}"
-                    } else null
-                }
-            }
-        }
+        val leftInfo = versionDbsMap[leftVer] ?: versionDbsMap["kjv"]!!
+        val rightInfo = versionDbsMap[rightVer] ?: versionDbsMap["abp"]!!
 
-        val leftExpr = getColExpression(leftVer) ?: "'__NONE__'"
-        val rightExpr = getColExpression(rightVer) ?: "'__NONE__'"
+        ensureVersionDbAttached(db, leftInfo)
+        ensureVersionDbAttached(db, rightInfo)
+
+        val leftExpr = "${leftInfo.schemaAlias}.verses.verse_text"
+        val rightExpr = "${rightInfo.schemaAlias}.verses.verse_text"
 
         val baseSearchExpr = when (verFilter) {
             "left" -> "$leftExpr LIKE ? ESCAPE '\\'"
@@ -352,18 +309,14 @@ class MainActivity : Activity() {
 
         val fullWhereClause = if (testamentCond != null) "$testamentCond AND ($baseSearchExpr)" else baseSearchExpr
 
-        val joinClauses = StringBuilder()
-        for ((_, info) in regionalDbsMap) {
-            if (activeAttachedSchemas.contains(info.schemaAlias)) {
-                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
-            }
-        }
-
         val escapedLike = trimmed.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         val likeArg = "%$escapedLike%"
-        val queryParams = if (verFilter == "both" && leftExpr != "'__NONE__'" && rightExpr != "'__NONE__'") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
+        val queryParams = if (verFilter == "both") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
 
-        val sql = "SELECT v.book, COUNT(*) FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() + " WHERE " + fullWhereClause + " GROUP BY v.book ORDER BY b.book_order ASC"
+        val sql = "SELECT v.book, COUNT(*) FROM ${leftInfo.schemaAlias}.verses v " +
+                " JOIN books b ON v.book = b.book " +
+                " LEFT JOIN ${rightInfo.schemaAlias}.verses r_tbl ON v.book = r_tbl.book AND v.chapter = r_tbl.chapter AND v.verse_num = r_tbl.verse_num " +
+                " WHERE " + fullWhereClause + " GROUP BY v.book ORDER BY b.book_order ASC"
 
         val resultArray = JSONArray()
         db.rawQuery(sql, queryParams).use { c ->
@@ -407,37 +360,14 @@ class MainActivity : Activity() {
             }
         }
 
-        fun getColExpression(verKey: String): String? {
-            return when (verKey) {
-                "kjv"  -> "v.kjv_text"
-                "nas"  -> "v.nasb_text"
-                "orig" -> "v.orig_text"
-                "abp"  -> "v.aben_text"
-                "abgr" -> "v.abgr_text"
-                "t4t"  -> "v.t4t_text"
-                else -> {
-                    val info = regionalDbsMap[verKey]
-                    if (info != null && activeAttachedSchemas.contains(info.schemaAlias)) {
-                        "${info.schemaAlias}_tbl.${info.columnName}"
-                    } else null
-                }
-            }
-        }
+        val leftInfo = versionDbsMap[leftVer] ?: versionDbsMap["kjv"]!!
+        val rightInfo = versionDbsMap[rightVer] ?: versionDbsMap["abp"]!!
 
-        val leftExpr = getColExpression(leftVer)
-        val rightExpr = getColExpression(rightVer)
+        ensureVersionDbAttached(db, leftInfo)
+        ensureVersionDbAttached(db, rightInfo)
 
-        if (leftExpr == null && rightExpr == null) {
-            return JSONObject().apply {
-                put("query", trimmed)
-                put("total", 0)
-                put("page", 1)
-                put("totalPages", 1)
-                put("pageSize", pageSize)
-                put("counts", emptyCounts())
-                put("results", JSONArray())
-            }
-        }
+        val leftExpr = "${leftInfo.schemaAlias}.verses.verse_text"
+        val rightExpr = "${rightInfo.schemaAlias}.verses.verse_text"
 
         val escapedLike = trimmed
             .replace("\\", "\\\\")
@@ -445,32 +375,22 @@ class MainActivity : Activity() {
             .replace("_", "\\_")
         val likeArg = "%$escapedLike%"
 
-        val joinClauses = StringBuilder()
-        for ((_, info) in regionalDbsMap) {
-            if (activeAttachedSchemas.contains(info.schemaAlias)) {
-                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
-            }
-        }
-
-        val safeLeftExpr = leftExpr ?: "'__NONE__'"
-        val safeRightExpr = rightExpr ?: "'__NONE__'"
-
         val countsSql = """
             SELECT 
-                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 AND $safeLeftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_ot,
-                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 AND $safeLeftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_nt,
-                COUNT(CASE WHEN $safeLeftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_all,
+                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 AND $leftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_ot,
+                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 AND $leftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_nt,
+                COUNT(CASE WHEN $leftExpr LIKE ? ESCAPE '\' THEN 1 END) AS left_all,
 
-                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 AND $safeRightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_ot,
-                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 AND $safeRightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_nt,
-                COUNT(CASE WHEN $safeRightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_all,
+                COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 AND $rightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_ot,
+                COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 AND $rightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_nt,
+                COUNT(CASE WHEN $rightExpr LIKE ? ESCAPE '\' THEN 1 END) AS right_all,
 
                 COUNT(CASE WHEN b.book_order BETWEEN 1 AND 39 THEN 1 END) AS total_ot,
                 COUNT(CASE WHEN b.book_order BETWEEN 40 AND 66 THEN 1 END) AS total_nt,
                 COUNT(*) AS total_all
-            FROM verses v JOIN books b ON v.book = b.book
-            $joinClauses
-            WHERE ($safeLeftExpr LIKE ? ESCAPE '\' OR $safeRightExpr LIKE ? ESCAPE '\')
+            FROM books b JOIN ${leftInfo.schemaAlias}.verses v ON b.book = v.book
+            LEFT JOIN ${rightInfo.schemaAlias}.verses r_tbl ON v.book = r_tbl.book AND v.chapter = r_tbl.chapter AND v.verse_num = r_tbl.verse_num
+            WHERE ($leftExpr LIKE ? ESCAPE '\' OR $rightExpr LIKE ? ESCAPE '\')
         """.trimIndent()
 
         val countsParams = arrayOf(
@@ -499,9 +419,9 @@ class MainActivity : Activity() {
         }
 
         val baseSearchExpr = when (verFilter) {
-            "left" -> "$safeLeftExpr LIKE ? ESCAPE '\\'"
-            "right" -> "$safeRightExpr LIKE ? ESCAPE '\\'"
-            else -> "($safeLeftExpr LIKE ? ESCAPE '\\' OR $safeRightExpr LIKE ? ESCAPE '\\')"
+            "left" -> "$leftExpr LIKE ? ESCAPE '\\'"
+            "right" -> "$rightExpr LIKE ? ESCAPE '\\'"
+            else -> "($leftExpr LIKE ? ESCAPE '\\' OR $rightExpr LIKE ? ESCAPE '\\')"
         }
 
         val testamentCond = when (testamentFilter) {
@@ -513,10 +433,12 @@ class MainActivity : Activity() {
         val bookCond = if (bookFilter != "all" && bookFilter.isNotBlank()) "v.book = '${bookFilter.replace("'", "''")}'" else null
 
         val fullWhereClause = listOfNotNull(testamentCond, bookCond, baseSearchExpr).joinToString(" AND ") { "($it)" }
-        val searchParams = if (verFilter == "both" && safeLeftExpr != "'__NONE__'" && safeRightExpr != "'__NONE__'") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
+        val searchParams = if (verFilter == "both") arrayOf(likeArg, likeArg) else arrayOf(likeArg)
 
         var totalMatches = 0
-        val totalCountSql = "SELECT COUNT(*) FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() + " WHERE " + fullWhereClause
+        val totalCountSql = "SELECT COUNT(*) FROM books b JOIN ${leftInfo.schemaAlias}.verses v ON b.book = v.book " +
+                " LEFT JOIN ${rightInfo.schemaAlias}.verses r_tbl ON v.book = r_tbl.book AND v.chapter = r_tbl.chapter AND v.verse_num = r_tbl.verse_num " +
+                " WHERE " + fullWhereClause
         db.rawQuery(totalCountSql, searchParams).use { c ->
             if (c.moveToFirst()) {
                 totalMatches = c.getInt(0)
@@ -527,20 +449,11 @@ class MainActivity : Activity() {
         val safePage = requestedPage.coerceIn(1, totalPages)
         val offset = (safePage - 1) * pageSize
 
-        val selectCols = mutableListOf(
-            "v.book", "v.chapter", "v.verse_num", "v.t4t_label",
-            "v.kjv_text", "v.nasb_text", "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text"
-        )
-        val regKeys = mutableListOf<Pair<String, String>>()
-        for ((_, info) in regionalDbsMap) {
-            if (activeAttachedSchemas.contains(info.schemaAlias)) {
-                selectCols.add("${info.schemaAlias}_tbl.${info.columnName}")
-                regKeys.add(Pair(info.columnName, info.versionKey))
-            }
-        }
-
-        val selectSql = "SELECT " + selectCols.joinToString(", ") +
-                " FROM verses v JOIN books b ON v.book = b.book" + joinClauses.toString() +
+        val selectSql = "SELECT v.book, v.chapter, v.verse_num, " +
+                " left_tbl.verse_text, right_tbl.verse_text " +
+                " FROM books b JOIN ${leftInfo.schemaAlias}.verses v ON b.book = v.book " +
+                " LEFT JOIN ${leftInfo.schemaAlias}.verses left_tbl ON v.book = left_tbl.book AND v.chapter = left_tbl.chapter AND v.verse_num = left_tbl.verse_num " +
+                " LEFT JOIN ${rightInfo.schemaAlias}.verses right_tbl ON v.book = right_tbl.book AND v.chapter = right_tbl.chapter AND v.verse_num = right_tbl.verse_num " +
                 " WHERE " + fullWhereClause +
                 " ORDER BY b.book_order ASC, v.chapter ASC, v.verse_num ASC LIMIT ? OFFSET ?"
 
@@ -554,21 +467,8 @@ class MainActivity : Activity() {
                     obj.put("book", c.getString(0))
                     obj.put("chapter", c.getInt(1))
                     obj.put("v", c.getInt(2))
-                    obj.put("t4tL", c.getString(3))
-                    if (!c.isNull(4)) obj.put("kjv", c.getString(4))
-                    if (!c.isNull(5)) obj.put("nas", c.getString(5))
-                    if (!c.isNull(6)) obj.put("orig", c.getString(6))
-                    if (!c.isNull(7)) obj.put("abp", c.getString(7))
-                    if (!c.isNull(8)) obj.put("abgr", c.getString(8))
-                    if (!c.isNull(9)) obj.put("t4t", c.getString(9))
-
-                    var idx = 10
-                    for (pair in regKeys) {
-                        if (!c.isNull(idx)) {
-                            obj.put(pair.second, c.getString(idx))
-                        }
-                        idx++
-                    }
+                    obj.put(leftVer, if (!c.isNull(3)) c.getString(3) else "")
+                    obj.put(rightVer, if (!c.isNull(4)) c.getString(4) else "")
                     resultsArray.put(obj)
                 }
             }
@@ -588,6 +488,8 @@ class MainActivity : Activity() {
     private fun getOrBuildChapterJson(
         requestedBook: String?,
         requestedChapter: Int?,
+        leftVer: String,
+        rightVer: String,
         prefetchAdjacent: Boolean
     ): String {
         val selectedBook = if (requestedBook != null && cachedBooks.contains(requestedBook)) {
@@ -603,34 +505,34 @@ class MainActivity : Activity() {
             chapters.firstOrNull() ?: 1
         }
 
-        val cacheKey = "$selectedBook:$selectedChapter"
+        val cacheKey = "$selectedBook:$selectedChapter:$leftVer:$rightVer"
         chapterJsonCache.get(cacheKey)?.let { cached ->
-            if (prefetchAdjacent) triggerAdjacentPrefetch(selectedBook, selectedChapter)
+            if (prefetchAdjacent) triggerAdjacentPrefetch(selectedBook, selectedChapter, leftVer, rightVer)
             return cached
         }
 
-        val built = queryChapterJsonObject(selectedBook, selectedChapter).toString()
+        val built = queryChapterJsonObject(selectedBook, selectedChapter, leftVer, rightVer).toString()
         chapterJsonCache.put(cacheKey, built)
 
         if (prefetchAdjacent) {
-            triggerAdjacentPrefetch(selectedBook, selectedChapter)
+            triggerAdjacentPrefetch(selectedBook, selectedChapter, leftVer, rightVer)
         }
         return built
     }
 
-    private fun triggerAdjacentPrefetch(book: String, chapter: Int) {
+    private fun triggerAdjacentPrefetch(book: String, chapter: Int, leftVer: String, rightVer: String) {
         val (prevPair, nextPair) = getAdjacentPassages(book, chapter)
         thread {
             if (prevPair != null) {
-                val k = "${prevPair.first}:${prevPair.second}"
+                val k = "${prevPair.first}:${prevPair.second}:$leftVer:$rightVer"
                 if (chapterJsonCache.get(k) == null) {
-                    chapterJsonCache.put(k, queryChapterJsonObject(prevPair.first, prevPair.second).toString())
+                    chapterJsonCache.put(k, queryChapterJsonObject(prevPair.first, prevPair.second, leftVer, rightVer).toString())
                 }
             }
             if (nextPair != null) {
-                val k = "${nextPair.first}:${nextPair.second}"
+                val k = "${nextPair.first}:${nextPair.second}:$leftVer:$rightVer"
                 if (chapterJsonCache.get(k) == null) {
-                    chapterJsonCache.put(k, queryChapterJsonObject(nextPair.first, nextPair.second).toString())
+                    chapterJsonCache.put(k, queryChapterJsonObject(nextPair.first, nextPair.second, leftVer, rightVer).toString())
                 }
             }
         }
@@ -665,28 +567,26 @@ class MainActivity : Activity() {
         return Pair(prev, next)
     }
 
-    private fun queryChapterJsonObject(selectedBook: String, selectedChapter: Int): JSONObject {
+    private fun queryChapterJsonObject(
+        selectedBook: String,
+        selectedChapter: Int,
+        leftVer: String,
+        rightVer: String
+    ): JSONObject {
         val db = sqliteDb ?: throw IllegalStateException("Database not initialized")
         val chapters = cachedBookChapters[selectedBook] ?: listOf(1)
         val (prev, next) = getAdjacentPassages(selectedBook, selectedChapter)
 
-        val selectCols = mutableListOf(
-            "v.verse_num", "v.t4t_label", "v.kjv_text", "v.nasb_text",
-            "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text"
-        )
-        val joinClauses = StringBuilder()
-        val regKeys = mutableListOf<Pair<String, String>>()
+        val leftInfo = versionDbsMap[leftVer] ?: versionDbsMap["kjv"]!!
+        val rightInfo = versionDbsMap[rightVer] ?: versionDbsMap["abp"]!!
 
-        for ((_, info) in regionalDbsMap) {
-            if (activeAttachedSchemas.contains(info.schemaAlias)) {
-                selectCols.add("${info.schemaAlias}_tbl.${info.columnName}")
-                joinClauses.append(" LEFT JOIN ${info.schemaAlias}.verses ${info.schemaAlias}_tbl ON v.book = ${info.schemaAlias}_tbl.book AND v.chapter = ${info.schemaAlias}_tbl.chapter AND v.verse_num = ${info.schemaAlias}_tbl.verse_num")
-                regKeys.add(Pair(info.columnName, info.versionKey))
-            }
-        }
+        ensureVersionDbAttached(db, leftInfo)
+        ensureVersionDbAttached(db, rightInfo)
 
-        val sql = "SELECT " + selectCols.joinToString(", ") +
-                " FROM verses v" + joinClauses.toString() +
+        val sql = "SELECT v.verse_num, left_tbl.verse_text, right_tbl.verse_text " +
+                " FROM ${leftInfo.schemaAlias}.verses v " +
+                " LEFT JOIN ${leftInfo.schemaAlias}.verses left_tbl ON v.book = left_tbl.book AND v.chapter = left_tbl.chapter AND v.verse_num = left_tbl.verse_num " +
+                " LEFT JOIN ${rightInfo.schemaAlias}.verses right_tbl ON v.book = right_tbl.book AND v.chapter = right_tbl.chapter AND v.verse_num = right_tbl.verse_num " +
                 " WHERE v.book = ? AND v.chapter = ? ORDER BY v.verse_num ASC"
 
         val versesArray = JSONArray()
@@ -694,21 +594,8 @@ class MainActivity : Activity() {
             while (c.moveToNext()) {
                 val obj = JSONObject()
                 obj.put("v", c.getInt(0))
-                obj.put("t4tL", c.getString(1))
-                if (!c.isNull(2)) obj.put("kjv", c.getString(2))
-                if (!c.isNull(3)) obj.put("nas", c.getString(3))
-                if (!c.isNull(4)) obj.put("orig", c.getString(4))
-                if (!c.isNull(5)) obj.put("abp", c.getString(5))
-                if (!c.isNull(6)) obj.put("abgr", c.getString(6))
-                if (!c.isNull(7)) obj.put("t4t", c.getString(7))
-
-                var idx = 8
-                for (pair in regKeys) {
-                    if (!c.isNull(idx)) {
-                        obj.put(pair.second, c.getString(idx))
-                    }
-                    idx++
-                }
+                obj.put(leftVer, if (!c.isNull(1)) c.getString(1) else "")
+                obj.put(rightVer, if (!c.isNull(2)) c.getString(2) else "")
                 versesArray.put(obj)
             }
         }
@@ -728,7 +615,7 @@ class MainActivity : Activity() {
     private fun buildInitialPageHtml(): String {
         val firstBook = cachedBooks.firstOrNull() ?: "GEN"
         val firstChapter = cachedBookChapters[firstBook]?.firstOrNull() ?: 1
-        val initialDataJson = getOrBuildChapterJson(firstBook, firstChapter, prefetchAdjacent = true)
+        val initialDataJson = getOrBuildChapterJson(firstBook, firstChapter, "kjv", "abp", prefetchAdjacent = true)
 
         val availableChaptersJson = JSONObject()
         for ((b, chaps) in cachedBookChapters) {

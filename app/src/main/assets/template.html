@@ -325,7 +325,7 @@ mark.search-hl {
 }
 
 .book-modal-overlay {
-    position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.45);
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300; background: rgba(0,0,0,0.45);
     display: none; align-items: center; justify-content: center; padding: 16px;
 }
 .book-modal-overlay.show { display: flex !important; }
@@ -372,68 +372,259 @@ mark.search-hl {
 }
 .dock-picker-btn {
     border: none; background: var(--btn-bg); color: var(--btn-text);
-    padding: 0 8px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold;
+    padding: 0 10px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: bold;
     cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    box-sizing: border-box; transition: background 0.15s ease;
+    box-sizing: border-box; transition: background 0.15s ease; flex-shrink: 0; white-space: nowrap;
 }
 .dock-picker-btn:hover { background: var(--btn-hover-bg); }
 
+/* Unified Passage Picker Modal & Accordion */
+
+
+
+/*****/
+/* Responsive Passage Picker Modal */
 .picker-modal-overlay {
-    position: fixed; inset: 0; z-index: 310; background: rgba(0,0,0,0.45);
-    display: none; align-items: center; justify-content: center; padding: 16px;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 310;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
 }
-.picker-modal-overlay.show { display: flex !important; }
-.picker-modal-card {
-    background: var(--bg-body); border: 1px solid var(--row-border);
-    border-radius: 12px; width: 100%; max-width: 380px; max-height: 80vh;
-    display: flex; flex-direction: column; overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: var(--text-color);
+.picker-modal-overlay.show {
+    display: flex !important;
 }
+
+.passage-modal-card {
+    background: var(--bg-body);
+    border: 1px solid var(--row-border);
+    border-radius: 14px;
+    width: 95%;
+    max-width: 680px; /* Expands comfortably on 7" and 10" tablets */
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
 .picker-modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; background: var(--row-even-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: var(--row-even-bg);
     border-bottom: 1px solid var(--row-border);
-    font-weight: bold; font-size: 14px; color: var(--text-color);
+}
+.passage-modal-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-color);
 }
 .picker-modal-close {
-    border: none; background: transparent; color: var(--text-color);
-    font-size: 20px; font-weight: bold; cursor: pointer; line-height: 1; padding: 0 4px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
 }
-.picker-modal-close:hover { color: var(--verse-num-color); }
-.picker-modal-body {
-    padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;
-    background: var(--bg-body);
-}
-.picker-book-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; border-radius: 7px; background: var(--row-odd-bg);
-    border: 1px solid var(--row-border); font-size: 12.5px; font-weight: bold;
-    color: var(--text-color); cursor: pointer; transition: background 0.15s ease;
-}
-.picker-book-item:hover { background: var(--row-hover-bg); }
-.picker-book-item.active {
-    background: var(--btn-active-bg); color: var(--btn-active-text);
-    border-color: var(--btn-active-bg);
-}
-.picker-book-code { font-weight: bold; color: var(--verse-num-color); min-width: 36px; }
-.picker-book-item.active .picker-book-code { color: var(--btn-active-text); }
-.picker-book-name { font-size: 11.5px; opacity: 0.9; text-align: right; flex-grow: 1; margin-left: 8px; }
 
-.picker-modal-grid-body {
-    padding: 14px; overflow-y: auto; display: grid;
-    grid-template-columns: repeat(5, 1fr); gap: 8px;
+.passage-modal-body {
+    padding: 12px 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     background: var(--bg-body);
+    box-sizing: border-box;
 }
-.picker-chapter-btn {
-    border: 1px solid var(--row-border); background: var(--row-odd-bg);
-    color: var(--text-color); padding: 10px 0; border-radius: 7px;
-    font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center;
+
+.passage-testament-heading {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--verse-num-color);
+    padding: 8px 4px 4px 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Accordion Book Card */
+.passage-book-card {
+    background: var(--row-odd-bg);
+    border: 1px solid var(--row-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.passage-book-card.expanded {
+    border-color: var(--verse-num-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.passage-book-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+    background: var(--row-odd-bg);
+}
+.passage-book-card.expanded .passage-book-header {
+    background: var(--row-even-bg);
+    border-bottom: 1px solid var(--row-border);
+}
+
+.passage-book-code {
+    font-weight: bold;
+    color: var(--verse-num-color);
+    min-width: 46px;
+    font-size: 15px;
+}
+.passage-book-name {
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 500;
+    flex-grow: 1;
+    text-align: left;
+    margin-left: 8px;
+}
+.passage-arrow {
+    font-size: 13px;
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+.passage-book-card.expanded .passage-arrow {
+    transform: rotate(180deg);
+    color: var(--verse-num-color);
+}
+
+/* Responsive Chapter Grid */
+.passage-chapter-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 8px;
+    padding: 12px 14px;
+    background: var(--bg-body);
+    box-sizing: border-box;
+}
+.passage-book-card.expanded .passage-chapter-grid {
+    display: grid !important;
+}
+
+.passage-chap-pill {
+    min-height: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 1px solid var(--row-border);
+    background: var(--row-even-bg);
+    color: var(--text-color);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+}
+.passage-chap-pill:active,
+.passage-chap-pill:hover {
+    background: var(--row-hover-bg);
+}
+.passage-chap-pill.active {
+    background: var(--btn-active-bg) !important;
+    color: var(--btn-active-text) !important;
+    border-color: var(--btn-active-bg) !important;
+    font-weight: bold;
+}
+/*****/
+
+
+
+
+/* Testament Tabs */
+.passage-tabs-row {
+    display: flex; background: var(--row-even-bg); padding: 6px; gap: 6px;
+    border-bottom: 1px solid var(--row-border);
+}
+.passage-tab-btn {
+    flex: 1; border: 1px solid var(--row-border); background: var(--row-odd-bg);
+    color: var(--text-color); padding: 8px 0; border-radius: 7px;
+    font-size: 12.5px; font-weight: bold; cursor: pointer; text-align: center;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.passage-tab-btn.active {
+    background: var(--btn-bg) !important; color: var(--btn-text) !important;
+    border-color: var(--btn-bg) !important; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.passage-modal-body {
+    padding: 10px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+    background: var(--bg-body); box-sizing: border-box;
+}
+.passage-book-card {
+    background: var(--row-odd-bg); border: 1px solid var(--row-border);
+    border-radius: 9px; margin-bottom: 4px; overflow: hidden; box-sizing: border-box;
+    min-height: 42px; flex-shrink: 0;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
-.picker-chapter-btn:hover { background: var(--row-hover-bg); }
-.picker-chapter-btn.active {
-    background: var(--btn-active-bg); color: var(--btn-active-text);
-    border-color: var(--btn-active-bg);
+.passage-book-card.expanded {
+    border-color: var(--verse-num-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.passage-book-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; font-size: 13.5px; font-weight: bold;
+    color: var(--text-color); background: var(--row-even-bg);
+    cursor: pointer; user-select: none; box-sizing: border-box;
+    min-height: 42px; flex-shrink: 0;
+}
+.passage-book-header:hover { background: var(--row-hover-bg); }
+.passage-book-card.expanded .passage-book-header {
+    background: var(--row-hover-bg); border-bottom: 1px solid var(--row-border);
+}
+.passage-book-code { font-weight: bold; color: var(--verse-num-color); min-width: 42px; font-size: 14px; }
+.passage-book-name { font-size: 12.5px; color: var(--text-color); flex-grow: 1; text-align: right; margin-right: 10px; opacity: 0.95; }
+.passage-arrow { font-size: 12px; color: var(--text-color); opacity: 0.8; transition: transform 0.2s ease; }
+.passage-book-card.expanded .passage-arrow { transform: rotate(180deg); color: var(--verse-num-color); }
+
+.passage-chapter-grid {
+    display: none; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    padding: 12px 14px; background: var(--bg-body); box-sizing: border-box;
+}
+@media (min-width: 600px) {
+    .passage-chapter-grid {
+        grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 14px 16px;
+    }
+}
+.passage-book-card.expanded .passage-chapter-grid { display: grid !important; }
+.passage-chap-pill {
+    width: 100%; min-height: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+    border: 1px solid var(--row-border); background: var(--row-odd-bg);
+    color: var(--text-color); border-radius: 8px; font-size: 14px; font-weight: bold;
+    cursor: pointer; text-align: center; line-height: 1;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.passage-chap-pill:hover { background: var(--row-hover-bg); transform: scale(1.04); }
+.passage-chap-pill.active {
+    background: var(--btn-active-bg) !important; color: var(--btn-active-text) !important;
+    border-color: var(--btn-active-bg) !important; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+    border-color: var(--btn-active-bg) !important; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .nav-bar, .utility-bar {
@@ -519,13 +710,14 @@ mark.search-hl {
 @media (min-width: 601px) and (max-width: 1024px) {
     :root { --verse-font-size: 15px; }
     .verse-cell { padding: 12px 16px; line-height: 1.65; }
-    .bottom-dock { left: 16px; right: 16px; max-width: 720px; margin: 0 auto; }
+    .bottom-dock { left: 50%; transform: translateX(-50%); width: min(94%, 720px); }
+    .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 14px)); }
     .search-bar { max-width: 360px; }
 }
 @media (min-width: 1025px) {
     :root { --verse-font-size: 16px; }
     .verse-cell { padding: 14px 20px; line-height: 1.7; }
-    .bottom-dock { left: 50%; transform: translateX(-50%); width: 760px; }
+    .bottom-dock { left: 50%; transform: translateX(-50%); width: min(94%, 760px); }
     .bottom-dock.ui-hidden { transform: translate(-50%, calc(100% + 14px)); }
     .search-bar { max-width: 420px; }
 }
@@ -621,49 +813,7 @@ mark.search-hl {
                 <div class="about-trans-card"><strong>ABe</strong> Apostolic Bible (English)</div>
                 <div class="about-trans-card"><strong>ABg</strong> Apostolic Bible (Greek)</div>
                 <div class="about-trans-card"><strong>T4T</strong> Translation for Translators</div>
-                <div class="about-oth-wrapper" id="aboutOthWrapper">
-                    <button type="button" class="about-oth-header" onclick="toggleOthAccordion(event)">
-                        <span><strong>OTH</strong> Regional / Other Versions <small style="opacity:0.75;">(Tap to configure)</small></span>
-                        <span class="oth-accordion-arrow" id="othAccordionArrow">▾</span>
-                    </button>
-                    <div class="about-oth-body" id="aboutOthBody">
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="kan" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">KAN</span>
-                            <span class="oth-chk-name">Kannada IRV</span>
-                        </label>
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="tlg" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">TLG</span>
-                            <span class="oth-chk-name">Telugu 2017</span>
-                        </label>
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="mal" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">MAL</span>
-                            <span class="oth-chk-name">Malayalam VPL</span>
-                        </label>
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="tam" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">TAM</span>
-                            <span class="oth-chk-name">Tamil 2017</span>
-                        </label>
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="hin" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">HIN</span>
-                            <span class="oth-chk-name">Hindi 2017</span>
-                        </label>
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="spa" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">SPA</span>
-                            <span class="oth-chk-name">Spanish Reina Valera</span>
-                        </label>
-                        <label class="oth-checkbox-item">
-                            <input type="checkbox" value="lxx" class="oth-chk-input" onchange="onOthCheckboxChange(this)">
-                            <span class="oth-chk-code">LXX</span>
-                            <span class="oth-chk-name">Thomson Septuagint Eng</span>
-                        </label>
-                    </div>
-                </div>
+                <div class="about-trans-card"><strong>LXX</strong> Thomson Septuagint</div>
             </div>
 
             <h3 class="about-section-title">Copyrights &amp; Permissions</h3>
@@ -681,12 +831,8 @@ mark.search-hl {
                     <p>&copy; Ellis W. Deibler, Jr. / unfoldingWord. Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" class="about-link">CC BY-SA 4.0</a>.</p>
                 </div>
                 <div class="about-copyright-item">
-                    <strong>Indian Revised Versions (KAN / TLG / TAM / HIN)</strong>
-                    <p>Kannada, Telugu, Tamil, and Hindi IRV Bibles &copy; Bridge Connectivity Solutions Pvt. Ltd. / unfoldingWord. Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" class="about-link">CC BY-SA 4.0</a>.</p>
-                </div>
-                <div class="about-copyright-item">
-                    <strong>Public Domain Translations (KJV / H/G / MAL / SPA / LXX)</strong>
-                    <p>King James Version (KJV), Hebrew Masoretic &amp; Greek TR (H/G), Malayalam VPL, Spanish Reina Valera 1909 (SPA), and Charles Thomson LXX Septuagint (LXX) are in the Public Domain.</p>
+                    <strong>Public Domain Translations (KJV / H/G / LXX)</strong>
+                    <p>King James Version (KJV), Hebrew Masoretic &amp; Greek TR (H/G), and Charles Thomson LXX Septuagint (LXX) are in the Public Domain.</p>
                 </div>
             </div>
 
@@ -731,12 +877,7 @@ mark.search-hl {
             <button type="button" id="abpButton" class="active" onclick="showRightVersion('abp')">ABe</button>
             <button type="button" id="abgrButton" onclick="showRightVersion('abgr')">ABg</button>
             <button type="button" id="t4tButton" onclick="showRightVersion('t4t')">T4T</button>
-            <div class="more-version-wrapper" id="moreVersionWrapper">
-                <button type="button" id="moreVersionBtn" class="more-version-btn" onclick="onMoreBtnClick(event)">
-                    <span id="moreBtnLabel">OTH</span> <span class="dropdown-arrow">▾</span>
-                </button>
-                <div id="moreVersionDropdown" class="more-version-dropdown"></div>
-            </div>
+            <button type="button" id="lxxButton" onclick="showRightVersion('lxx')">LXX</button>
         </div>
     </div>
 </div>
@@ -746,33 +887,21 @@ mark.search-hl {
     </span>
     <button type="button" class="search-return-close" onclick="dismissRetainedSearch(event)" title="Dismiss Search">&times;</button>
 </div>
-<div id="bookPickerModal" class="picker-modal-overlay" style="display: none;" onclick="onPickerBackdropClick(event, 'bookPickerModal')">
-    <div class="picker-modal-card">
+<!-- Unified Passage Picker Modal -->
+<div id="passagePickerModal" class="picker-modal-overlay" style="display: none;" onclick="onPickerBackdropClick(event, 'passagePickerModal')">
+    <div class="passage-modal-card">
         <div class="picker-modal-header">
-            <span>Select Book</span>
-            <button type="button" class="picker-modal-close" onclick="closeBookPickerModal(event)">&times;</button>
+            <span class="passage-modal-title">Select Book &amp; Chapter</span>
+            <button type="button" class="picker-modal-close" onclick="closePassagePickerModal(event)">&times;</button>
         </div>
-        <div id="bookPickerBody" class="picker-modal-body"></div>
-    </div>
-</div>
-
-<div id="chapterPickerModal" class="picker-modal-overlay" style="display: none;" onclick="onPickerBackdropClick(event, 'chapterPickerModal')">
-    <div class="picker-modal-card">
-        <div class="picker-modal-header">
-            <span id="chapterPickerModalTitle">Select Chapter</span>
-            <button type="button" class="picker-modal-close" onclick="closeChapterPickerModal(event)">&times;</button>
-        </div>
-        <div id="chapterPickerBody" class="picker-modal-grid-body"></div>
+        <div id="passagePickerBody" class="passage-modal-body"></div>
     </div>
 </div>
 
 <div class="bottom-dock" id="bottomDock">
     <div class="nav-bar">
-        <button type="button" id="bookPickerBtn" class="dock-picker-btn" onclick="openBookPickerModal(event)" aria-label="Select Book">
-            <span id="bookPickerLabel">GEN</span> <span class="dropdown-arrow">▾</span>
-        </button>
-        <button type="button" id="chapterPickerBtn" class="dock-picker-btn" onclick="openChapterPickerModal(event)" aria-label="Select Chapter">
-            <span id="chapterPickerLabel">1</span> <span class="dropdown-arrow">▾</span>
+        <button type="button" id="passagePickerBtn" class="dock-picker-btn" onclick="openPassagePickerModal(event)" aria-label="Select Passage">
+            <span id="passagePickerLabel">GEN 1</span> <span class="dropdown-arrow">▾</span>
         </button>
     </div>
     <form class="search-bar" onsubmit="return submitChapterSearch();">
@@ -798,9 +927,7 @@ let activeRight = 'abp';
 
 const versionLabels = {
     kjv: 'KJV', nas: 'NAS', orig: 'H/G',
-    abp: 'ABe', abgr: 'ABg', t4t: 'T4T',
-    kan: 'KAN', tlg: 'TLG', mal: 'MAL', tam: 'TAM',
-    hin: 'HIN', spa: 'SPA', lxx: 'LXX'
+    abp: 'ABe', abgr: 'ABg', t4t: 'T4T', lxx: 'LXX'
 };
 
 const missingFallbacks = {
@@ -818,16 +945,6 @@ const missingFallbacks = {
     spa:  '[Not available in SPA]',
     lxx:  '[Not available in LXX]'
 };
-
-const allOthVersions = [
-    { code: 'kan', label: 'KAN', name: 'Kannada IRV' },
-    { code: 'tlg', label: 'TLG', name: 'Telugu 2017' },
-    { code: 'mal', label: 'MAL', name: 'Malayalam VPL' },
-    { code: 'tam', label: 'TAM', name: 'Tamil 2017' },
-    { code: 'hin', label: 'HIN', name: 'Hindi 2017' },
-    { code: 'spa', label: 'SPA', name: 'Spanish Reina Valera' },
-    { code: 'lxx', label: 'LXX', name: 'Thomson Septuagint Eng' }
-];
 
 const bookFullNameMap = {
     GEN: 'Genesis', EXO: 'Exodus', LEV: 'Leviticus', NUM: 'Numbers', DEU: 'Deuteronomy',
@@ -863,99 +980,6 @@ const origBookNames = {
     '2PE': 'Πέτρου Β΄', '1JO': 'Ἰωάννου Α΄', '2JO': 'Ἰωάννου Β΄', '3JO': 'Ἰωάννου Γ΄', JUD: 'Ἰούδα', REV: 'Ἀποκάλυψις Ἰωάννου'
 };
 
-const regionalBookNames = {
-    kan: {
-        GEN: 'ಆದಿಕಾಂಡ', EXO: 'ವಿಮೋಚನಕಾಂಡ', LEV: 'ಯಾಜಕಕಾಂಡ', NUM: 'ಅರಣ್ಯಕಾಂಡ', DEU: 'ಧರ್ಮೋಪದೇಶಕಾಂಡ',
-        JOS: 'ಯೆಹೋಶುವ', JDG: 'ನ್ಯಾಯಾಧಿಪತಿಗಳು', RUT: 'ರೂತಳು', '1SA': '1 ಸಮುವೇಲನು', '2SA': '2 ಸಮುವೇಲನು',
-        '1KI': '1 ಅರಸುಗಳು', '2KI': '2 ಅರಸುಗಳು', '1CH': '1 ಪೂರ್ವಕಾಲವೃತ್ತಾಂತ', '2CH': '2 ಪೂರ್ವಕಾಲವೃತ್ತಾಂತ', EZR: 'ಎಜ್ರ',
-        NEH: 'ನೆಹೆಮೀಯ', EST: 'ಎಸ್ತೇರಳು', JOB: 'ಯೋಬ', PSA: 'ಕೀರ್ತನೆಗಳು', PRO: 'ಜ್ಞಾನೋಕ್ತಿಗಳು',
-        ECC: 'ಪ್ರಸಂಗಿ', SOL: 'ಪರಮಗೀತ', ISA: 'ಯೆಶಾಯ', JER: 'ಯೆರೆಮೀಯ', LAM: 'ಪ್ರಲಾಪಗಳು',
-        EZE: 'ಯೆಹೆಜ್ಕೇಲ', DAN: 'ದಾನಿಯೇಲ', HOS: 'ಹೋಶೇಯ', JOE: 'ಯೋವೇಲ', AMO: 'ಆಮೋಸ',
-        OBA: 'ಓಬದ್ಯ', JON: 'ಯೋನ', MIC: 'ಮೀಕ', NAH: 'ನಹೂಮ', HAB: 'ಹಬಕ್ಕೂಕ',
-        ZEP: 'ಚೆಫನ್ಯ', HAG: 'ಹಗ್ಗಾಯ', ZEC: 'ಜೆಕರ್ಯ', MAL: 'ಮಲಾಕಿಯ', MAT: 'ಮತ್ತಾಯ',
-        MAR: 'ಮಾರ್ಕ', LUK: 'ಲೂಕ', JOH: 'ಯೋಹಾನ', ACT: 'ಅಪೊಸ್ತಲರ ಕೃತ್ಯಗಳು', ROM: 'ರೋಮಾಪುರದವರಿಗೆ',
-        '1CO': '1 ಕೊರಿಂಥದವರಿಗೆ', '2CO': '2 ಕೊರಿಂಥದವರಿಗೆ', GAL: 'ಗಲಾತ್ಯದವರಿಗೆ', EPH: 'ಎಫೆಸದವರಿಗೆ', PHI: 'ಫಿಲಿಪ್ಪಿಯವರಿಗೆ',
-        COL: 'ಕೊಲೊಸ್ಸೆಯವರಿಗೆ', '1TH': '1 ಥೆಸಲೋನಿಕದವರಿಗೆ', '2TH': '2 ಥೆಸಲೋನಿಕದವರಿಗೆ', '1TI': '1 ತಿಮೊಥೆಯನಿಗೆ', '2TI': '2 ತಿಮೊಥೆಯನಿಗೆ',
-        TIT: 'ತೀತನಿಗೆ', PHM: 'ಫಿಲೆಮೋನನಿಗೆ', HEB: 'ಇಬ್ರಿಯರಿಗೆ', JAM: 'ಯಾಕೋಬನು', '1PE': '1 ಪೇತ್ರನು',
-        '2PE': '2 ಪೇತ್ರನು', '1JO': '1 ಯೋಹಾನನು', '2JO': '2 ಯೋಹಾನನು', '3JO': '3 ಯೋಹಾನನು', JUD: 'ಯೂದನು', REV: 'ಪ್ರಕಟನೆ'
-    },
-    tlg: {
-        GEN: 'ఆదికాండము', EXO: 'నిర్గమకాండము', LEV: 'లేవీయకాండము', NUM: 'సంఖ్యాకాండము', DEU: 'ద్వితీయోపదేశకాండము',
-        JOS: 'యెహోషువ', JDG: 'న్యాయాధిపతులు', RUT: 'రూతు', '1SA': '1 సమూయేలు', '2SA': '2 సమూయేలు',
-        '1KI': '1 రాజులు', '2KI': '2 రాజులు', '1CH': '1 దినవృత్తాంతములు', '2CH': '2 దినవృత్తాంతములు', EZR: 'ఎజ్రా',
-        NEH: 'నెహెమ్యా', EST: 'ఎస్తేరు', JOB: 'యోబు', PSA: 'కీర్తనలు', PRO: 'సామెతలు',
-        ECC: 'ప్రసంగి', SOL: 'పరమగీతము', ISA: 'యెషయా', JER: 'యిర్మీయా', LAM: 'విలాపవాక్యములు',
-        EZE: 'యెహెజ్కేలు', DAN: 'దానియేలు', HOS: 'హోషేయ', JOE: 'యోవేలు', AMO: 'ఆమోసు',
-        OBA: 'ఓబద్యా', JON: 'యోనా', MIC: 'మీకా', NAH: 'నహూము', HAB: 'హబక్కూకు',
-        ZEP: 'జెఫన్యా', HAG: 'హగ్గయి', ZEC: 'జెకర్యా', MAL: 'మలాకీ', MAT: 'మత్తయి',
-        MAR: 'మార్కు', LUK: 'లూకా', JOH: 'యోహాను', ACT: 'అపొస్తలుల కార్యములు', ROM: 'రోమీయులకు',
-        '1CO': '1 కొరింథీయులకు', '2CO': '2 కొరింథీయులకు', GAL: 'గలతీయులకు', EPH: 'ఎఫెసీయులకు', PHI: 'ఫిలిప్పీయులకు',
-        COL: 'కొలొస్సయులకు', '1TH': '1 థెస్సలొనీకయులకు', '2TH': '2 థెస్సలొనీకయులకు', '1TI': '1 తిమోతికి', '2TI': '2 తిమోతికి',
-        TIT: 'తీతుకు', PHM: 'ఫిలేమోనుకు', HEB: 'హెబ్రీయులకు', JAM: 'యాకోబు', '1PE': '1 పేతురు',
-        '2PE': '2 పేతురు', '1JO': '1 యోహాను', '2JO': '2 యోహాను', '3JO': '3 యోహాను', JUD: 'యూదా', REV: 'ప్రకటన గ్రంథము'
-    },
-    mal: {
-        GEN: 'ഉല്പത്തി', EXO: 'പുറപ്പാട്', LEV: 'ലേവ്യപുസ്തകം', NUM: 'സംഖ്യാപുസ്തകം', DEU: 'ആവർത്തനം',
-        JOS: 'യോശുവ', JDG: 'ന്യായാധിപന്മാർ', RUT: 'രൂത്ത്', '1SA': '1 ശമൂവേൽ', '2SA': '2 ശമൂവേൽ',
-        '1KI': '1 രാജാക്കന്മാർ', '2KI': '2 രാജാക്കന്മാർ', '1CH': '1 ദിനവൃത്താന്തം', '2CH': '2 ദിനവൃത്താന്തം', EZR: 'എസ്രാ',
-        NEH: 'നെഹെമ്യാവ്', EST: 'എസ്ഥേർ', JOB: 'ഇയ്യോബ്', PSA: 'സങ്കീർത്തനങ്ങൾ', PRO: 'സദൃശവാക്യങ്ങൾ',
-        ECC: 'സഭാപ്രസംഗി', SOL: 'ഉത്തമഗീതം', ISA: 'യെശയ്യാവ്', JER: 'യിരെമ്യാവ്', LAM: 'വിലാപങ്ങൾ',
-        EZE: 'യെഹെസ്കേൽ', DAN: 'ദാനീയേൽ', HOS: 'ഹോശേയ', JOE: 'യോവേൽ', AMO: 'ആമോസ്',
-        OBA: 'ഓബദ്യാവ്', JON: 'യോനാ', MIC: 'മീഖാ', NAH: 'നഹൂം', HAB: 'ഹബക്കൂക്',
-        ZEP: 'സെഫന്യാവ്', HAG: 'ഹഗ്ഗായി', ZEC: 'സെഖര്യാവ്', MAL: 'മലാഖി', MAT: 'മത്തായി',
-        MAR: 'മർക്കൊസ്', LUK: 'ലൂക്കൊസ്', JOH: 'യോഹന്നാൻ', ACT: 'പ്രവൃത്തികൾ', ROM: 'റോമർ',
-        '1CO': '1 കൊരിന്ത്യർ', '2CO': '2 കൊരിന്ത്യർ', GAL: 'ഗലാത്യർ', EPH: 'എഫെസ്യർ', PHI: 'ഫിലിപ്പിയർ',
-        COL: 'കൊലൊസ്സ്യർ', '1TH': '1 തെസ്സലൊനീക്യർ', '2TH': '2 തെസ്സലൊനീക്യർ', '1TI': '1 തിമൊഥെയൊസ്', '2TI': '2 തിമൊഥെയൊസ്',
-        TIT: 'തീത്തോസ്', PHM: 'ഫിലേമോൻ', HEB: 'എബ്രായർ', JAM: 'യാക്കോബ്', '1PE': '1 പത്രൊസ്',
-        '2PE': '2 പത്രൊസ്', '1JO': '1 യോഹന്നാൻ', '2JO': '2 യോഹന്നാൻ', '3JO': '3 യോഹന്നാൻ', JUD: 'യൂദാ', REV: 'വെളിപ്പാട്'
-    },
-    tam: {
-        GEN: 'ஆதியாகமம்', EXO: 'யாத்திராகமம்', LEV: 'லேவியராகமம்', NUM: 'எண்ணாகமம்', DEU: 'உபாகமம்',
-        JOS: 'யோசுவா', JDG: 'நியாயாதிபதிகள்', RUT: 'ரூத்', '1SA': '1 சாமுவேல்', '2SA': '2 சாமுவேல்',
-        '1KI': '1 இராஜாக்கள்', '2KI': '2 இராஜாக்கள்', '1CH': '1 நாளாகமம்', '2CH': '2 நாளாகமம்', EZR: 'எஸ்றா',
-        NEH: 'நெகேமியா', EST: 'எஸ்தர்', JOB: 'யோபு', PSA: 'சங்கீதம்', PRO: 'நீதிமொழிகள்',
-        ECC: 'பிரசங்கி', SOL: 'உன்னதப்பாட்டு', ISA: 'ஏசாயா', JER: 'எரேமியா', LAM: 'புலம்பல்',
-        EZE: 'எசேக்கியேல்', DAN: 'தானியேல்', HOS: 'ஓசியா', JOE: 'யோவேல்', AMO: 'ஆமோஸ்',
-        OBA: 'ஒபதியா', JON: 'யோனா', MIC: 'மீகா', NAH: 'நாகூம்', HAB: 'ஆபகூக்',
-        ZEP: 'செப்பனியா', HAG: 'ஆகாய்', ZEC: 'சகரியா', MAL: 'மல்கியா', MAT: 'மத்தேயு',
-        MAR: 'மாற்கு', LUK: 'லூக்கா', JOH: 'யோவான்', ACT: 'அப்போஸ்தலர்', ROM: 'ரோமர்',
-        '1CO': '1 கொரிந்தியர்', '2CO': '2 கொரிந்தியர்', GAL: 'கலாத்தியர்', EPH: 'எபேசியர்', PHI: 'பிலிப்பியர்',
-        COL: 'கொலோசெயர்', '1TH': '1 தெசலோனிக்கேயர்', '2TH': '2 தெசலோனிக்கேயர்', '1TI': '1 தீமோத்தேயு', '2TI': '2 தீமோத்தேயு',
-        TIT: 'தீத்து', PHM: 'பிலேமோன்', HEB: 'எபிரெயர்', JAM: 'யாக்கோபு', '1PE': '1 பேதுரு',
-        '2PE': '2 பேதுரு', '1JO': '1 யோவான்', '2JO': '2 யோவான்', '3JO': '3 யோவான்', JUD: 'யூதா', REV: 'வெளிப்படுத்தின விசேஷம்'
-    },
-    hin: {
-        GEN: 'उत्पत्ति', EXO: 'निर्गमन', LEV: 'लैव्यव्यवस्था', NUM: 'गिनती', DEU: 'व्यवस्थाविवरण',
-        JOS: 'यहोशू', JDG: 'न्यायियों', RUT: 'रूत', '1SA': '1 शमूएल', '2SA': '2 शमूएल',
-        '1KI': '1 राजा', '2KI': '2 राजा', '1CH': '1 इतिहास', '2CH': '2 इतिहास', EZR: 'एज्रा',
-        NEH: 'नहेमायाह', EST: 'एस्तेर', JOB: 'अय्यूब', PSA: 'भजन संहिता', PRO: 'नीतिवचन',
-        ECC: 'सभोपदेशक', SOL: 'श्रेष्ठगीत', ISA: 'यशायाह', JER: 'यिर्मयाह', LAM: 'विलापगीत',
-        EZE: 'यहेजकेल', DAN: 'दानिय्येल', HOS: 'होशे', JOE: 'योएल', AMO: 'आमोस',
-        OBA: 'ओबद्याह', JON: 'योना', MIC: 'मीका', NAH: 'नहूम', HAB: 'हबक्कूक',
-        ZEP: 'सपन्याह', HAG: 'हाग्गै', ZEC: 'जकर्याह', MAL: 'मलाकी', MAT: 'मत्ती',
-        MAR: 'मरकुस', LUK: 'लूका', JOH: 'यूहन्ना', ACT: 'प्रेरितों के काम', ROM: 'रोमियों',
-        '1CO': '1 कुरिन्थियों', '2CO': '2 कुरिन्थियों', GAL: 'गलातियों', EPH: 'इफिसियों', PHI: 'फिलिप्पियों',
-        COL: 'कुलुस्सियों', '1TH': '1 थिस्सलुनीकियों', '2TH': '2 थिस्सलुनीकियों', '1TI': '1 तीमुथियुस', '2TI': '2 तीमुथियुस',
-        TIT: 'तीतुस', PHM: 'फिलेमोन', HEB: 'इब्रानियों', JAM: 'याकूब', '1PE': '1 पतरस',
-        '2PE': '2 पतरस', '1JO': '1 यूहन्ना', '2JO': '2 यूहन्ना', '3JO': '3 यूहन्ना', JUD: 'यहूदा', REV: 'प्रकाशितवाक्य'
-    },
-    spa: {
-        GEN: 'Génesis', EXO: 'Éxodo', LEV: 'Levítico', NUM: 'Números', DEU: 'Deuteronomio',
-        JOS: 'Josué', JDG: 'Jueces', RUT: 'Rut', '1SA': '1 Samuel', '2SA': '2 Samuel',
-        '1KI': '1 Reyes', '2KI': '2 Reyes', '1CH': '1 Crónicas', '2CH': '2 Crónicas', EZR: 'Esdras',
-        NEH: 'Nehemías', EST: 'Ester', JOB: 'Job', PSA: 'Salmos', PRO: 'Proverbios',
-        ECC: 'Eclesiastés', SOL: 'Cantares', ISA: 'Isaías', JER: 'Jeremías', LAM: 'Lamentaciones',
-        EZE: 'Ezequiel', DAN: 'Daniel', HOS: 'Oseas', JOE: 'Joel', AMO: 'Amós',
-        OBA: 'Abdías', JON: 'Jonás', MIC: 'Miqueas', NAH: 'Nahúm', HAB: 'Habacuc',
-        ZEP: 'Sofonías', HAG: 'Hageo', ZEC: 'Zacarías', MAL: 'Malaquías', MAT: 'Mateo',
-        MAR: 'Marcos', LUK: 'Lucas', JOH: 'Juan', ACT: 'Hechos de los Apóstoles', ROM: 'Romanos',
-        '1CO': '1 Corintios', '2CO': '2 Corintios', GAL: 'Gálatas', EPH: 'Efesios', PHI: 'Filipenses',
-        COL: 'Colosenses', '1TH': '1 Tesalonicenses', '2TH': '2 Tesalonicenses', '1TI': '1 Timoteo', '2TI': '2 Timoteo',
-        TIT: 'Tito', PHM: 'Filemón', HEB: 'Hebreos', JAM: 'Santiago', '1PE': '1 Pedro',
-        '2PE': '2 Pedro', '1JO': '1 Juan', '2JO': '2 Juan', '3JO': '3 Juan', JUD: 'Judas', REV: 'Apocalipsis'
-    }
-};
-
 function getBookNameForVer(code, verKey) {
     if (['kjv', 'nas', 'abp', 't4t', 'lxx'].includes(verKey)) {
         return bookFullNameMap[code] || code;
@@ -977,165 +1001,6 @@ function getDualBookName(code) {
         return leftName;
     }
     return leftName + ' / ' + rightName;
-}
-
-const moreVersions = ['kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
-let enabledOthVersions = [];
-let currentMoreVersion = '';
-
-function loadOthSettings() {
-    try {
-        const saved = localStorage.getItem('enabledOthVersions');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) {
-                enabledOthVersions = parsed.filter(v => allOthVersions.some(a => a.code === v));
-            }
-        }
-    } catch (_) {}
-}
-
-function saveOthSettings() {
-    localStorage.setItem('enabledOthVersions', JSON.stringify(enabledOthVersions));
-}
-
-function syncOthCheckboxes() {
-    document.querySelectorAll('.oth-chk-input').forEach(chk => {
-        chk.checked = enabledOthVersions.includes(chk.value);
-    });
-}
-
-function renderOthDropdownMenu() {
-    const dropdown = document.getElementById('moreVersionDropdown');
-    if (!dropdown) return;
-    dropdown.innerHTML = '';
-
-    if (enabledOthVersions.length === 0) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'oth-empty-msg';
-        emptyDiv.textContent = 'No versions enabled. Tap to configure in About.';
-        emptyDiv.onclick = (e) => {
-            if (e) e.stopPropagation();
-            closeAllMoreDropdowns();
-            openAboutModal();
-        };
-        dropdown.appendChild(emptyDiv);
-        return;
-    }
-
-    allOthVersions.forEach(ver => {
-        if (!enabledOthVersions.includes(ver.code)) return;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'more-option';
-        btn.setAttribute('data-ver', ver.code);
-        btn.onclick = (e) => selectMoreVersion(ver.code, e);
-
-        const codeSpan = document.createElement('span');
-        codeSpan.className = 'more-opt-code';
-        codeSpan.textContent = ver.label;
-
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'more-opt-name';
-        nameSpan.textContent = ver.name;
-
-        btn.appendChild(codeSpan);
-        btn.appendChild(nameSpan);
-        dropdown.appendChild(btn);
-    });
-}
-
-function syncAndroidAttachedDbs() {
-    if (window.AndroidBridge && window.AndroidBridge.syncAttachedDatabases) {
-        window.AndroidBridge.syncAttachedDatabases(JSON.stringify(enabledOthVersions));
-    }
-}
-
-function toggleOthAccordion(e) {
-    if (e) e.stopPropagation();
-    const wrapper = document.getElementById('aboutOthWrapper');
-    if (wrapper) wrapper.classList.toggle('open');
-}
-
-function onOthCheckboxChange(chk) {
-    const val = chk.value;
-    if (chk.checked) {
-        if (!enabledOthVersions.includes(val)) enabledOthVersions.push(val);
-    } else {
-        enabledOthVersions = enabledOthVersions.filter(v => v !== val);
-    }
-    saveOthSettings();
-    syncAndroidAttachedDbs();
-    renderOthDropdownMenu();
-
-    if (enabledOthVersions.length === 0) {
-        currentMoreVersion = '';
-        localStorage.removeItem('selectedMoreVersion');
-    } else if (!enabledOthVersions.includes(currentMoreVersion)) {
-        currentMoreVersion = enabledOthVersions[0];
-        localStorage.setItem('selectedMoreVersion', currentMoreVersion);
-    }
-
-    if (moreVersions.includes(activeRight) && !enabledOthVersions.includes(activeRight)) {
-        if (enabledOthVersions.length > 0) {
-            selectMoreVersion(enabledOthVersions[0]);
-        } else {
-            showRightVersion('abp');
-        }
-    } else {
-        showRightVersion(activeRight, true);
-    }
-
-    if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
-        const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter);
-        renderChapterData(JSON.parse(rawJson), null);
-    }
-}
-
-function onMoreBtnClick(e) {
-    if (e) e.stopPropagation();
-    if (enabledOthVersions.length === 0) {
-        closeAllMoreDropdowns();
-        openAboutModal();
-        return;
-    }
-    const isMoreActive = moreVersions.includes(activeRight);
-    if (!isMoreActive && enabledOthVersions.length > 0) {
-        const targetVer = (currentMoreVersion && enabledOthVersions.includes(currentMoreVersion))
-            ? currentMoreVersion
-            : enabledOthVersions[0];
-        showRightVersion(targetVer);
-    } else {
-        toggleMoreDropdown(e);
-    }
-}
-
-function toggleMoreDropdown(e) {
-    if (e) e.stopPropagation();
-    const dropdown = document.getElementById('moreVersionDropdown');
-    const wrapper = document.getElementById('moreVersionWrapper');
-    if (!dropdown) return;
-    const isShowing = dropdown.classList.contains('show');
-    closeAllMoreDropdowns();
-    if (!isShowing) {
-        dropdown.classList.add('show');
-        if (wrapper) wrapper.classList.add('open');
-    }
-}
-
-function closeAllMoreDropdowns() {
-    const dropdown = document.getElementById('moreVersionDropdown');
-    const wrapper = document.getElementById('moreVersionWrapper');
-    if (dropdown) dropdown.classList.remove('show');
-    if (wrapper) wrapper.classList.remove('open');
-}
-
-function selectMoreVersion(ver, e) {
-    if (e) e.stopPropagation();
-    currentMoreVersion = ver;
-    localStorage.setItem('selectedMoreVersion', ver);
-    closeAllMoreDropdowns();
-    showRightVersion(ver);
 }
 
 const availableBooks = {{AVAILABLE_BOOKS_JSON}};
@@ -1615,63 +1480,43 @@ function showLeftVersion(version, skipRender = false) {
     document.getElementById('origButton').classList.toggle('active', version === 'orig');
     localStorage.setItem('selectedFirstVersion', version);
     if (!skipRender) {
-        if (searchState.active) runKeywordSearch(searchState.query, 1);
-        else renderVersesDom();
+        if (searchState.active) {
+            runKeywordSearch(searchState.query, 1);
+        } else if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+            const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter, activeLeft, activeRight);
+            renderChapterData(JSON.parse(rawJson), null);
+        } else {
+            renderVersesDom();
+        }
     }
 }
 
 function showRightVersion(version, skipRender = false) {
-    const validRightVersions = ['abp', 'abgr', 't4t', 'kan', 'tlg', 'mal', 'tam', 'hin', 'spa', 'lxx'];
+    const validRightVersions = ['abp', 'abgr', 't4t', 'lxx'];
     if (!validRightVersions.includes(version)) version = 'abp';
-
-    if (moreVersions.includes(version) && !enabledOthVersions.includes(version)) {
-        if (enabledOthVersions.length > 0) {
-            version = enabledOthVersions[0];
-        } else {
-            version = 'abp';
-        }
-    }
 
     activeRight = version;
 
     const abpBtn = document.getElementById('abpButton');
     const abgrBtn = document.getElementById('abgrButton');
     const t4tBtn = document.getElementById('t4tButton');
+    const lxxBtn = document.getElementById('lxxButton');
 
     if (abpBtn) abpBtn.classList.toggle('active', version === 'abp');
     if (abgrBtn) abgrBtn.classList.toggle('active', version === 'abgr');
     if (t4tBtn) t4tBtn.classList.toggle('active', version === 't4t');
-
-    const isMoreSelected = enabledOthVersions.includes(version);
-    const moreBtn = document.getElementById('moreVersionBtn');
-    const moreLabel = document.getElementById('moreBtnLabel');
-
-    if (isMoreSelected) {
-        currentMoreVersion = version;
-        localStorage.setItem('selectedMoreVersion', version);
-    }
-
-    if (moreBtn) {
-        moreBtn.classList.toggle('active', isMoreSelected);
-    }
-    if (moreLabel) {
-        const displayCode = (enabledOthVersions.length > 0 && currentMoreVersion && enabledOthVersions.includes(currentMoreVersion) && versionLabels[currentMoreVersion])
-            ? versionLabels[currentMoreVersion]
-            : (enabledOthVersions.length > 0 && enabledOthVersions[0] && versionLabels[enabledOthVersions[0]])
-                ? versionLabels[enabledOthVersions[0]]
-                : 'OTH';
-        moreLabel.textContent = displayCode;
-    }
-
-    document.querySelectorAll('.more-option').forEach(opt => {
-        const optVer = opt.getAttribute('data-ver');
-        opt.classList.toggle('selected', optVer === currentMoreVersion);
-    });
+    if (lxxBtn) lxxBtn.classList.toggle('active', version === 'lxx');
 
     localStorage.setItem('selectedSecondVersion', version);
     if (!skipRender) {
-        if (searchState.active) runKeywordSearch(searchState.query, 1);
-        else renderVersesDom();
+        if (searchState.active) {
+            runKeywordSearch(searchState.query, 1);
+        } else if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
+            const rawJson = window.AndroidBridge.getChapterData(currentBook, currentChapter, activeLeft, activeRight);
+            renderChapterData(JSON.parse(rawJson), null);
+        } else {
+            renderVersesDom();
+        }
     }
 }
 
@@ -1691,11 +1536,8 @@ function renderChapterData(data, targetVerse = null, swipeDir = null) {
         showChapterToast(currentBook + ' ' + currentChapter);
     }
 
-    const bookLabel = document.getElementById('bookPickerLabel');
-    if (bookLabel) bookLabel.textContent = currentBook;
-
-    const chapLabel = document.getElementById('chapterPickerLabel');
-    if (chapLabel) chapLabel.textContent = currentChapter;
+    const passageLabel = document.getElementById('passagePickerLabel');
+    if (passageLabel) passageLabel.textContent = currentBook + ' ' + currentChapter;
 
     prevTarget = (data.prevBook && data.prevChapter)
         ? { book: data.prevBook, chapter: data.prevChapter }
@@ -1751,110 +1593,146 @@ function navigateToPassage(book, chapter, verse = null, pushHistory = true, swip
     }
 
     if (window.AndroidBridge && window.AndroidBridge.getChapterData) {
-        const rawJson = window.AndroidBridge.getChapterData(book, chapNum);
+        const rawJson = window.AndroidBridge.getChapterData(book, chapNum, activeLeft, activeRight);
         renderChapterData(JSON.parse(rawJson), verse, swipeDir);
     }
 }
 
-function openBookPickerModal(e) {
-    if (e) e.stopPropagation();
-    const bodyEl = document.getElementById('bookPickerBody');
-    if (!bodyEl) return;
-    bodyEl.innerHTML = '';
+let pickerOpeningFlag = false;
 
-    availableBooks.forEach(code => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'picker-book-item' + (code === currentBook ? ' active' : '');
-        itemDiv.onclick = (evt) => {
-            if (evt) evt.stopPropagation();
-            closeBookPickerModal(evt);
-            navigateToPassage(code, 1);
-        };
+let expandedBookCode = null;
 
-        const codeSpan = document.createElement('span');
-        codeSpan.className = 'picker-book-code';
-        codeSpan.textContent = code;
+function openPassagePickerModal(e) {
+    if (e && e.stopPropagation) e.stopPropagation();
 
-        const fullName = getDualBookName(code);
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'picker-book-name';
-        nameSpan.textContent = fullName;
+    const modal = document.getElementById('passagePickerModal');
+    if (!modal) return;
 
-        itemDiv.appendChild(codeSpan);
-        itemDiv.appendChild(nameSpan);
-        bodyEl.appendChild(itemDiv);
-    });
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.add('show');
 
-    const modal = document.getElementById('bookPickerModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
+    try {
+        const bodyEl = document.getElementById('passagePickerBody');
+        if (!bodyEl) return;
+        bodyEl.innerHTML = '';
+
+        expandedBookCode = currentBook;
+
+        // Ensure availableBooks has all 66 books from your DB or fallback
+        const otBooks = availableBooks.slice(0, 39);
+        const ntBooks = availableBooks.slice(39);
+
+        function renderBookSection(headingTitle, bookList) {
+            if (!bookList || bookList.length === 0) return;
+
+            const headingDiv = document.createElement('div');
+            headingDiv.className = 'passage-testament-heading';
+            headingDiv.textContent = headingTitle;
+            bodyEl.appendChild(headingDiv);
+
+            bookList.forEach(code => {
+                const isExpanded = (code === expandedBookCode);
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'passage-book-card' + (isExpanded ? ' expanded' : '');
+                cardDiv.id = 'pcard_' + code;
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'passage-book-header';
+                headerDiv.onclick = (evt) => {
+                    if (evt && evt.stopPropagation) evt.stopPropagation();
+                    toggleBookAccordion(code);
+                };
+
+                const codeSpan = document.createElement('span');
+                codeSpan.className = 'passage-book-code';
+                codeSpan.textContent = code;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'passage-book-name';
+                nameSpan.textContent = (typeof getDualBookName === 'function') ? getDualBookName(code) : code;
+
+                const arrowSpan = document.createElement('span');
+                arrowSpan.className = 'passage-arrow';
+                arrowSpan.textContent = '▾';
+
+                headerDiv.appendChild(codeSpan);
+                headerDiv.appendChild(nameSpan);
+                headerDiv.appendChild(arrowSpan);
+
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'passage-chapter-grid';
+                gridDiv.id = 'pgrid_' + code;
+
+                const chaps = (availableChapters && availableChapters[code]) ? availableChapters[code] : [1];
+                chaps.forEach(chapNum => {
+                    const pill = document.createElement('button');
+                    pill.type = 'button';
+                    pill.className = 'passage-chap-pill' + (code === currentBook && chapNum === currentChapter ? ' active' : '');
+                    pill.textContent = chapNum;
+                    pill.onclick = (evt) => {
+                        if (evt && evt.stopPropagation) evt.stopPropagation();
+                        closePassagePickerModal(evt);
+                        navigateToPassage(code, chapNum);
+                    };
+                    gridDiv.appendChild(pill);
+                });
+
+                cardDiv.appendChild(headerDiv);
+                cardDiv.appendChild(gridDiv);
+                bodyEl.appendChild(cardDiv);
+            });
+        }
+
+        renderBookSection('Old Testament', otBooks);
+        renderBookSection('New Testament', ntBooks);
+
+        // Auto-scroll to currently selected book
         setTimeout(() => {
-            const activeItem = bodyEl.querySelector('.picker-book-item.active');
-            if (activeItem) activeItem.scrollIntoView({ block: 'center' });
-        }, 50);
+            const activeCard = document.getElementById('pcard_' + currentBook);
+            if (activeCard) activeCard.scrollIntoView({ block: 'center' });
+        }, 80);
+
+    } catch (err) {
+        console.error("openPassagePickerModal error:", err);
     }
 }
 
-function closeBookPickerModal(e) {
-    if (e) e.stopPropagation();
-    const modal = document.getElementById('bookPickerModal');
+function toggleBookAccordion(code) {
+    if (expandedBookCode && expandedBookCode !== code) {
+        const prevCard = document.getElementById('pcard_' + expandedBookCode);
+        if (prevCard) prevCard.classList.remove('expanded');
+    }
+
+    if (expandedBookCode === code) {
+        expandedBookCode = null;
+        const currentCard = document.getElementById('pcard_' + code);
+        if (currentCard) currentCard.classList.remove('expanded');
+    } else {
+        expandedBookCode = code;
+        const newCard = document.getElementById('pcard_' + code);
+        if (newCard) {
+            newCard.classList.add('expanded');
+            setTimeout(() => {
+                newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 60);
+        }
+    }
+}
+
+function closePassagePickerModal(e) {
+    if (pickerOpeningFlag) return;
+    if (e && e.stopPropagation) e.stopPropagation();
+    const modal = document.getElementById('passagePickerModal');
     if (modal) {
         modal.classList.remove('show');
-        modal.style.display = 'none';
-    }
-}
-
-function openChapterPickerModal(e) {
-    if (e) e.stopPropagation();
-    const titleEl = document.getElementById('chapterPickerModalTitle');
-    const bookFullName = getDualBookName(currentBook);
-    if (titleEl) {
-        titleEl.textContent = currentBook + ' (' + bookFullName + ')';
-    }
-
-    const bodyEl = document.getElementById('chapterPickerBody');
-    if (!bodyEl) return;
-    bodyEl.innerHTML = '';
-
-    const chaps = availableChapters[currentBook] || [1];
-    chaps.forEach(chapNum => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'picker-chapter-btn' + (chapNum === currentChapter ? ' active' : '');
-        btn.textContent = chapNum;
-        btn.onclick = (evt) => {
-            if (evt) evt.stopPropagation();
-            closeChapterPickerModal(evt);
-            navigateToPassage(currentBook, chapNum);
-        };
-        bodyEl.appendChild(btn);
-    });
-
-    const modal = document.getElementById('chapterPickerModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
-        setTimeout(() => {
-            const activeBtn = bodyEl.querySelector('.picker-chapter-btn.active');
-            if (activeBtn) activeBtn.scrollIntoView({ block: 'center' });
-        }, 50);
-    }
-}
-
-function closeChapterPickerModal(e) {
-    if (e) e.stopPropagation();
-    const modal = document.getElementById('chapterPickerModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
+        modal.style.setProperty('display', 'none', 'important');
     }
 }
 
 function onPickerBackdropClick(e, modalId) {
+    if (pickerOpeningFlag) return;
     if (e.target.id === modalId) {
-        if (modalId === 'bookPickerModal') closeBookPickerModal(e);
-        if (modalId === 'chapterPickerModal') closeChapterPickerModal(e);
+        if (modalId === 'passagePickerModal') closePassagePickerModal(e);
     }
 }
 
@@ -1883,14 +1761,9 @@ function onAboutModalBackdropClick(e) {
 }
 
 window.handleAndroidBack = function() {
-    const bookPicker = document.getElementById('bookPickerModal');
-    if (bookPicker && bookPicker.classList.contains('show')) {
-        closeBookPickerModal();
-        return true;
-    }
-    const chapPicker = document.getElementById('chapterPickerModal');
-    if (chapPicker && chapPicker.classList.contains('show')) {
-        closeChapterPickerModal();
+    const passagePicker = document.getElementById('passagePickerModal');
+    if (passagePicker && passagePicker.classList.contains('show')) {
+        closePassagePickerModal();
         return true;
     }
     const bookModal = document.getElementById('bookFilterModal');
@@ -2224,20 +2097,8 @@ function renderSearchResults(matches, requestedChapter = null, requestedVerse = 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadOthSettings();
-    syncOthCheckboxes();
-    syncAndroidAttachedDbs();
-    renderOthDropdownMenu();
-
     const savedLeft = localStorage.getItem('selectedFirstVersion');
     if (savedLeft) showLeftVersion(savedLeft, true);
-
-    const savedMore = localStorage.getItem('selectedMoreVersion');
-    if (savedMore && enabledOthVersions.includes(savedMore)) {
-        currentMoreVersion = savedMore;
-    } else if (enabledOthVersions.length > 0) {
-        currentMoreVersion = enabledOthVersions[0];
-    }
 
     const savedRight = localStorage.getItem('selectedSecondVersion');
     showRightVersion(savedRight || 'abp', true);
@@ -2264,6 +2125,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initSwipeNavigation();
     initPinchToZoom();
+
+    const passageBtn = document.getElementById('passagePickerBtn');
+    if (passageBtn) {
+        passageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openPassagePickerModal(e);
+        });
+    }
 
     const input = document.getElementById('chapterSearch');
     const results = document.getElementById('searchResults');
