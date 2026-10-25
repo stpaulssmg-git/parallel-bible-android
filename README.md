@@ -1,6 +1,6 @@
 # Apostolic Parallel Bible - Android
 
-An offline, dual-pane parallel Bible study application built for Android. **Apostolic Parallel Bible** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, book-level drill-down filtering, modular regional language support, smart passage navigation, customizable themes, and responsive gesture typography.
+An offline, dual-pane parallel Bible study application built for Android. **Apostolic Parallel Bible** enables users to read and compare multiple Bible translations side-by-side with fast full-text search, book-level drill-down filtering, modular regional language support, smart passage navigation, customizable themes, customizable verse fonts, and responsive gesture typography.
 
 ---
 
@@ -12,80 +12,96 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
   - **KJV**: King James Version
   - **NAS**: New American Standard Bible (1995/2020)
   - **H/G**: Original Hebrew Masoretic & Greek Textus Receptus
+  - **LXX**: Thomson Septuagint English (1808) — Permanently built into Left Pane
 - **Right Column Translations**:
   - **ABe**: Apostolic Bible Polyglot (English)
   - **ABg**: Apostolic Bible Polyglot (Greek)
   - **T4T**: Translation for Translators
-  - **OTH**: Regional & Other Languages (Configurable 4th Button)
-- **Persistent Preferences**: Selected versions, themes, font sizes, and regional language configurations are saved automatically.
+  - **OTH ▾**: Regional & Other Languages (Configurable 4th Button)
+- **Persistent Preferences**: Selected versions, themes, verse font family, font size, and regional language selections are automatically saved.
+
+---
+
+### 🏛️ Native 7-Translation Core Database (`bible.db.zip`)
+- **Built-in Core Database**: Contains 7 core translations pre-compiled into a single SQLite database (`bible.db.zip`):
+  1. `KJV` (King James Version)
+  2. `NAS` (New American Standard)
+  3. `H/G` (Hebrew Masoretic / Greek TR)
+  4. `LXX` (Thomson Septuagint English — 30,974 verses)
+  5. `ABe` (Apostolic Bible English)
+  6. `ABg` (Apostolic Bible Greek)
+  7. `T4T` (Translation for Translators)
 
 ---
 
 ### 🌐 Modular Regional Databases (`ATTACH DATABASE`)
-- **Dynamic SQLite Attachment**: Regional translations are stored in separate compressed `.db.zip` asset packages and dynamically attached on demand using SQLite `ATTACH DATABASE`:
+- **Dynamic SQLite Attachment**: Additional regional translations are stored in separate compressed `.db.zip` packages and attached dynamically on demand using SQLite `ATTACH DATABASE`:
   - **KAN**: Kannada IRV (`kannada.db.zip`)
   - **TLG**: Telugu 2017 (`telugu.db.zip`)
   - **MAL**: Malayalam VPL (`malayalam.db.zip`)
   - **TAM**: Tamil 2017 (`tamil.db.zip`)
   - **HIN**: Hindi 2017 (`hindi.db.zip`)
   - **SPA**: Spanish Reina Valera 1909 (`spanish.db.zip`)
-  - **LXX**: Thomson Septuagint English (`thomson.db.zip`)
-- **First Install Default State**: Regional languages are disabled by default on first launch. Tapping `OTH ▾` or `i` opens the About modal to configure regional translations.
-- **Active Memory Retention**: The 4th top bar button retains the last chosen regional language (e.g. `KAN ▾`) even when switching back to `ABe` or `T4T`.
+- **Configuration Modal**: Regional languages are enabled/disabled via the **OTH** section inside the About Modal (`i`).
+
+---
+
+### 📚 Redesigned Book Picker & Inline Chapter Selector
+- **Testament Filter Tabs**:
+  - **OT (39 Books)**: Filters the book list to Old Testament books (Genesis–Malachi).
+  - **NT (27 Books)**: Filters the book list to New Testament books (Matthew–Revelation).
+- **Inline Expandable Chapter Grid**:
+  - Tapping a book name expands a spacious 5-column grid of chapter buttons inline directly under that book for 1-tap passage navigation.
+- **Spacious & Comfortable Touch Targets**:
+  - 44px minimum height buttons with explicit spacing for easy, non-congested tapping on all device sizes.
+
+---
+
+### 🔤 Verse Font Family Selection
+- **4 Selectable Typefaces** (configured in About Modal):
+  1. **Sans-Serif**: Modern / Clean (`Segoe UI`, system-ui, Arial) — Default
+  2. **Serif**: Georgia / Literary Book Style (`Georgia`, `Times New Roman`)
+  3. **Monospace**: Fixed Pitch (`Consolas`, `Courier New`)
+  4. **Rounded**: Casual / Trebuchet (`Trebuchet MS`, `Ubuntu`)
+- **Focused Typography Application**: Font changes apply **strictly to verse text** in the reader and search results, preserving clean system typography for all UI buttons, headers, modals, and dock controls.
+
+---
+
+### 🎨 4 Color Themes & Pinch-to-Zoom Gesture
+- **4 Color Themes** (Cycled via `C` button):
+  1. 🍷 **Crimson** (`crimson`) — Signature default crimson theme (**C**).
+  2. 📜 **Warm** (`warm`) — Paper-like sepia comfort reading (**W**).
+  3. 🌊 **Teal** (`teal`) — High-contrast daylight teal (**T**).
+  4. 🌙 **Dark** (`dark`) — Deep dark theme with enhanced dock/bar borders and contrast for OLED screens (**D**).
+- **Smooth Pinch-to-Zoom**: Sub-pixel font scaling (12px to 28px) with `requestAnimationFrame`.
 
 ---
 
 ### ✍️ Native Right-to-Left (RTL) Hebrew Support
-- **RTL Text Rendering**: Hebrew text in the Original/Masoretic column is automatically formatted right-to-left (`direction: rtl`).
-- **Tailored Typography**: Integrated Hebrew font family cascade (`SBL Hebrew`, `Ezra SIL`, `David`) with +15% font scaling and adjusted line height for high legibility.
+- **RTL Text Rendering**: Hebrew text in the Original (`H/G`) column is formatted right-to-left (`direction: rtl`).
+- **Hebrew Typography**: Integrated font stack (`SBL Hebrew`, `Ezra SIL`, `David`) with adjusted line height for high legibility.
 
 ---
 
 ### 🔍 Smart Full-Text Search & Drill-Down Engine
 - **Per-Version & Testament Breakdown Links**:
-  - Displays match counts per translation: `KJV: [O-250] [ + ]  [N-30] [ + ]  [T-280]`.
+  - Displays match counts per active translation: `KJV: [O-250] [ + ]  [N-30] [ + ]  [T-280]`.
   - Clickable count badges filter results instantly by **Old Testament (`O`)**, **New Testament (`N`)**, or **Total (`T`)**.
-  - Grayed-out non-clickable links for zero matches (`[O-0]`).
 - **Book-Level Drill-Down (`[ + ]`)**:
-  - Tapping **`[ + ]`** opens a popup modal listing only the specific books containing search matches along with their verse counts.
-  - Tapping a book filters search results directly to that book.
+  - Tapping **`[ + ]`** opens a spacious popup modal listing matching books and match counts.
 - **Search Retention & Return Bar**:
-  - Tapping a verse reference opens the full chapter context without losing search results.
-  - A floating return bar (`🔍 Return to "query" (Pg 1)`) + Android Back button integration allows 1-tap return to active search results.
-- **12 Verses Per Page & 60fps Swipe Navigation**:
-  - Background search page prefetching (`searchPageCache`) for zero-latency, 60fps hardware-accelerated horizontal swipe page transitions.
+  - Floating return bar (`🔍 Return to "query" (Pg 1)`) + Android Back button integration allows 1-tap return to active search results.
+- **12 Verses Per Page & Swipe Page Transitions**:
+  - Background search page prefetching for smooth horizontal swipe page transitions.
 
 ---
 
-### 🧭 Custom Touch Pickers & Navigation
-- **Custom Book Picker Modal**:
-  - Displays dual-translation book names matching active left and right translations (e.g. `GEN Genesis / ಆದಿಕಾಂಡ` or `GEN Genesis`).
-- **Custom Chapter Grid Modal**:
-  - 5-column touch grid for instant chapter selection.
-- **Uniform Bottom Dock**:
-  - 32px height and 6px corner radius synchronized across Book Picker, Chapter Picker, Search Input, Search Submit, Theme Selector (`C`), and About Modal (`i`) buttons.
+### ⚡ Compatibility & Performance
 
----
-
-### 🎨 4 Reading Themes & Pinch-to-Zoom Gesture
-- **4 Built-in Color Themes**:
-  1. 🍷 **Alpha/Omega Crimson** (`crimson`) — Signature default theme.
-  2. 📜 **Warm Sepia** (`warm`) — Paper-like comfort reading.
-  3. 🌊 **Modern Teal** (`teal`) — High-contrast daylight mode.
-  4. 🌙 **Night Dark** (`dark`) — Deep dark theme optimized for OLED screens.
-- **Silky-Smooth 60fps Pinch-to-Zoom**: Sub-pixel floating-point font scaling driven by `requestAnimationFrame`.
-
----
-
-### ⚡ Build Optimization & Performance
-
-- **34.7 MB Optimized Release Bundle**:
-  - Raw `.txt` source files are excluded from APK/AAB builds (`ignoreAssetsPattern = "*.txt"`), saving 20.5 MB of build size.
-- **Multi-Level In-Memory Caching**:
-  - `LruCache` (32 Chapters) for instant chapter switching.
-  - Background worker threads to prefetch adjacent chapters.
-- **Native Android WebView Guard**:
-  - `WebViewClient` URL override guard and `event.preventDefault()` prevent accidental form submissions or `ERR_FILE_NOT_FOUND` errors.
+- **Android API 24 (Android 7.0) Compatibility**:
+  - Tailored CSS overlays and hit-testing fallback handling for stock System WebViews (Chrome 51).
+- **Multi-Level Caching**:
+  - In-memory `LruCache` (32 Chapters) and background worker threads for adjacent chapter prefetching.
 
 ---
 
@@ -93,12 +109,11 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
 
 | Layer | Technology / Library |
 | :--- | :--- |
-| **Language** | Kotlin 1.9+ & Modern ES6 JavaScript / HTML5 / CSS3 |
-| **UI Container** | Custom Android `WebView` with `Material3` DayNight theme |
-| **Database Engine** | SQLite (`android.database.sqlite.SQLiteDatabase`) with `ATTACH DATABASE` |
-| **Decompression** | `java.util.zip.ZipInputStream` |
-| **Caching** | `android.util.LruCache` & Kotlin Coroutines / Background Threads |
-| **Min SDK / Target SDK** | Android 7.0 (API 24) / Android 14+ (API 37) |
+| **Language** | Kotlin & ES6 JavaScript / HTML5 / CSS3 |
+| **UI Container** | Android `WebView` with Material DayNight theme |
+| **Database Engine** | SQLite (`android.database.sqlite.SQLiteDatabase`) + `ATTACH DATABASE` |
+| **Caching** | `android.util.LruCache` & Background Threads |
+| **Min SDK / Target SDK** | Android 7.0 (API 24) / Android 14+ (API 34/35) |
 | **Build Tool** | Gradle with Kotlin DSL (`build.gradle.kts`) |
 
 ---
@@ -109,26 +124,22 @@ An offline, dual-pane parallel Bible study application built for Android. **Apos
 ParallelBible/
 ├── app/
 │   ├── build.gradle.kts
-│   ├── release.jks            # RSA 2048-bit Release Keystore
 │   └── src/
 │       └── main/
 │           ├── AndroidManifest.xml
 │           ├── assets/
-│           │   ├── bible.db.zip       # Core 6-version SQLite database (~11 MB)
+│           │   ├── bible.db.zip       # Core 7-version SQLite database (~13 MB)
 │           │   ├── kannada.db.zip     # Regional Kannada database
 │           │   ├── telugu.db.zip      # Regional Telugu database
 │           │   ├── malayalam.db.zip   # Regional Malayalam database
 │           │   ├── tamil.db.zip       # Regional Tamil database
 │           │   ├── hindi.db.zip       # Regional Hindi database
 │           │   ├── spanish.db.zip     # Regional Spanish database
-│           │   ├── thomson.db.zip     # Regional Thomson LXX database
 │           │   └── template.html      # Main HTML layout, CSS themes, and JS logic
 │           └── java/com/stpauls/parallelbible/
-│               └── MainActivity.kt    # SQLite engine, ATTACH DATABASE joins, LRU cache & JS Bridge
+│               └── MainActivity.kt    # SQLite engine, JS Bridge & LRU cache
 ├── LICENSE                    # CC BY-NC-SA 4.0 International License
 ├── PRIVACY_POLICY.md
-├── build.gradle.kts
-├── settings.gradle.kts
 └── README.md
 ```
 
@@ -162,18 +173,9 @@ ParallelBible/
 
 Licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)**.
 
-Official License Details: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-### Summary of License Terms:
-- **Share**: Copy and redistribute the material in any medium or format.
-- **Adapt**: Remix, transform, and build upon the material.
-- **Attribution**: You must give appropriate credit, provide a link to the license, and indicate if changes were made.
-- **NonCommercial**: You may **NOT** use the material for commercial purposes or monetization.
-- **ShareAlike**: If you remix, transform, or build upon the material, you must distribute your contributions under the exact same CC BY-NC-SA 4.0 license.
-
-### Content & Copyright Notice:
-- **Software Source Code & Engine**: Licensed under CC BY-NC-SA 4.0 (Non-Commercial).
-- **Bible Text Databases & Resources**:
-  - **NASB (New American Standard Bible)**: Copyright © The Lockman Foundation. All rights reserved. Used strictly for non-commercial study purposes.
-  - **ABP (Apostolic Bible Polyglot)**: Copyright © Charles Van der Pool. All rights reserved. Restricted to non-commercial personal study.
-  - **KJV & Public Domain Translations**: Public Domain.
+### Copyrights & Permissions:
+- **NASB (New American Standard Bible)**: Copyright © The Lockman Foundation.
+- **ABP (Apostolic Bible Polyglot - ABe / ABg)**: Copyright © Charles Van der Pool.
+- **T4T (Translation for Translators)**: Copyright © Ellis W. Deibler, Jr. / unfoldingWord (CC BY-SA 4.0).
+- **IRV Bibles (KAN / TLG / TAM / HIN)**: Copyright © Bridge Connectivity Solutions / unfoldingWord (CC BY-SA 4.0).
+- **Public Domain**: King James Version (KJV), Hebrew Masoretic & Greek TR (H/G), Thomson Septuagint (LXX), Malayalam VPL (MAL), Spanish Reina Valera 1909 (SPA).
