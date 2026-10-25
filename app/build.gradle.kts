@@ -1,3 +1,11 @@
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -27,16 +35,26 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("release.jks")
-            storePassword = "parallelbible"
-            keyAlias = "parallelbible"
-            keyPassword = "parallelbible"
+            val storeFilePath = localProperties.getProperty("keystore.file") ?: "release.jks"
+            val storePass = localProperties.getProperty("keystore.password")
+            val alias = localProperties.getProperty("key.alias")
+            val keyPass = localProperties.getProperty("key.password")
+
+            if (storePass != null && alias != null && keyPass != null) {
+                storeFile = file(storeFilePath)
+                storePassword = storePass
+                keyAlias = alias
+                keyPassword = keyPass
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storePassword != null) {
+                signingConfig = releaseSigning
+            }
             optimization {
                 enable = false
             }

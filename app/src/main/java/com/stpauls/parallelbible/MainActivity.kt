@@ -42,8 +42,7 @@ class MainActivity : Activity() {
         "mal" to RegionalDbInfo("mal", "mal_db", "malayalam.db", "malayalam.db.zip", "mal_text"),
         "tam" to RegionalDbInfo("tam", "tam_db", "tamil.db", "tamil.db.zip", "tam_text"),
         "hin" to RegionalDbInfo("hin", "hin_db", "hindi.db", "hindi.db.zip", "hin_text"),
-        "spa" to RegionalDbInfo("spa", "spa_db", "spanish.db", "spanish.db.zip", "spa_text"),
-        "lxx" to RegionalDbInfo("lxx", "lxx_db", "thomson.db", "thomson.db.zip", "lxx_text")
+        "spa" to RegionalDbInfo("spa", "spa_db", "spanish.db", "spanish.db.zip", "spa_text")
     )
 
     private val activeAttachedSchemas = mutableSetOf<String>()
@@ -65,7 +64,14 @@ class MainActivity : Activity() {
             allowContentAccess = true
         }
 
+        webView.webChromeClient = android.webkit.WebChromeClient()
+
         webView.webViewClient = object : WebViewClient() {
+            @Suppress("OVERRIDE_DEPRECATION")
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                return true
+            }
+
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 return true // Intercept and block internal webview url redirects
             }
@@ -303,6 +309,7 @@ class MainActivity : Activity() {
 
             cachedBooks = books
             cachedBookChapters = bookChapters
+            chapterJsonCache.evictAll()
             sqliteDb = db
         }
     }
@@ -323,6 +330,7 @@ class MainActivity : Activity() {
                 "kjv"  -> "v.kjv_text"
                 "nas"  -> "v.nasb_text"
                 "orig" -> "v.orig_text"
+                "lxx"  -> "v.lxx_text"
                 "abp"  -> "v.aben_text"
                 "abgr" -> "v.abgr_text"
                 "t4t"  -> "v.t4t_text"
@@ -412,6 +420,7 @@ class MainActivity : Activity() {
                 "kjv"  -> "v.kjv_text"
                 "nas"  -> "v.nasb_text"
                 "orig" -> "v.orig_text"
+                "lxx"  -> "v.lxx_text"
                 "abp"  -> "v.aben_text"
                 "abgr" -> "v.abgr_text"
                 "t4t"  -> "v.t4t_text"
@@ -529,7 +538,7 @@ class MainActivity : Activity() {
 
         val selectCols = mutableListOf(
             "v.book", "v.chapter", "v.verse_num", "v.t4t_label",
-            "v.kjv_text", "v.nasb_text", "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text"
+            "v.kjv_text", "v.nasb_text", "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text", "v.lxx_text"
         )
         val regKeys = mutableListOf<Pair<String, String>>()
         for ((_, info) in regionalDbsMap) {
@@ -561,8 +570,9 @@ class MainActivity : Activity() {
                     if (!c.isNull(7)) obj.put("abp", c.getString(7))
                     if (!c.isNull(8)) obj.put("abgr", c.getString(8))
                     if (!c.isNull(9)) obj.put("t4t", c.getString(9))
+                    if (!c.isNull(10)) obj.put("lxx", c.getString(10))
 
-                    var idx = 10
+                    var idx = 11
                     for (pair in regKeys) {
                         if (!c.isNull(idx)) {
                             obj.put(pair.second, c.getString(idx))
@@ -672,7 +682,7 @@ class MainActivity : Activity() {
 
         val selectCols = mutableListOf(
             "v.verse_num", "v.t4t_label", "v.kjv_text", "v.nasb_text",
-            "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text"
+            "v.orig_text", "v.aben_text", "v.abgr_text", "v.t4t_text", "v.lxx_text"
         )
         val joinClauses = StringBuilder()
         val regKeys = mutableListOf<Pair<String, String>>()
@@ -701,8 +711,9 @@ class MainActivity : Activity() {
                 if (!c.isNull(5)) obj.put("abp", c.getString(5))
                 if (!c.isNull(6)) obj.put("abgr", c.getString(6))
                 if (!c.isNull(7)) obj.put("t4t", c.getString(7))
+                if (!c.isNull(8)) obj.put("lxx", c.getString(8))
 
-                var idx = 8
+                var idx = 9
                 for (pair in regKeys) {
                     if (!c.isNull(idx)) {
                         obj.put(pair.second, c.getString(idx))
