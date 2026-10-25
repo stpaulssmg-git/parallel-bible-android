@@ -783,37 +783,37 @@ mark.search-hl {
             <div class="about-font-grid">
                 <label class="about-font-option selected" data-font="sans" onclick="applyFontFamily('sans')">
                     <input type="radio" name="appFont" value="sans" checked>
-                    <div class="about-font-info">
+                    <span class="about-font-info">
                         <strong>Sans-Serif</strong>
                         <small>Modern / Clean</small>
-                    </div>
+                    </span>
                     <span class="about-font-preview" style="font-family:'Segoe UI', sans-serif;">Aa</span>
                 </label>
 
                 <label class="about-font-option" data-font="serif" onclick="applyFontFamily('serif')">
                     <input type="radio" name="appFont" value="serif">
-                    <div class="about-font-info">
+                    <span class="about-font-info">
                         <strong>Serif</strong>
                         <small>Georgia / Literary Book Style</small>
-                    </div>
+                    </span>
                     <span class="about-font-preview" style="font-family:'Georgia', serif;">Aa</span>
                 </label>
 
                 <label class="about-font-option" data-font="mono" onclick="applyFontFamily('mono')">
                     <input type="radio" name="appFont" value="mono">
-                    <div class="about-font-info">
+                    <span class="about-font-info">
                         <strong>Monospace</strong>
                         <small>Fixed Pitch</small>
-                    </div>
+                    </span>
                     <span class="about-font-preview" style="font-family:'Consolas', monospace;">Aa</span>
                 </label>
 
                 <label class="about-font-option" data-font="rounded" onclick="applyFontFamily('rounded')">
                     <input type="radio" name="appFont" value="rounded">
-                    <div class="about-font-info">
+                    <span class="about-font-info">
                         <strong>Rounded</strong>
                         <small>Casual / Trebuchet</small>
-                    </div>
+                    </span>
                     <span class="about-font-preview" style="font-family:'Trebuchet MS', sans-serif;">Aa</span>
                 </label>
             </div>
@@ -934,7 +934,7 @@ mark.search-hl {
     </div>
     <form class="search-bar" onsubmit="return submitChapterSearch();">
         <div class="search-results" id="searchResults"></div>
-        <input type="text" id="chapterSearch" class="search-input" placeholder="Ref or word..." autocomplete="off">
+        <input type="text" id="chapterSearch" class="search-input" placeholder="Ref or word..." aria-label="Search reference or keyword" autocomplete="off">
         <button type="button" id="clearSearchInlineBtn" class="search-clear-inline" title="Clear Search" onclick="clearVerseSearch()">&times;</button>
         <button type="submit" class="search-button" title="Search">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.2" y2="16.2"></line></svg>
