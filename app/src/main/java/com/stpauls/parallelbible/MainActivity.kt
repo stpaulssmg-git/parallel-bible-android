@@ -120,8 +120,26 @@ class MainActivity : Activity() {
             verFilter: String = "both",
             bookFilter: String = "all"
         ): String {
-            ensureMasterDatabaseReady()
-            return executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter, bookFilter).toString()
+            return try {
+                ensureMasterDatabaseReady()
+                executeVerseSearch(query, leftVer, rightVer, page, testamentFilter, verFilter, bookFilter).toString()
+            } catch (e: Throwable) {
+                android.util.Log.e("BibleBridge", "searchVerses error", e)
+                JSONObject().apply {
+                    put("query", query)
+                    put("total", 0)
+                    put("page", 1)
+                    put("totalPages", 1)
+                    put("pageSize", 12)
+                    put("counts", JSONObject().apply {
+                        put("leftOt", 0); put("leftNt", 0); put("leftAll", 0)
+                        put("rightOt", 0); put("rightNt", 0); put("rightAll", 0)
+                        put("totalOt", 0); put("totalNt", 0); put("totalAll", 0)
+                    })
+                    put("results", JSONArray())
+                    put("error", e.message ?: "Unknown search error")
+                }.toString()
+            }
         }
 
         @JavascriptInterface
@@ -197,11 +215,10 @@ class MainActivity : Activity() {
             try {
                 val sql = "ATTACH DATABASE '${targetFile.absolutePath.replace("'", "''")}' AS ${info.schemaAlias}"
                 db.execSQL(sql)
-                activeAttachedSchemas.add(info.schemaAlias)
-                chapterJsonCache.evictAll()
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
+            activeAttachedSchemas.add(info.schemaAlias)
+            chapterJsonCache.evictAll()
         }
     }
 
@@ -449,6 +466,7 @@ class MainActivity : Activity() {
             WHERE ($leftExpr LIKE ? ESCAPE '\' OR $rightExpr LIKE ? ESCAPE '\')
         """.trimIndent()
 
+        // Exactly 8 parameters: 3 for leftExpr in CASE, 3 for rightExpr in CASE, 2 for WHERE clause
         val countsParams = arrayOf(
             likeArg, likeArg, likeArg,
             likeArg, likeArg, likeArg,

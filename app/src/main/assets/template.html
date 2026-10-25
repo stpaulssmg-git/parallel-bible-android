@@ -250,6 +250,92 @@
             opacity: 0.28; cursor: default; pointer-events: none; color: var(--merged-text-color);
         }
 
+        /* Full-Screen Search Modal */
+        .search-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 250; background: rgba(0, 0, 0, 0.65);
+            display: none; align-items: center; justify-content: center;
+            padding: 12px; box-sizing: border-box;
+            transition: opacity 0.18s ease;
+        }
+        .search-modal-overlay.show {
+            display: flex !important;
+        }
+        .search-modal-card {
+            background: var(--bg-body);
+            border: 1px solid var(--row-border);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 820px;
+            height: 90vh;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+        .search-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--header-bg);
+            color: var(--header-text);
+            border-bottom: 1px solid var(--header-border);
+            flex-shrink: 0;
+        }
+        .search-modal-title {
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .search-modal-close {
+            border: none;
+            background: transparent;
+            color: var(--header-text);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 6px;
+        }
+        .search-modal-close:hover { opacity: 0.8; }
+        .search-modal-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+        }
+        .search-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: var(--row-even-bg);
+            border-top: 1px solid var(--row-border);
+            flex-shrink: 0;
+            font-size: 12.5px;
+        }
+        .search-page-btn {
+            border: none;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .search-page-btn:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+
         .book-modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300; background: rgba(0,0,0,0.45);
             display: none; align-items: center; justify-content: center; padding: 16px;
@@ -681,15 +767,15 @@
             </p>
 
             <h3 class="about-section-title">Supported Translations</h3>
-            <div class="about-trans-grid">
-                <div class="about-trans-card"><strong>KJV</strong> King James Version</div>
-                <div class="about-trans-card"><strong>NAS</strong> New American Standard</div>
-                <div class="about-trans-card"><strong>H/G</strong> Hebrew &amp; Greek Original</div>
-                <div class="about-trans-card"><strong>LXX</strong> Thomson Septuagint</div>
-                <div class="about-trans-card"><strong>ABe</strong> Apostolic Bible (English)</div>
-                <div class="about-trans-card"><strong>ABg</strong> Apostolic Bible (Greek)</div>
-                <div class="about-trans-card"><strong>T4T</strong> Translation for Translators</div>
-            </div>
+
+                <ul class="about-features-list">
+                    <li>KJV - King James Version</li>
+                    <li>NAS - New American Standard</li>
+                    <li>LXX - Thomson Septuagint</li>
+                    <li>ABe - Apostolic Bible (English)</li>
+                    <li>ABg - Apostolic Bible (Greek)</li>
+                    <li>T4T - Translation for Translators</li>
+                </ul>
 
             <h3 class="about-section-title">Copyrights &amp; Permissions</h3>
             <div class="about-copyrights-box">
@@ -760,6 +846,22 @@
     </div>
 </div>
 
+<!-- Search Results Full Modal -->
+<div id="searchModalOverlay" class="search-modal-overlay" onclick="onSearchModalBackdropClick(event)">
+    <div class="search-modal-card">
+        <div class="search-modal-header">
+            <span class="search-modal-title" id="searchModalHeaderTitle">Search Results</span>
+            <button type="button" class="search-modal-close" onclick="closeSearchModal(event)" aria-label="Close">&times;</button>
+        </div>
+        <div class="search-modal-body" id="searchModalBody"></div>
+        <div class="search-modal-footer" id="searchModalFooter">
+            <button type="button" class="search-page-btn" id="searchPrevBtn" onclick="changeSearchPage(-1)">&larr; Prev</button>
+            <span id="searchPageIndicator" style="font-weight:600;">Pg 1 of 1</span>
+            <button type="button" class="search-page-btn" id="searchNextBtn" onclick="changeSearchPage(1)">Next &rarr;</button>
+        </div>
+    </div>
+</div>
+
 <!-- Unified Passage Picker Modal -->
 <div id="passagePickerModal" class="picker-modal-overlay" onclick="onPickerBackdropClick(event, 'passagePickerModal')">
     <div class="passage-modal-card">
@@ -784,18 +886,18 @@
         </button>
 
         <!-- Search Bar -->
-        <form class="search-bar" onsubmit="return submitChapterSearch();">
+        <form class="search-bar" onsubmit="event.preventDefault(); submitChapterSearch(); return false;">
             <div class="search-results" id="searchResults"></div>
             <input type="text" id="chapterSearch" class="search-input" placeholder="Ref or word..." autocomplete="off">
             <button type="button" id="clearSearchInlineBtn" class="search-clear-inline" title="Clear Search" onclick="clearVerseSearch()">&times;</button>
-            <button type="submit" class="search-button" title="Search">
+            <button type="button" class="search-button" title="Search" onclick="submitChapterSearch()">
                 <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.2" y2="16.2"></line></svg>
             </button>
         </form>
 
         <!-- Utilities (Theme & About) -->
         <div class="utility-bar">
-            <button type="button" id="themeButton" onclick="cycleTheme(event)">D</button>
+            <button type="button" id="themeButton">D</button>
             <button type="button" id="aboutBtn" onclick="openAboutModal(event)" title="About Parallel Bible"><i>i</i></button>
         </div>
     </div>
@@ -828,12 +930,6 @@
         abp:  '[Not available in ABe]',
         abgr: '[Not available in ABg]',
         t4t:  '[Included in previous verse]',
-        kan:  '[Not available in KAN]',
-        tlg:  '[Not available in TLG]',
-        mal:  '[Not available in MAL]',
-        tam:  '[Not available in TAM]',
-        hin:  '[Not available in HIN]',
-        spa:  '[Not available in SPA]',
         lxx:  '[Not available in LXX]'
     };
 
@@ -929,20 +1025,23 @@
         }, 850);
     }
 
-    function applyTheme(theme) {
+ function applyTheme(theme) {
         if (!themes.includes(theme)) theme = 'dark';
         currentTheme = theme;
         rootEl.setAttribute('data-theme', theme);
         const themeBtn = document.getElementById('themeButton');
         if (themeBtn) {
-            themeBtn.textContent = theme === 'dark' ? 'D' : (theme === 'teal' ? 'T' : (theme === 'warm' ? 'W' : 'C'));
+            const themeMap = { dark: 'D', teal: 'T', warm: 'W', crimson: 'C' };
+            themeBtn.textContent = themeMap[theme] || 'D';
         }
         localStorage.setItem('bibleTheme', theme);
     }
 
-    function cycleTheme(e) {
+  function cycleTheme(e) {
         if (e && e.stopPropagation) e.stopPropagation();
-        applyTheme(themes[(themes.indexOf(currentTheme) + 1) % themes.length]);
+        const currIndex = themes.indexOf(currentTheme);
+        const nextIndex = (currIndex >= 0) ? (currIndex + 1) % themes.length : 0;
+        applyTheme(themes[nextIndex]);
     }
 
     function applyFontSize(sizePx) {
@@ -1222,7 +1321,6 @@
     }
 
     function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both', swipeDir = null, bookFilter = 'all') {
-        hideSearchReturnBar();
         const trimmed = query.trim();
         if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
 
@@ -1238,9 +1336,22 @@
         let data = searchPageCache.get(cacheKey);
 
         if (!data) {
-            const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter, bookFilter);
-            data = JSON.parse(rawJson);
-            searchPageCache.set(cacheKey, data);
+            try {
+                const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter, bookFilter);
+                data = JSON.parse(rawJson);
+                searchPageCache.set(cacheKey, data);
+            } catch (err) {
+                console.error("searchVerses bridge error:", err);
+                data = {
+                    query: trimmed,
+                    total: 0,
+                    page: 1,
+                    totalPages: 1,
+                    pageSize: 12,
+                    counts: { leftOt: 0, leftNt: 0, leftAll: 0, rightOt: 0, rightNt: 0, rightAll: 0, totalOt: 0, totalNt: 0, totalAll: 0 },
+                    results: []
+                };
+            }
         }
 
         searchState.active = true;
@@ -1259,18 +1370,8 @@
         };
         searchState.results = data.results || [];
 
-        renderVersesDom();
-
-        const resultsList = document.getElementById('searchResultsList');
-        if (resultsList && (swipeDir === 'next' || swipeDir === 'prev')) {
-            resultsList.classList.remove('swipe-next', 'swipe-prev');
-            void resultsList.offsetWidth;
-            resultsList.classList.add(swipeDir === 'next' ? 'swipe-next' : 'swipe-prev');
-            showChapterToast('Page ' + searchState.page + ' of ' + searchState.totalPages);
-        }
-
-        const container = document.getElementById('scrollContainer');
-        if (container) container.scrollTop = 0;
+        openSearchModal();
+        renderSearchVersesDom();
 
         if (page < searchState.totalPages) {
             prefetchSearchPage(trimmed, page + 1, testament, verFilter, bookFilter);
@@ -1861,35 +1962,50 @@
     }
 
     function parseSearchQuery(query) {
-        const match = query.match(/^([1-4]?\s*[A-Z.]+(?:\s+[A-Z.]+)*?)\s*(\d+)(?:[:.\s]+(\d+))?$/i);
-        if (match) {
+        // 1. Compact formats like "m1 1", "j3 16", "g1 1", "mat2 10", "john3 16"
+        const compactMatch = query.match(/^([1-3]?\s*[A-Z.]+)(\d+)(?:[:.\s]+(\d+))?$/i);
+        if (compactMatch) {
             return {
-                bookQuery: match[1].trim(),
-                chapter: parseInt(match[2], 10),
-                verse: match[3] ? parseInt(match[3], 10) : null
+                bookQuery: compactMatch[1].trim(),
+                chapter: parseInt(compactMatch[2], 10),
+                verse: compactMatch[3] ? parseInt(compactMatch[3], 10) : null
             };
         }
+
+        // 2. Spaced formats like "m 1 1", "mat 1 1", "matthew 1 1", "j 3 16", "john 3 16"
+        const spacedMatch = query.match(/^([1-3]?\s*[A-Z.]+)\s+(\d+)(?:[:.\s]+(\d+))?$/i);
+        if (spacedMatch) {
+            return {
+                bookQuery: spacedMatch[1].trim(),
+                chapter: parseInt(spacedMatch[2], 10),
+                verse: spacedMatch[3] ? parseInt(spacedMatch[3], 10) : null
+            };
+        }
+
         return { bookQuery: query, chapter: null, verse: null };
     }
 
     function submitChapterSearch() {
         const input = document.getElementById('chapterSearch');
         const results = document.getElementById('searchResults');
-        const rawValue = input ? input.value.trim() : '';
-        const query = normalizeSearch(rawValue);
-        if (!query) {
+        const rawValue = input ? input.value : '';
+        const trimmed = rawValue.trim();
+        if (!trimmed) {
             if (results) results.classList.remove('show');
             return false;
         }
 
+        const query = normalizeSearch(trimmed);
         const { bookQuery, chapter, verse } = parseSearchQuery(query);
         const matches = findBookMatches(bookQuery);
 
-        if (chapter !== null) {
+        // If it's a valid book name with chapter
+        if (chapter !== null && matches.length > 0) {
             const exactBook = matches.find(b => isExactBookMatch(b, bookQuery));
             if (exactBook && availableChapters[exactBook]) {
                 const chaps = availableChapters[exactBook];
                 if (chaps.includes(chapter)) {
+                    if (results) results.classList.remove('show');
                     navigateToPassage(exactBook, chapter, verse);
                     return false;
                 }
@@ -1898,23 +2014,18 @@
                 const book = matches[0];
                 const chaps = availableChapters[book] || [];
                 if (chaps.includes(chapter)) {
+                    if (results) results.classList.remove('show');
                     navigateToPassage(book, chapter, verse);
                     return false;
                 }
             }
-            if (matches.length > 0) {
-                renderSearchResults(matches, chapter, verse, rawValue);
-                return false;
-            }
-        } else {
-            const exactBookOnly = matches.find(b => isExactBookMatch(b, bookQuery));
-            if (exactBookOnly && matches.length === 1) {
-                navigateToPassage(exactBookOnly, 1, null);
-                return false;
-            }
+            renderSearchResults(matches, chapter, verse, trimmed);
+            return false;
         }
 
-        runKeywordSearch(rawValue, 1);
+        // Otherwise, it is a word / keyword search: directly execute keyword search
+        if (results) results.classList.remove('show');
+        runKeywordSearch(trimmed, 1);
         return false;
     }
 
@@ -1947,8 +2058,9 @@
         });
 
         const trimmedRaw = (rawText || '').trim();
+        const is2CharSearch = (rawText.length >= 2 && trimmedRaw.length >= 1);
 
-        if (trimmedRaw.length >= 2 && window.AndroidBridge && window.AndroidBridge.quickSearchVerses) {
+        if (is2CharSearch && window.AndroidBridge && window.AndroidBridge.quickSearchVerses) {
             try {
                 const rawJson = window.AndroidBridge.quickSearchVerses(trimmedRaw, activeLeft, activeRight, 5);
                 const quickResults = JSON.parse(rawJson);
@@ -2038,10 +2150,10 @@
 
         const themeBtn = document.getElementById('themeButton');
         if (themeBtn) {
-            themeBtn.addEventListener('click', (e) => {
+            themeBtn.onclick = (e) => {
                 if (e && e.stopPropagation) e.stopPropagation();
                 cycleTheme(e);
-            });
+            };
         }
 
         const aboutBtn = document.getElementById('aboutBtn');
@@ -2093,6 +2205,241 @@
             }, { passive: true });
         }
     });
+
+    function openSearchModal() {
+        const modal = document.getElementById('searchModalOverlay');
+        if (modal) {
+            modal.classList.add('show');
+            modal.style.setProperty('display', 'flex', 'important');
+        }
+    }
+
+    function closeSearchModal(e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        const modal = document.getElementById('searchModalOverlay');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.setProperty('display', 'none', 'important');
+        }
+        searchState.active = false;
+        updateInlineClearButton();
+    }
+
+    function onSearchModalBackdropClick(e) {
+        if (e.target.id === 'searchModalOverlay') {
+            closeSearchModal(e);
+        }
+    }
+
+    function renderVersesDom() {
+        updateInlineClearButton();
+        let html = '';
+        const isOrig = (activeLeft === 'orig');
+        for (let i = 0; i < currentVerses.length; i++) {
+            const row = currentVerses[i];
+            const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
+            html += '<div class="version-row" id="v' + row.v + '">'
+                  + '<div class="verse-cell left-cell' + leftRtl + '">' + buildCellInner(row, activeLeft) + '</div>'
+                  + '<div class="verse-cell right-cell">' + buildCellInner(row, activeRight) + '</div>'
+                  + '</div>';
+        }
+        document.getElementById('parallelContent').innerHTML = html;
+    }
+
+    function renderSearchVersesDom() {
+        const modalBody = document.getElementById('searchModalBody');
+        if (!modalBody) return;
+
+        const q = searchState.query;
+        const total = searchState.total;
+        const page = searchState.page;
+        const totalPages = searchState.totalPages;
+        const rows = searchState.results || [];
+        const counts = searchState.counts || {};
+        const curTestament = searchState.testament || 'all';
+        const curVerFilter = searchState.verFilter || 'both';
+        const curBookFilter = searchState.bookFilter || 'all';
+
+        const leftCode = (versionLabels[activeLeft] || activeLeft.toUpperCase());
+        const rightCode = (versionLabels[activeRight] || activeRight.toUpperCase());
+
+        const headerTitle = document.getElementById('searchModalHeaderTitle');
+        if (headerTitle) {
+            headerTitle.textContent = `Search: "${q}" (${total} matches)`;
+        }
+
+        const pageIndicator = document.getElementById('searchPageIndicator');
+        if (pageIndicator) {
+            pageIndicator.innerHTML = `Pg ${page} of ${totalPages} &mdash; <strong>${total}</strong> verses`;
+        }
+        const prevBtn = document.getElementById('searchPrevBtn');
+        const nextBtn = document.getElementById('searchNextBtn');
+        if (prevBtn) prevBtn.disabled = (page <= 1);
+        if (nextBtn) nextBtn.disabled = (page >= totalPages);
+
+        function isBadgeActive(t, vf) {
+            return curTestament === t && curVerFilter === vf && curBookFilter === 'all';
+        }
+
+        function renderBadge(count, testament, verFilter, labelPrefix) {
+            const isActive = isBadgeActive(testament, verFilter);
+            if (!count || count <= 0) {
+                return '<span class="search-count-link disabled">[' + labelPrefix + '-0]</span>';
+            }
+            return '<span class="search-count-link' + (isActive ? ' active' : '') + '" onclick="applySearchFilter(\'' + testament + '\', \'' + verFilter + '\')">[' + labelPrefix + '-' + count + ']</span>';
+        }
+
+        function renderPlusBtn(count, testament, verFilter) {
+            if (!count || count <= 0) {
+                return '<span class="search-plus-btn disabled">[ + ]</span>';
+            }
+            return '<span class="search-plus-btn" onclick="openBookFilterModal(\'' + testament + '\', \'' + verFilter + '\', event)" title="Select book">[ + ]</span>';
+        }
+
+        const bookSuffix = (curBookFilter !== 'all') ? (' in ' + curBookFilter) : '';
+
+        let html = '<div class="search-banner">'
+            + '<div class="search-banner-top-row">'
+            + '<div class="search-banner-title">&ldquo;<strong>' + escHtml(q) + '</strong>&rdquo;' + escHtml(bookSuffix) + '</div>'
+            + '</div>'
+            + '<div class="search-breakdown-container">'
+            + '<div class="search-breakdown-row">'
+            + '<span class="search-ver-code">' + escHtml(leftCode) + ':</span>'
+            + '<div class="search-badges-group">'
+            + renderBadge(counts.leftOt, 'ot', 'left', 'O')
+            + renderPlusBtn(counts.leftOt, 'ot', 'left')
+            + renderBadge(counts.leftNt, 'nt', 'left', 'N')
+            + renderPlusBtn(counts.leftNt, 'nt', 'left')
+            + renderBadge(counts.leftAll, 'all', 'left', 'T')
+            + '</div>'
+            + '</div>'
+            + '<div class="search-breakdown-row">'
+            + '<span class="search-ver-code">' + escHtml(rightCode) + ':</span>'
+            + '<div class="search-badges-group">'
+            + renderBadge(counts.rightOt, 'ot', 'right', 'O')
+            + renderPlusBtn(counts.rightOt, 'ot', 'right')
+            + renderBadge(counts.rightNt, 'nt', 'right', 'N')
+            + renderPlusBtn(counts.rightNt, 'nt', 'right')
+            + renderBadge(counts.rightAll, 'all', 'right', 'T')
+            + '</div>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+
+        if (rows.length === 0) {
+            html += '<div style="padding: 36px 16px; text-align: center; font-size: 15px;">'
+                  + 'No matching verses found for <strong>&ldquo;' + escHtml(q) + '&rdquo;</strong>' + escHtml(bookSuffix) + '.'
+                  + '</div>';
+        } else {
+            html += '<div id="searchResultsList">';
+            const isOrig = (activeLeft === 'orig');
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const leftRtl = (isOrig && isHebrewText(row.orig)) ? ' mt-rtl' : '';
+                html += '<div class="version-row">'
+                      + '<div class="verse-cell left-cell' + leftRtl + '">' + buildSearchCellInner(row, activeLeft, q) + '</div>'
+                      + '<div class="verse-cell right-cell">' + buildSearchCellInner(row, activeRight, q) + '</div>'
+                      + '</div>';
+            }
+            html += '</div>';
+        }
+
+        modalBody.innerHTML = html;
+        modalBody.scrollTop = 0;
+    }
+
+    function runKeywordSearch(query, page = 1, testament = 'all', verFilter = 'both', swipeDir = null, bookFilter = 'all') {
+        const trimmed = query.trim();
+        if (!trimmed || !window.AndroidBridge || !window.AndroidBridge.searchVerses) return;
+
+        const resultsPopup = document.getElementById('searchResults');
+        const input = document.getElementById('chapterSearch');
+        if (resultsPopup) resultsPopup.classList.remove('show');
+        if (input) {
+            input.value = trimmed;
+            input.blur();
+        }
+
+        const cacheKey = `${trimmed}:${page}:${testament}:${verFilter}:${bookFilter}:${activeLeft}:${activeRight}`;
+        let data = searchPageCache.get(cacheKey);
+
+        if (!data) {
+            const rawJson = window.AndroidBridge.searchVerses(trimmed, activeLeft, activeRight, page, testament, verFilter, bookFilter);
+            data = JSON.parse(rawJson);
+            searchPageCache.set(cacheKey, data);
+        }
+
+        searchState.active = true;
+        searchState.query = data.query || trimmed;
+        searchState.page = data.page || page;
+        searchState.total = data.total || 0;
+        searchState.totalPages = data.totalPages || 1;
+        searchState.pageSize = data.pageSize || 12;
+        searchState.testament = testament;
+        searchState.verFilter = verFilter;
+        searchState.bookFilter = bookFilter;
+        searchState.counts = data.counts || {
+            leftOt: 0, leftNt: 0, leftAll: 0,
+            rightOt: 0, rightNt: 0, rightAll: 0,
+            totalOt: 0, totalNt: 0, totalAll: 0
+        };
+        searchState.results = data.results || [];
+
+        openSearchModal();
+        renderSearchVersesDom();
+
+        if (page < searchState.totalPages) {
+            prefetchSearchPage(trimmed, page + 1, testament, verFilter, bookFilter);
+        }
+        if (page > 1) {
+            prefetchSearchPage(trimmed, page - 1, testament, verFilter, bookFilter);
+        }
+    }
+
+    function clearVerseSearch() {
+        dismissRetainedSearch();
+        const input = document.getElementById('chapterSearch');
+        const resultsPopup = document.getElementById('searchResults');
+        if (input) input.value = '';
+        if (resultsPopup) resultsPopup.classList.remove('show');
+
+        searchState.active = false;
+        searchState.query = '';
+        searchState.results = [];
+        closeSearchModal();
+    }
+
+    function openSearchResult(book, chapter, verse) {
+        retainedSearch = {
+            query: searchState.query,
+            page: searchState.page
+        };
+        navHistory.push({
+            isSearchSnapshot: true,
+            query: searchState.query,
+            page: searchState.page
+        });
+        showSearchReturnBar();
+
+        // Close search modal without wiping state
+        const modal = document.getElementById('searchModalOverlay');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.setProperty('display', 'none', 'important');
+        }
+
+        const input = document.getElementById('chapterSearch');
+        if (input) input.value = '';
+        updateInlineClearButton();
+
+        const chapNum = Number(chapter) || 1;
+        if (book === currentBook && chapNum === currentChapter) {
+            renderVersesDom();
+            requestAnimationFrame(() => scrollToVerse(verse));
+        } else {
+            navigateToPassage(book, chapNum, verse, false);
+        }
+    }
 </script>
 </body>
 </html>
